@@ -26,6 +26,7 @@ client.once('ready', () => {
 
 client.on('message', message => {
     if (!message.content.startsWith(prefix) || message.author.bot) return;
+    if (message.content.includes("@everyone") || message.content.include("@here")) return message.reply("NO PINGS!");
     const args = message.content.slice(prefix.length).split(/ +/);
     const command = args.shift().toLowerCase();
     // if (!(message.member.permissions.has("ADMINISTRATOR"))) {
