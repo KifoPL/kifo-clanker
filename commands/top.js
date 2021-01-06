@@ -1,6 +1,6 @@
 module.exports = {
     name: 'top',
-    description: 'This command lists x messages with most reactions from other channel.\nUsage: "!top <x> <time_period> <other_channel> <reaction> <ping>"\nType "ping" if you want to mention authors (Admin only!)\n\nBeware! Due to the way Discord API works, if there are more than 100 messages in your time-span, only the last 100 messages will be checked.',
+    description: "This command lists x messages with most reactions from other channel.\nUsage: !top <x> <time_period> <other_channel> <reaction> <ping>\nType 'ping' if you want to mention authors (Admin only!)\n\nBeware! Due to the way Discord API works, if there are more than 100 messages in your time-span, only the last 100 messages will be checked.",
     async execute(message, args, Discord) {
         const ms = require(`ms`);
         if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("sorry, only Admins can ping authors.");
@@ -51,19 +51,26 @@ module.exports = {
         //    console.log(chmessages[i]);
         // }
         let ii = 1;
+        message.channel.startTyping();
         for (i = 0; i < loops; i++) {
             if (i > 0 && chmessages[i].reactions.resolve(key).count == chmessages[i - 1].reactions.resolve(key).count) {
                 loops++;
                 ii--;
-                if (!chmessages[loops]) loops--;
+                if (!chmessages[loops])
+                {
+                    loops--;
+                } 
             }
+            message.channel.startTyping();
             if (ping) {
-                message.channel.send("**> Top " + ii + "** by <@" + chmessages[i].author.id + "> with **" + chmessages[i].reactions.resolve(key).count + "** <:" + chmessages[i].reactions.resolve(key).name + ":" + key + ">");
+                message.channel.send("**Top " + ii + "** by <@" + chmessages[i].author.id + "> with **" + chmessages[i].reactions.resolve(key).count + "** <:" + chmessages[i].reactions.resolve(key).name + ":" + key + ">");
 
             } else {
-                message.channel.send("**> Top " + ii + "** by **" + chmessages[i].author.username + "** with **" + chmessages[i].reactions.resolve(key).count + "** <:" + chmessages[i].reactions.resolve(key).name + ":" + key + ">");
+                message.channel.send("**Top " + ii + "** by **" + chmessages[i].author.username + "** with **" + chmessages[i].reactions.resolve(key).count + "** <:" + chmessages[i].reactions.resolve(key).name + ":" + key + ">");
             }
-            if (chmessages[i].content.length > 0) message.channel.send("``" + chmessages[i].content + "``");
+            message.channel.startTyping();
+            if (chmessages[i].content.length > 0) message.channel.send("> ```" + chmessages[i].content + "```");
+            message.channel.startTyping();
             if (chmessages[i].attachments.array().length > 0 && chmessages[i].attachments.array()[0] != undefined)
             {
                 await message.channel.send(chmessages[i].attachments.array()[0])
@@ -71,7 +78,9 @@ module.exports = {
             }
             else message.channel.send(`Original post: https://discord.com/channels/${chmessages[i].channel.guild.id}/${chmessages[i].channel.id}/${chmessages[i].id}`);
             ii++;
+            message.channel.startTyping();
         }
+        message.channel.stopTyping(true);
         if (loops < args[0]) message.channel.send("No more posts with given criteria found.")
     }
 }

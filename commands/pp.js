@@ -9,7 +9,7 @@ module.exports = {
         {
             if (!isNaN(args[0]))
             {
-                console.log(message.guild.members.resolve(args[0]));
+                //console.log(message.guild.members.resolve(args[0]));
                 if (!message.guild.members.resolve(args[0])) return message.reply("user not found.");
                 else
                 {
