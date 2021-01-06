@@ -54,5 +54,4 @@ client.on('message', message => {
     message.channel.send("Command not found. Type `!help` for list of commands.");
 });
 
-//DO NOT SHARE IT ANYWHERE
-client.login(config.token);
+client.login(process.env.LOGIN_TOKEN);
