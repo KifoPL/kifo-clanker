@@ -51,7 +51,7 @@ client.on('message', message => {
             return;
         }
     }
-    message.channel.send("Command not found. Type `!help` for list of commands.");
+    message.channel.send("Command not found. Type `!kifo help` for list of commands.");
 });
 
 client.login(process.env.LOGIN_TOKEN);
