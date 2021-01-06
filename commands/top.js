@@ -1,6 +1,6 @@
 module.exports = {
     name: 'top',
-    description: "This command lists x messages with most reactions from other channel.\nUsage: !top <x> <time_period> <other_channel> <reaction> <ping>\nType 'ping' if you want to mention authors (Admin only!)\n\nBeware! Due to the way Discord API works, if there are more than 100 messages in your time-span, only the last 100 messages will be checked.",
+    description: 'This command lists x messages with most reactions from other channel.\nUsage: "!top <x> <time_period> <other_channel> <reaction> <ping>"\nType "ping" if you want to mention authors (Admin only!)\n\nBeware! Due to the way Discord API works, if there are more than 100 messages in your time-span, only the last 100 messages will be checked.',
     async execute(message, args, Discord) {
         const ms = require(`ms`);
         if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("sorry, only Admins can ping authors.");
