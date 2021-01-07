@@ -6,7 +6,7 @@ module.exports = {
         if (args[1] != undefined) message.reply("Too many arguments!");
         if (args[0])
         {
-            if (message.mentions.users.firstKey() != undefined) reply = args[0] + reply;
+            if (message.mentions.users.firstKey() != undefined) reply = args[0] + "\n" + reply;
             else if (!isNaN(args[0]))
             {
                 if (!message.guild.members.resolve(args[0])) return message.reply("user not found.");
