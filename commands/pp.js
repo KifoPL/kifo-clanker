@@ -29,7 +29,7 @@ module.exports = {
         for (i = 0; i < pplen; i++) pp += "=";
         pp += "D";
         let ppvalue = "";
-        ppvalue = pplen + 2 + " cm";
+        ppvalue = (pplen + 2) * 2 + " cm";
         const newEmbed = new Discord.MessageEmbed()
         .setColor('a039a0')
         .setTitle(username +"'s PP:")
