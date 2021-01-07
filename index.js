@@ -26,7 +26,8 @@ client.once('ready', () => {
 
 client.on('message', message => {
     if (!message.content.startsWith(prefix) || message.author.bot) return;
-    if (message.content.includes("@everyone") || message.content.includes("@here")) return message.reply("NO PINGS!");
+    if (message.mentions.roles.firstKey() != undefined) return message.reply("no roles in commands!");
+    if (message.mentions.everyone) return message.reply("don't even try pinging...");
     const args = message.content.slice(prefix.length).split(/ +/);
     const command = args.shift().toLowerCase();
     // if (!(message.member.permissions.has("ADMINISTRATOR"))) {
