@@ -38,20 +38,27 @@ client.on('message', message => {
     // }
     for (const file of commandFiles) {
         const splitter = (file.length - 3);
-        if (!(command === "help")) {
+        if (command == "help")
+        {
+            const event = new Date(Date.now());
+            console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", event.toUTCString());
+        }
+        else if (command == "error")
+        {
+            const event = new Date(Date.now());
+            console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", event.toUTCString());
+            client.commands.get(command).execute(message, args, Discord, client)
+            return;
+        }
+        else {
             if (command === file.toLowerCase().substring(0, splitter)) {
                 const event = new Date(Date.now());
-                console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "in", message.guild.name, "at", event.toUTCString());
+                console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", event.toUTCString());
                 client.commands.get(command).execute(message, args, Discord)
                 return;
             }
         }
-        else {
-            const event = new Date(Date.now());
-            console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "in", message.guild.name, "at", event.toUTCString());
-            client.commands.get('help').execute(message, args, Discord);
-            return;
-        }
+        
     }
     message.channel.send("Command not found. Type `!kifo help` for list of commands.").catch();
 });
