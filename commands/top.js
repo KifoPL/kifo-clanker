@@ -61,26 +61,26 @@ module.exports = {
                     loops--;
                 } 
             }
-            message.channel.startTyping();
+            message.channel.startTyping().catch();
             if (ping) {
-                message.channel.send("**Top " + ii + "** by <@" + chmessages[i].author.id + "> with **" + chmessages[i].reactions.resolve(key).count + "** <:" + chmessages[i].reactions.resolve(key).name + ":" + key + ">");
+                message.channel.send("**Top " + ii + "** by <@" + chmessages[i].author.id + "> with **" + chmessages[i].reactions.resolve(key).count + "** <:" + chmessages[i].reactions.resolve(key).name + ":" + key + ">").catch();
 
             } else {
-                message.channel.send("**Top " + ii + "** by **" + chmessages[i].author.username + "** with **" + chmessages[i].reactions.resolve(key).count + "** <:" + chmessages[i].reactions.resolve(key).name + ":" + key + ">");
+                message.channel.send("**Top " + ii + "** by **" + chmessages[i].author.username + "** with **" + chmessages[i].reactions.resolve(key).count + "** <:" + chmessages[i].reactions.resolve(key).name + ":" + key + ">").catch();
             }
-            message.channel.startTyping();
+            message.channel.startTyping().catch();
             if (chmessages[i].content.length > 0) message.channel.send("> ```" + chmessages[i].content + "```");
-            message.channel.startTyping();
+            message.channel.startTyping().catch();
             if (chmessages[i].attachments.array().length > 0 && chmessages[i].attachments.array()[0] != undefined)
             {
-                await message.channel.send(chmessages[i].attachments.array()[0])
-                message.channel.send(`Original post: https://discord.com/channels/${chmessages[i].channel.guild.id}/${chmessages[i].channel.id}/${chmessages[i].id}`);
+                await message.channel.send(chmessages[i].attachments.array()[0]).catch()
+                message.channel.send(`Original post: https://discord.com/channels/${chmessages[i].channel.guild.id}/${chmessages[i].channel.id}/${chmessages[i].id}`).catch();
             }
-            else message.channel.send(`Original post: https://discord.com/channels/${chmessages[i].channel.guild.id}/${chmessages[i].channel.id}/${chmessages[i].id}`);
+            else message.channel.send(`Original post: https://discord.com/channels/${chmessages[i].channel.guild.id}/${chmessages[i].channel.id}/${chmessages[i].id}`).catch();
             ii++;
-            message.channel.startTyping();
+            message.channel.startTyping().catch();
         }
         message.channel.stopTyping(true);
-        if (loops < args[0]) message.channel.send("No more posts with given criteria found.")
+        if (loops < args[0]) message.channel.send("No more posts with given criteria found.").catch()
     }
 }

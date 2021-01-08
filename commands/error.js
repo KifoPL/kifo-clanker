@@ -4,6 +4,6 @@ module.exports = {
     execute(message, args) {
         let reply ="**" +  message.author.username + "** has encountered a problem. Check it out <@289119054130839552>.";
         if (args[0]) reply += "\nProblem:\n> *" + args.join(' ') + "*";
-        message.channel.send(reply);
+        message.channel.send(reply).catch();
     }
 }

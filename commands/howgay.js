@@ -46,6 +46,6 @@ module.exports = {
         .addFields(
             {name: reply, value: comment}
         )
-        message.channel.send(newEmbed);
+        message.channel.send(newEmbed).catch();
     }
 }

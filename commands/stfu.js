@@ -15,8 +15,7 @@ module.exports = {
                     reply = "<@" + args[0] + ">\n" + reply;
                 }
             }
-            
         }
-        message.channel.send(reply);
+        message.channel.send(reply).catch();
     }
 }

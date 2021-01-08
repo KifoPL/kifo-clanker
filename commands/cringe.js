@@ -17,6 +17,6 @@ module.exports = {
             }
             
         }
-        message.channel.send(reply);
+        message.channel.send(reply).catch();
     }
 }

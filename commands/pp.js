@@ -36,6 +36,6 @@ module.exports = {
         .addFields(
             {name: pp, value: ppvalue}
         )
-        message.channel.send(newEmbed);
+        message.channel.send(newEmbed).catch();
     }
 }

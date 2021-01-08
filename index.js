@@ -41,19 +41,19 @@ client.on('message', message => {
         if (!(command === "help")) {
             if (command === file.toLowerCase().substring(0, splitter)) {
                 const event = new Date(Date.now());
-                console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", event.toUTCString());
+                console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "in", message.guild.name, "at", event.toUTCString());
                 client.commands.get(command).execute(message, args, Discord)
                 return;
             }
         }
         else {
             const event = new Date(Date.now());
-            console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", event.toUTCString());
+            console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "in", message.guild.name, "at", event.toUTCString());
             client.commands.get('help').execute(message, args, Discord);
             return;
         }
     }
-    message.channel.send("Command not found. Type `!kifo help` for list of commands.");
+    message.channel.send("Command not found. Type `!kifo help` for list of commands.").catch();
 });
 
 client.login(process.env.LOGIN_TOKEN);
