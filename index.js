@@ -42,19 +42,20 @@ client.on('message', message => {
         {
             const event = new Date(Date.now());
             console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", event.toUTCString());
+            client.commands.get(command).execute(message, args, Discord);
         }
         else if (command == "error")
         {
             const event = new Date(Date.now());
             console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", message.guild.name, "at", event.toUTCString());
-            client.commands.get(command).execute(message, args, Discord, client)
+            client.commands.get(command).execute(message, args, Discord, client);
             return;
         }
         else {
             if (command === file.toLowerCase().substring(0, splitter)) {
                 const event = new Date(Date.now());
                 console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", message.guild.name, "at", event.toUTCString());
-                client.commands.get(command).execute(message, args, Discord)
+                client.commands.get(command).execute(message, args, Discord);
                 return;
             }
         }
