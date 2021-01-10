@@ -43,6 +43,7 @@ client.on('message', message => {
             const event = new Date(Date.now());
             console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", event.toUTCString());
             client.commands.get(command).execute(message, args, Discord);
+            return;
         }
         else if (command == "error")
         {
