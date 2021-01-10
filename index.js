@@ -21,7 +21,7 @@ command = require(`./help.js`);
 client.commands.set(command.name, command);
 
 client.once('ready', () => {
-    console.log('Kifo Clanker™ is online!');
+    console.log('Kifo Clanker is online!');
 });
 
 client.on('message', message => {
