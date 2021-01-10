@@ -6,6 +6,7 @@ module.exports = {
 
         let reply = "**" +  message.author.username + "** has encountered a problem.";
         let kiforeply = reply + ` Link: https://discord.com/channels/${message.channel.guild.id}/${message.channel.id}/${message.id}`;
+        reply += " Kifo has been notified, he will reply soon™.";
         if (args[0])
         {
             let problem = "\nProblem:\n> *" + args.join(' ') + "*";
