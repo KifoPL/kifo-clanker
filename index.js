@@ -24,7 +24,23 @@ client.once('ready', () => {
     console.log('Kifo Clanker is online!');
 });
 
+//USED BY REACT COMMAND
+let reactreturn;
+const channellist = new Discord.Collection();
+const channellistemotes = new Map;
+
 client.on('message', message => {
+    if (channellist.find(channel => message.channel == channel) != undefined)
+    {
+        if (!message.content.startsWith(prefix) || message.author.bot)
+        {
+            for (i = 0; i < channellistemotes.get(message.channel.id).length; i++)
+            {
+                if (message.deleted) return;
+                message.react(channellistemotes.get(message.channel.id)[i]);
+            }
+        }
+    }
     if (!message.content.startsWith(prefix) || message.author.bot) return;
     if (message.mentions.roles.firstKey() != undefined) return message.reply("no roles in commands!");
     if (message.mentions.everyone) return message.reply("don't even try pinging...");
@@ -50,6 +66,22 @@ client.on('message', message => {
             const event = new Date(Date.now());
             console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", message.guild.name, "at", event.toUTCString());
             client.commands.get(command).execute(message, args, Discord, client);
+            return;
+        }
+        else if (command == "react")
+        {
+            const event = new Date(Date.now());
+            console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", message.guild.name, "at", event.toUTCString());
+            reactreturn = client.commands.get(command).execute(message, args, Discord, client);
+            if (reactreturn[0] == "ON")
+            {
+                channellist.set(message.channel.id, message.channel);
+                channellistemotes.set(message.channel.id, reactreturn.pop());
+            }
+            else
+            {
+                channellist.delete(message.channel.id);
+            }
             return;
         }
         else {
