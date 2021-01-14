@@ -3,7 +3,6 @@ module.exports = {
     description: "This command lists x messages with most reactions from other channel.\nUsage: !top <x> <time_period> <other_channel> <reaction> <ping>\nType 'ping' if you want to mention authors (Admin only!)\n\nBeware! Due to the way Discord API works, if there are more than 100 messages in your time-span, only the last 100 messages will be checked.",
     async execute(message, args, Discord) {
         const ms = require(`ms`);
-        if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("sorry, only Admins can ping authors.");
         if (!args[3]) return message.reply("insufficient arguments. Use !top <x> <time_period> <other_channel> <reaction>.");
         if (isNaN(args[0])) return message.reply("incorrect amount of posts.");
         if (args[0] < 1 || args[0] > 100) return message.reply("incorrect amount of posts. You must select at least 1, but not more than 100.");
@@ -11,12 +10,13 @@ module.exports = {
         if (isNaN(ms(args[1]))) return message.reply("incorrect time period. Please specify correct time period.")
         if (ms(args[1]) < ms('10s') || ms(args[1]) > ms('14d')) return message.reply("incorrect amount of time. For the command to work, please input period of time that is between 10 seconds and 14 days.");
         if (message.guild.channels.cache.find(channel => channel.id == args[2].slice(2, 20)) == undefined) return message.reply("channel does not exist. Please input correct channel.");
+        //if !(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("sorry, only Admins can ping authors.");
         //console.log(message.guild.emojis.cache.find(emojis => emojis.id == args[3].slice(args[3].length-19,args[3].length-1)));
         //console.log(args[3].slice(args[3].length-19,args[3].length-1));
         if (message.guild.emojis.cache.find(emojis => emojis.id == args[3].slice(args[3].length - 19, args[3].length - 1)) == undefined) return message.reply("this reaction does not exist / is not from this server. Please use only emojis from this server.");
         let ping = false;
         if (args[4] != undefined) {
-            if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("sorry, this is admin only command."); else if (args[4] == "ping") ping = true; else return message.reply("type **ping** if you want to ping authors. If not, end the command at emoji.");
+            if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("sorry, only Admins can ping authors."); else if (args[4] == "ping") ping = true; else return message.reply("type **ping** if you want to ping authors. If not, end the command at emoji.");
         }
         let now = Date.now();
         let whichchannel = message.channel.guild.channels.cache.find(channel => channel.id == args[2].slice(2, 20));
