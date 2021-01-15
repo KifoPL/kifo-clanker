@@ -19,11 +19,13 @@ module.exports = {
         if (option == "ON")
         {
             let params = [option, emotes];
+            message.reply("it's ON!");
             return params;
         }
         else
         {
             let params = [option, 0];
+            message.reply("it's OFF!");
             return params;
         }
     }

@@ -70,6 +70,7 @@ client.on('message', message => {
         }
         else if (command == "react")
         {
+            if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("This is ADMIN ONLY command.");
             const event = new Date(Date.now());
             console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", message.guild.name, "at", event.toUTCString());
             reactreturn = client.commands.get(command).execute(message, args, Discord, client);
@@ -78,7 +79,7 @@ client.on('message', message => {
                 channellist.set(message.channel.id, message.channel);
                 channellistemotes.set(message.channel.id, reactreturn.pop());
             }
-            else
+            else if (reactreturn[1] == "OFF")
             {
                 channellist.delete(message.channel.id);
             }
