@@ -32,7 +32,7 @@ const channellistemotes = new Map;
 client.on('message', message => {
     if (channellist.find(channel => message.channel == channel) != undefined)
     {
-        if (!message.content.startsWith(prefix) || message.author.bot)
+        if (!message.content.startsWith(prefix) && !message.author.bot)
         {
             for (i = 0; i < channellistemotes.get(message.channel.id).length; i++)
             {
