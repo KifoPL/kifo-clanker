@@ -47,6 +47,7 @@ client.on('message', message => {
                 db.lrange(message.channel.id, 0, -1, function(err, reply) {
                 console.log(reply);
                 reactlist = reply;
+                console.log(reactlist);
                 });
                 for (i = 0; i < reactlist.length; i++)
                 {
