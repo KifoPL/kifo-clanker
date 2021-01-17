@@ -40,7 +40,11 @@ client.on('message', message => {
     {
         if (!message.content.startsWith(prefix) && !message.author.bot)
         {
-            let reactlist = db.lrange(message.channel.id, 0, -1);
+            let reactlist = [];
+            db.lrange(message.channel.id, 0, -1, function(err, reply) {
+            console.log(reply);
+            reactlist = reply;
+            });
             for (i = 0; i < reactlist.length; i++)
             {
                 if (message.deleted) return;
