@@ -36,22 +36,25 @@ let reactreturn;
 //const channellistemotes = new Map;
 
 client.on('message', message => {
-    if (db.exists(message.channel.id))
+    db.exists(message.channel.id, function(err, reply)
     {
-        if (!message.content.startsWith(prefix) && !message.author.bot)
+        if (reply === 1)
         {
-            let reactlist = [];
-            db.lrange(message.channel.id, 0, -1, function(err, reply) {
-            console.log(reply);
-            reactlist = reply;
-            });
-            for (i = 0; i < reactlist.length; i++)
+            if (!message.content.startsWith(prefix) && !message.author.bot)
             {
-                if (message.deleted) return;
-                message.react(reactlist[i]);
+                let reactlist = [];
+                db.lrange(message.channel.id, 0, -1, function(err, reply) {
+                console.log(reply);
+                reactlist = reply;
+                });
+                for (i = 0; i < reactlist.length; i++)
+                {
+                    if (message.deleted) return;
+                    message.react(reactlist[i]);
+                }
             }
         }
-    }
+    })
     // if (channellist.find(channel => message.channel == channel) != undefined)
     // {
     //     if (!message.content.startsWith(prefix) && !message.author.bot)
@@ -102,6 +105,7 @@ client.on('message', message => {
                 reactreturn.shift();
                 let arrout = [message.channel.id];
                 arrout = arrout.concat(reactreturn);
+                console.log(arrout);
                 db.rpush(arrout, function(err, reply)
                 {
                     console.log(reply);
