@@ -53,6 +53,7 @@ client.on('message', message => {
                 {
                     if (message.deleted) return;
                     message.react(reactlist[i]);
+                    console.log("reacted with " + reactlist[i]);
                 }
             }
         }
