@@ -49,12 +49,18 @@ client.on('message', message => {
                 reactlist = reply;
                 console.log(reactlist);
                 });
-                for (i = 0; i < reactlist.length; i++)
+                reactlist.forEach(function(item, index, array)
                 {
-                    if (message.deleted) return;
-                    message.react(reactlist[i]);
-                    console.log("reacted with " + reactlist[i]);
-                }
+                    
+                    message.react(item).catch();
+                    console.log(item, index);
+                })
+                // for (i = 0; i < reactlist.length; i++)
+                // {
+                //     if (message.deleted) return;
+                //     message.react(reactlist[i]);
+                //     console.log("reacted with " + reactlist[i]);
+                // }
             }
         }
     })
