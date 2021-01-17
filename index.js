@@ -79,7 +79,7 @@ client.on('message', message => {
                 channellist.set(message.channel.id, message.channel);
                 channellistemotes.set(message.channel.id, reactreturn.pop());
             }
-            else if (reactreturn[1] == "OFF")
+            else if (reactreturn[0] == "OFF")
             {
                 channellist.delete(message.channel.id);
             }
