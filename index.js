@@ -103,7 +103,8 @@ client.on('message', message => {
             {
                 //channellist.set(message.channel.id, message.channel);
                 let arrout = [message.channel.id, reactreturn[1]];
-                db.rpush(arrout, function(err, reply)
+                console.log(arrout);
+                db.rpush([arrout], function(err, reply)
                 {
                     console.log(reply);
                 })
