@@ -44,7 +44,7 @@ client.on('message', message => {
             {
                 let reactlist = [];
                 db.lrange(message.channel.id, 0, -1, function(err, reply) {
-                console.log(reply);
+                //console.log(reply);
                 reactlist = reply;
                 });
                 for (i = 0; i < reactlist.length; i++)
@@ -102,16 +102,13 @@ client.on('message', message => {
             if (reactreturn[0] == "ON")
             {
                 //channellist.set(message.channel.id, message.channel);
-                reactreturn.shift();
-                let reacttemp = [message.channel.id];
-                let arrout = reacttemp.concat(reactreturn);
-                console.log(arrout);
+                let arrout = [message.channel.id, reactreturn[1]];
                 db.rpush(arrout, function(err, reply)
                 {
                     console.log(reply);
                 })
             }
-            else if (reactreturn[1] == "OFF")
+            else if (reactreturn[0] == "OFF")
             {
                 //channellist.delete(message.channel.id);
                 db.del(message.channel.id);
