@@ -42,9 +42,10 @@ client.on('message', message => {
         {
             if (!message.content.startsWith(prefix) && !message.author.bot)
             {
+                console.log("reacting...");
                 let reactlist = [];
                 db.lrange(message.channel.id, 0, -1, function(err, reply) {
-                //console.log(reply);
+                console.log(reply);
                 reactlist = reply;
                 });
                 for (i = 0; i < reactlist.length; i++)
