@@ -43,18 +43,14 @@ client.on('message', message => {
             if (!message.content.startsWith(prefix) && !message.author.bot)
             {
                 console.log("reacting...");
-                let reactlist = [];
                 db.lrange(message.channel.id, 0, -1, function(err, reply) {
                 console.log(reply);
-                reactlist = reply;
-                console.log(reactlist);
-                });
-                reactlist.forEach(function(item, index, array)
+                for (i = 0; i < reply.length; i++) 
                 {
-                    
-                    message.react(item).catch();
-                    console.log(item, index);
-                })
+                    message.react(reply[i]).catch();
+                    console.log("reacted with " + reply[i]);
+                }
+                });
                 // for (i = 0; i < reactlist.length; i++)
                 // {
                 //     if (message.deleted) return;
