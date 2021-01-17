@@ -85,8 +85,8 @@ client.on('message', message => {
                 {
                     db.rpush([message.channel.id, arrout[i]], function(err, reply)
                     {
-                        console.log("I will now react in " + message.channel.name + " with " + reply);
                     })
+                    console.log("I will now react in " + message.channel.name + " with " + arrout);
                 }
             }
             else if (reactreturn[0] == "OFF")
