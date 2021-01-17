@@ -4,6 +4,9 @@ const Discord = require('discord.js');
 
 const client = new Discord.Client();
 const db = require('redis').createClient(process.env.REDIS_URL);
+db.on('connect', function() {
+    console.log('Database online!');
+})
 var Redis = require('ioredis');
 var redis = new Redis(process.env.REDIS_URL);
 
@@ -33,14 +36,15 @@ let reactreturn;
 //const channellistemotes = new Map;
 
 client.on('message', message => {
-    if (db.get(message.channel.id) != null)
+    if (db.exists(message.channel.id))
     {
         if (!message.content.startsWith(prefix) && !message.author.bot)
         {
-            for (i = 0; i < db.get(message.channel.id).length; i++)
+            let reactlist = db.lrange(message.channel.id, 0, -1);
+            for (i = 0; i < reactlist.length; i++)
             {
                 if (message.deleted) return;
-                message.react(db.get(message.channel.id)[i]);
+                message.react(reactlist[i]);
             }
         }
     }
@@ -91,7 +95,10 @@ client.on('message', message => {
             if (reactreturn[0] == "ON")
             {
                 //channellist.set(message.channel.id, message.channel);
-                db.set(message.channel.id, reactreturn.pop());
+                reactreturn.shift();
+                let reacttemp = [message.channel.id];
+                reactreturn.push()
+                db.rpush(reacttemp.concat(reactreturn));
             }
             else if (reactreturn[1] == "OFF")
             {
