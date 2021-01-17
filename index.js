@@ -98,7 +98,9 @@ client.on('message', message => {
                 reactreturn.shift();
                 for (i = 0; i < reactreturn.length; i++)
                 {
-                    db.rpush(message.channel.id, reactreturn[i]);
+                    db.rpush([message.channel.id, reactreturn[i]], function(err, reply) {
+                        console.log(reply);
+                    });
                 }
             }
             else if (reactreturn[1] == "OFF")
