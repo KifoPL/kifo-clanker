@@ -106,12 +106,11 @@ client.on('message', message => {
                 console.log(arrout);
                 for (i = 0; i < arrout.length; i++)
                 {
-
+                    db.rpush([message.channel.id, arrout[i]], function(err, reply)
+                    {
+                        console.log(reply);
+                    })
                 }
-                db.rpush([message.channel.id, arrout[i]], function(err, reply)
-                {
-                    console.log(reply);
-                })
             }
             else if (reactreturn[0] == "OFF")
             {
