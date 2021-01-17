@@ -32,56 +32,29 @@ client.once('ready', () => {
 
 //USED BY REACT COMMAND
 let reactreturn;
-//const channellist = new Discord.Collection();
-//const channellistemotes = new Map;
 
 client.on('message', message => {
+    //IF CORRECT CHANNEL, REACT
     db.exists(message.channel.id, function(err, reply)
     {
         if (reply === 1)
         {
             if (!message.content.startsWith(prefix) && !message.author.bot)
             {
-                console.log("reacting...");
                 db.lrange(message.channel.id, 0, -1, function(err, reply) {
-                console.log(reply);
                 for (i = 0; i < reply.length; i++) 
                 {
                     message.react(reply[i]).catch();
-                    console.log("reacted with " + reply[i]);
                 }
                 });
-                // for (i = 0; i < reactlist.length; i++)
-                // {
-                //     if (message.deleted) return;
-                //     message.react(reactlist[i]);
-                //     console.log("reacted with " + reactlist[i]);
-                // }
             }
         }
     })
-    // if (channellist.find(channel => message.channel == channel) != undefined)
-    // {
-    //     if (!message.content.startsWith(prefix) && !message.author.bot)
-    //     {
-    //         for (i = 0; i < channellistemotes.get(message.channel.id).length; i++)
-    //         {
-    //             if (message.deleted) return;
-    //             message.react(channellistemotes.get(message.channel.id)[i]);
-    //         }
-    //     }
-    // }
     if (!message.content.startsWith(prefix) || message.author.bot) return;
     if (message.mentions.roles.firstKey() != undefined) return message.reply("no roles in commands!");
     if (message.mentions.everyone) return message.reply("don't even try pinging...");
     const args = message.content.slice(prefix.length).split(/ +/);
     const command = args.shift().toLowerCase();
-    // if (!(message.member.permissions.has("ADMINISTRATOR"))) {
-    //     message.channel.send("Sorry, this is Admin only bot.");
-    //     const event = new Date(Date.now());
-    //     console.log(message.author.tag, "tried to issue !kifo", command, "in", message.channel.name, "at", event.toUTCString());
-    //     return;
-    // }
     for (const file of commandFiles) {
         const splitter = (file.length - 3);
         if (command == "help")
@@ -108,12 +81,11 @@ client.on('message', message => {
             {
                 //channellist.set(message.channel.id, message.channel);
                 let arrout = reactreturn[1];
-                console.log(arrout);
                 for (i = 0; i < arrout.length; i++)
                 {
                     db.rpush([message.channel.id, arrout[i]], function(err, reply)
                     {
-                        console.log(reply);
+                        console.log("I will now react in " + message.channel.name + " with " + reply);
                     })
                 }
             }
