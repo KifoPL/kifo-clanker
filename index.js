@@ -3,9 +3,6 @@ const Discord = require('discord.js');
 //const config = require('./config.json');
 
 const client = new Discord.Client();
-const db = require('redis').createClient(process.env.REDIS_URL);
-var Redis = require('ioredis');
-var redis = new Redis(process.env.REDIS_URL);
 
 const prefix = '!kifo ';
 
@@ -29,32 +26,21 @@ client.once('ready', () => {
 
 //USED BY REACT COMMAND
 let reactreturn;
-//const channellist = new Discord.Collection();
-//const channellistemotes = new Map;
+const channellist = new Discord.Collection();
+const channellistemotes = new Map;
 
 client.on('message', message => {
-    if (db.get(message.channel.id) != null)
+    if (channellist.find(channel => message.channel == channel) != undefined)
     {
         if (!message.content.startsWith(prefix) && !message.author.bot)
         {
-            for (i = 0; i < db.get(message.channel.id).length; i++)
+            for (i = 0; i < channellistemotes.get(message.channel.id).length; i++)
             {
                 if (message.deleted) return;
-                message.react(db.get(message.channel.id)[i]);
+                message.react(channellistemotes.get(message.channel.id)[i]);
             }
         }
     }
-    // if (channellist.find(channel => message.channel == channel) != undefined)
-    // {
-    //     if (!message.content.startsWith(prefix) && !message.author.bot)
-    //     {
-    //         for (i = 0; i < channellistemotes.get(message.channel.id).length; i++)
-    //         {
-    //             if (message.deleted) return;
-    //             message.react(channellistemotes.get(message.channel.id)[i]);
-    //         }
-    //     }
-    // }
     if (!message.content.startsWith(prefix) || message.author.bot) return;
     if (message.mentions.roles.firstKey() != undefined) return message.reply("no roles in commands!");
     if (message.mentions.everyone) return message.reply("don't even try pinging...");
@@ -90,13 +76,12 @@ client.on('message', message => {
             reactreturn = client.commands.get(command).execute(message, args, Discord, client);
             if (reactreturn[0] == "ON")
             {
-                //channellist.set(message.channel.id, message.channel);
-                db.set(message.channel.id, reactreturn.pop());
+                channellist.set(message.channel.id, message.channel);
+                channellistemotes.set(message.channel.id, reactreturn.pop());
             }
             else if (reactreturn[1] == "OFF")
             {
-                //channellist.delete(message.channel.id);
-                db.del(message.channel.id);
+                channellist.delete(message.channel.id);
             }
             return;
         }
