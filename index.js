@@ -97,8 +97,9 @@ client.on('message', message => {
                 //channellist.set(message.channel.id, message.channel);
                 reactreturn.shift();
                 let reacttemp = [message.channel.id];
-                reactreturn.push()
-                db.rpush(reacttemp.concat(reactreturn));
+                reactreturn.push();
+                let arrout = reacttemp.concat(reactreturn);
+                db.rpush(arrout);
             }
             else if (reactreturn[1] == "OFF")
             {
