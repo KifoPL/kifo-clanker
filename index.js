@@ -88,6 +88,7 @@ client.on('message', message => {
                     {
                         if (reply === 1)
                         {
+                            var FieldReactChannels = {}
                             FieldReactChannels.name = "#" + channel.name;
                             FieldReactChannels.value = "";
                             db.lrange(message.channel.id, 0, -1, function(err, reply) {
