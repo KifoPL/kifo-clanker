@@ -79,8 +79,6 @@ client.on('message', message => {
             console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", message.guild.name, "at", event.toUTCString());
             if (args[0].toUpperCase() == "LIST")
             {
-
-                
                 var FieldReactChannels = {name: "name", value: "description"};
                 var FieldArrReactChannels = [];
                 message.guild.channels.cache.each(channel => {
@@ -91,12 +89,14 @@ client.on('message', message => {
                             var FieldReactChannels = {}
                             FieldReactChannels.name = "#" + channel.name;
                             FieldReactChannels.value = "";
+                            let ChannelReactions = [];
                             db.lrange(channel.id, 0, -1, function(err, reply) {
-                                for (i = 0; i < reply.length; i++) 
-                                {
-                                    FieldReactChannels.value += reply[i] + " ";
-                                }
+                                ChannelReactions = reply;
                                 });
+                            for (i = 0; i < ChannelReactions.length; i++)
+                            {
+                                FieldReactChannels.value += ChannelReactions[i] + " ";
+                            }
                             FieldArrReactChannels.push(FieldReactChannels);
                             console.log(channel.name);
                             console.log(FieldReactChannels);
