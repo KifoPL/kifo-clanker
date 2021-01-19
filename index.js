@@ -82,7 +82,7 @@ client.on('message', message => {
 
                 var FieldArrReactChannels = [];
                 var FieldReactChannels = {name: "name", value: "description"};
-                message.guild.channels.cache().each(channel => {
+                message.guild.channels.cache.each(channel => {
                     db.exists(channel.id, function(err, reply)
                     {
                         if (reply === 1)
