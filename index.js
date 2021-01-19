@@ -80,8 +80,9 @@ client.on('message', message => {
             if (args[0].toUpperCase() == "LIST")
             {
                 var FieldReactChannels = {name: "name", value: "description"};
-                var FieldArrReactChannels = [FieldReactChannels];
-                FieldArrReactChannels.pop();
+                const newReactChannelsEmbed = new Discord.MessageEmbed()
+                .setColor('a039a0')
+                .setTitle('List of channels, where command is active:');
                 message.guild.channels.cache.each(channel => {
                     db.exists(channel.id, function(err, reply)
                     {
@@ -90,15 +91,10 @@ client.on('message', message => {
                             var FieldReactChannels = {}
                             FieldReactChannels.name = "#" + channel.name;
                             FieldReactChannels.value = "Reactions ON.";
-                            FieldArrReactChannels.push(FieldReactChannels);
+                            newReactChannelsEmbed.addField(FieldReactChannels);
                         }
                     })
                 })
-                const newReactChannelsEmbed = new Discord.MessageEmbed()
-                .setColor('a039a0')
-                .setTitle('List of channels, where command is active:')
-                .addFields(FieldArrReactChannels);
-                console.log(FieldArrReactChannels);
                 console.log(newReactChannelsEmbed);
                 message.channel.send(newReactChannelsEmbed);
                 return;
