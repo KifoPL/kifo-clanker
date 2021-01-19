@@ -80,7 +80,8 @@ client.on('message', message => {
             if (args[0].toUpperCase() == "LIST")
             {
                 var FieldReactChannels = {name: "name", value: "description"};
-                var FieldArrReactChannels = [];
+                var FieldArrReactChannels = [FieldReactChannels];
+                FieldArrReactChannels.pop();
                 message.guild.channels.cache.each(channel => {
                     db.exists(channel.id, function(err, reply)
                     {
