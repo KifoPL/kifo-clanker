@@ -4,41 +4,55 @@ module.exports = {
     execute(message, args, Discord) {
         let userid = 0;
         let howgay = 0;
+        let reply = "";
+        let comment = "";
+        let Troll = false;
         if (args[0])
         {
             if (!isNaN(args[0]))
             {
                 //console.log(message.guild.members.resolve(args[0]));
-                if (!message.guild.members.resolve(args[0])) return message.reply("user not found.");
-                else
+                if (args[0] == 289119054130839552 || args[0] == 795638549730295820)
                 {
-                    userid = args[0];
+                    Troll = true;
                 }
+                else if (!message.guild.members.resolve(args[0])) return message.reply("user not found.");
+                userid = args[0];
             }
             else
             {
-                if (!message.guild.members.resolve(args[0].slice(3, args[0].length-1))) return message.reply("user not found.");
-                else userid = args[0].slice(3, args[0].length-1);
+                if (message.mentions.users.firstKey() != undefined)
+                {
+                    if (!message.guild.members.resolve(message.mentions.users.firstKey())) return message.reply("user not found.");
+                    userid = message.mentions.users.firstKey();
+                }
             }
         }
         else userid = message.author.id;
         let username = message.guild.members.resolve(userid).nickname;
         if (username == null) username = message.guild.members.resolve(userid).user.username;
-        howgay = userid % 101;
-        let reply = howgay + "%";
-        let comment = "";
-        if (howgay == 69) comment = "Nice.";
-        else if (howgay == 50) comment = "That's just bisexual with extra steps.";
-        else if (howgay < 10) comment = "Damn bro you're straight.";
-        else if (howgay < 20) comment = "That's just kissing the homies goodnight.";
-        else if (howgay < 30) comment = "Typical person except you fell in love with Ricardo.";
-        else if (howgay < 40) comment = "More straight than banana, that's for sure.";
-        else if (howgay < 50) comment = "You are somewhat gay. No need to thank for professional diagnosis.";
-        else if (howgay < 60) comment = "You'd choose Ewan McGregor over Natalie Portman.";
-        else if (howgay < 70) comment = "You like sand more than the other gender.";
-        else if (howgay < 80) comment = "This is getting out of hand! Now you are gay.";
-        else if (howgay < 90) comment = "Why are you gay?";
-        else if (howgay < 100) comment = "You're with him! You brought him to #### me!";
+        if (!Troll)
+        {
+            howgay = userid % 101;
+            reply = howgay + "%";
+            if (howgay == 69) comment = "Nice.";
+            else if (howgay == 50) comment = "That's just bisexual with extra steps.";
+            else if (howgay < 10) comment = "Damn bro you're straight.";
+            else if (howgay < 20) comment = "That's just kissing the homies goodnight.";
+            else if (howgay < 30) comment = "Typical person except you fell in love with Ricardo.";
+            else if (howgay < 40) comment = "More straight than banana, that's for sure.";
+            else if (howgay < 50) comment = "You are somewhat gay. No need to thank for professional diagnosis.";
+            else if (howgay < 60) comment = "You'd choose Ewan McGregor over Natalie Portman.";
+            else if (howgay < 70) comment = "You like sand more than the other gender.";
+            else if (howgay < 80) comment = "This is getting out of hand! Now you are gay.";
+            else if (howgay < 90) comment = "Why are you gay?";
+            else if (howgay < 100) comment = "You're with him! You brought him to #### me!";
+        }
+        else
+        {
+            reply = "-1%";
+            comment = `How is that possible, you may wonder?\n"The Dark Side of The Force is a pathway to many abilities, some consider to be unnatural."`;
+        }
 
         const newEmbed = new Discord.MessageEmbed()
         .setColor('a039a0')
