@@ -91,7 +91,7 @@ client.on('message', message => {
                             var FieldReactChannels = {}
                             FieldReactChannels.name = "#" + channel.name;
                             FieldReactChannels.value = "Reactions ON.";
-                            newReactChannelsEmbed.addField(FieldReactChannels);
+                            newReactChannelsEmbed.addField(FieldReactChannels.name, FieldReactChannels.value);
                         }
                     })
                 })
