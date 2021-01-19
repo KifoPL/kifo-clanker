@@ -96,6 +96,7 @@ client.on('message', message => {
                                 }
                                 });
                             FieldArrReactChannels.push(FieldReactChannels);
+                            console.log(channel.name);
                         }
                     })
                 })
