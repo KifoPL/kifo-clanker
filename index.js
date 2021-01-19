@@ -13,6 +13,7 @@ var redis = new Redis(process.env.REDIS_URL);
 const prefix = '!kifo ';
 
 const fs = require('fs');
+const { SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION } = require('constants');
 
 client.commands = new Discord.Collection();
 
@@ -76,6 +77,34 @@ client.on('message', message => {
             if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("This is ADMIN ONLY command.");
             const event = new Date(Date.now());
             console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", message.guild.name, "at", event.toUTCString());
+            if (args[0].toUpperCase() == "LIST")
+            {
+
+                var FieldArrReactChannels = [];
+                var FieldReactChannels = {name: "name", value: "description"};
+                message.guild.channels.cache().each(channel => {
+                    db.exists(channel.id, function(err, reply)
+                    {
+                        if (reply === 1)
+                        {
+                            FieldReactChannels.name = "#" + channel.name;
+                            FieldReactChannels.value = "";
+                            db.lrange(message.channel.id, 0, -1, function(err, reply) {
+                                for (i = 0; i < reply.length; i++) 
+                                {
+                                    FieldReactChannels.value += reply[i] + " ";
+                                }
+                                });
+                            FieldArrReactChannels.push(FieldReactChannels);
+                        }
+                    })
+                })
+                const newReactChannelsEmbed = new Discord.MessageEmbed()
+                .setColor('a039a0')
+                .setTitle('List of channels, where command is active:')
+                .addFields(FieldArrReactChannels);
+                return;
+            }
             reactreturn = client.commands.get(command).execute(message, args, Discord, client);
             if (reactreturn[0] == "ON")
             {
