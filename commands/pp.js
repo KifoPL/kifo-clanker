@@ -24,12 +24,13 @@ module.exports = {
                 if (message.mentions.users.firstKey() != undefined)
                 {
                     if (!message.guild.members.resolve(message.mentions.users.firstKey())) return message.reply("user not found.");
+                    if(message.mentions.users.firstKey() == 289119054130839552 || message.mentions.users.firstKey() == 795638549730295820) Troll = true;
                     userid = message.mentions.users.firstKey();
                 }
             }
         }
         else userid = message.author.id;
-        if (userid == 289119054130839552 || args[0] == 289119054130839552) Troll = true;
+        if (userid == 289119054130839552 || args[0] == 795638549730295820) Troll = true;
         let username = message.guild.members.resolve(userid).nickname;
         if (username == null) username = message.guild.members.resolve(userid).user.username;
         if (!Troll)
