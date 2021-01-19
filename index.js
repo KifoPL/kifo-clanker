@@ -91,9 +91,6 @@ client.on('message', message => {
                             FieldReactChannels.name = "#" + channel.name;
                             FieldReactChannels.value = "Reactions ON.";
                             FieldArrReactChannels.push(FieldReactChannels);
-                            console.log(channel.name);
-                            console.log(FieldReactChannels);
-                            console.log(FieldArrReactChannels);
                         }
                     })
                 })
@@ -101,6 +98,8 @@ client.on('message', message => {
                 .setColor('a039a0')
                 .setTitle('List of channels, where command is active:')
                 .addFields(FieldArrReactChannels);
+                console.log(FieldArrReactChannels);
+                console.log(newReactChannelsEmbed);
                 message.channel.send(newReactChannelsEmbed);
                 return;
             }
