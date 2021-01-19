@@ -88,7 +88,7 @@ client.on('message', message => {
                         {
                             var FieldReactChannels = {}
                             FieldReactChannels.name = "#" + channel.name;
-                            FieldReactChannels.value = " ";
+                            FieldReactChannels.value = "Reactions ON.";
                             FieldArrReactChannels.push(FieldReactChannels);
                             console.log(channel.name);
                             console.log(FieldReactChannels);
