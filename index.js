@@ -80,8 +80,9 @@ client.on('message', message => {
             if (args[0].toUpperCase() == "LIST")
             {
 
-                var FieldArrReactChannels = [];
+                
                 var FieldReactChannels = {name: "name", value: "description"};
+                var FieldArrReactChannels = [];
                 message.guild.channels.cache.each(channel => {
                     db.exists(channel.id, function(err, reply)
                     {
@@ -97,6 +98,8 @@ client.on('message', message => {
                                 });
                             FieldArrReactChannels.push(FieldReactChannels);
                             console.log(channel.name);
+                            console.log(FieldReactChannels);
+                            console.log(FieldArrReactChannels);
                         }
                     })
                 })
