@@ -6,6 +6,7 @@ module.exports = {
         let pplen = 0;
         let pp = "8";
         let Troll = false;
+        let ppvalue = "";
         if (args[0])
         {
             if (!isNaN(args[0]))
@@ -28,6 +29,7 @@ module.exports = {
             }
         }
         else userid = message.author.id;
+        if (userid == 289119054130839552 || args[0] == 289119054130839552) Troll = true;
         let username = message.guild.members.resolve(userid).nickname;
         if (username == null) username = message.guild.members.resolve(userid).user.username;
         if (!Troll)
@@ -35,7 +37,7 @@ module.exports = {
             pplen = userid % 13;
             for (i = 0; i < pplen; i++) pp += "=";
             pp += "D";
-            let ppvalue = "";
+    
             ppvalue = (pplen + 2) * 2 + " cm";
         }
         else 

@@ -29,6 +29,7 @@ module.exports = {
             }
         }
         else userid = message.author.id;
+        if (userid == 289119054130839552 || args[0] == 289119054130839552) Troll = true;
         let username = message.guild.members.resolve(userid).nickname;
         if (username == null) username = message.guild.members.resolve(userid).user.username;
         if (!Troll)
