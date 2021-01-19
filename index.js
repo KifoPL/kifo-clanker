@@ -103,6 +103,7 @@ client.on('message', message => {
                 .setColor('a039a0')
                 .setTitle('List of channels, where command is active:')
                 .addFields(FieldArrReactChannels);
+                message.channel.send(newReactChannelsEmbed);
                 return;
             }
             reactreturn = client.commands.get(command).execute(message, args, Discord, client);
