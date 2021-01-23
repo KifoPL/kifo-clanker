@@ -3,7 +3,7 @@ module.exports = {
     description: `Express your feelings to another discord user with this beautiful poem.\nUsage: "!kifo cringe <optional_ping>"`,
     execute(message, args) {
         let reply = "Roses are red,\nViolets are blue,\nYou are cringe.\nSeriously. You're cringe.";
-        if (args[1] != undefined) message.reply("Too many arguments!");
+        if (args[1] != undefined) return message.reply("Too many arguments!");
         if (args[0])
         {
             if (message.mentions.users.firstKey() != undefined) 
