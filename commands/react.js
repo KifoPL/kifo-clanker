@@ -18,7 +18,7 @@ module.exports = {
 
         if (option == "ON")
         {
-            if (!args[1]) return message.reply("Insufficient arguments!");
+            if (!args[0]) return message.reply("Insufficient arguments!");
             let params = [option, emotes];
             message.reply("it's ON!");
             return params;
