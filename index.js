@@ -88,16 +88,14 @@ client.on('message', message => {
                     {
                         if (reply === 1)
                         {
-                            let strreply;
                             db.lrange(channel.id, 0, -1, function(err, reply) {
-                                strreply = reply;
+                                message.channel.send("<#" + channel.id + ">: " + reply); //TODO fix it someday
                             })
                             var FieldReactChannels = {}
                             FieldReactChannels.name = "#" + channel.name;
                             FieldReactChannels.value = "Reactions ON.";
                             newReactChannelsEmbed.addField(FieldReactChannels.name, FieldReactChannels.value);
                             console.log(newReactChannelsEmbed.fields);
-                            message.channel.send("<#" + channel.id + ">: " + strreply); //TODO fix it someday
                         }
                     })
                 })
