@@ -95,6 +95,7 @@ client.on('message', message => {
                             FieldReactChannels.name = "#" + channel.name;
                             FieldReactChannels.value = "Reactions ON.";
                             newReactChannelsEmbed.addField(FieldReactChannels.name, FieldReactChannels.value);
+                            message.channel.send("End of list!");
                             //console.log(newReactChannelsEmbed.fields);
                         }
                     })

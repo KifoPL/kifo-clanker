@@ -8,13 +8,13 @@ module.exports = {
         let option = args[0].toUpperCase();
         args.shift();
         let emotes = args;
-        for (i = 0; i < emotes.length; i++)
-        {
-            if (message.guild.emojis.cache.find(emojis => emojis.id == emotes[i].slice(emotes[i].length - 19, emotes[i].length - 1)) == undefined)
-            {
-                return message.reply(emotes[i] + " is not a valid emote. Make sure that emotes specified in the command are in **THIS** server.");
-            }
-        }
+        // for (i = 0; i < emotes.length; i++)
+        // {
+        //     if (message.guild.emojis.cache.find(emojis => emojis.id == emotes[i].slice(emotes[i].length - 19, emotes[i].length - 1)) == undefined)
+        //     {
+        //         return message.reply(emotes[i] + " is not a valid emote. Make sure that emotes specified in the command are in **THIS** server.");
+        //     }
+        // }
 
         if (option == "ON")
         {
