@@ -93,7 +93,7 @@ client.on('message', message => {
                             FieldReactChannels.value = "Reactions ON.";
                             newReactChannelsEmbed.addField(FieldReactChannels.name, FieldReactChannels.value);
                             console.log(newReactChannelsEmbed.fields);
-                            message.channel.send(FieldReactChannels.name); //TODO fix it someday
+                            message.channel.send(FieldReactChannels.name, db.get(channel.id)); //TODO fix it someday
                         }
                     })
                 })
