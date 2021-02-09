@@ -39,7 +39,7 @@ module.exports = {
             for (i = 0; i < pplen; i++) pp += "=";
             pp += "D";
     
-            ppvalue = (pplen + 2) * 2 + " cm";
+            ppvalue = (userid % 26 + 2) + " cm";
         }
         else 
         {
