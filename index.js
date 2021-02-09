@@ -52,6 +52,7 @@ client.on('message', message => {
         }
     })
     if (!message.content.startsWith(prefix) || message.author.bot) return;
+    if (message.channel.id == "707650931809976391") return;
     if (message.mentions.roles.firstKey() != undefined) return message.reply("no roles in commands!");
     if (message.mentions.everyone) return message.reply("don't even try pinging...");
     const args = message.content.slice(prefix.length).split(/ +/);
