@@ -138,6 +138,15 @@ client.on('message', message => {
     message.channel.send("Command not found. Type `!kifo help` for list of commands.").catch();
 });
 
+client.on('guildMemberAdd', member => {
+    // Send the message to a designated channel on a server:
+    const channel = member.guild.channels.cache.find(ch => ch.name === 'shinies-incoming');
+    // Do nothing if the channel wasn't found on this server
+    if (!channel) return;
+    // Send the message, mentioning the member
+    channel.send(`Welcome to the server, ${member}`);
+  });
+
 //Code for adding WoofWoof role to members added by WoofWoofWolffe
 client.on('guildMemberAdd', member => {
     console.log('did it work?');
@@ -149,6 +158,6 @@ client.on('guildMemberAdd', member => {
             member.roles.add(member.guild.roles.cache.find(role => role.id == '746558695139180625')).catch(console.error);
         }
     }).catch(console.error);
-});
+}).catch(console.error);
 
 client.login(process.env.LOGIN_TOKEN);
