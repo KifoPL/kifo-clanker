@@ -55,13 +55,14 @@ module.exports = {
             reply = "-1%";
             comment = `How is that possible, you may wonder?\n"The Dark Side of The Force is a pathway to many abilities, some consider to be unnatural."`;
         }
+        console.log(howgay, comment);
 
         const newEmbed = new Discord.MessageEmbed()
         .setColor('a039a0')
         .setTitle(username +"'s gay level is:")
         .addFields(
             {name: reply, value: comment}
-        )
+        ).catch();
         message.channel.send(newEmbed).catch();
     }
 }
