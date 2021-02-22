@@ -154,7 +154,7 @@ client.on('guildMemberAdd', member => {
     member.guild.fetchInvites().then(invites => {
         console.log('test1');
         let foundinvite;
-        if (invites.find(invite => invite.targetUser == member) != undefined)
+        if (invites.find(invite => invite.targetUser == member.user) != undefined)
         {
             foundinvite = invite;
             console.log(foundinvite.inviter.id);
