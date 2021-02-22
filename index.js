@@ -140,6 +140,7 @@ client.on('message', message => {
 
 //Code for adding WoofWoof role to members added by WoofWoofWolffe
 client.on('guildMemberAdd', member => {
+    console.log('did it work?');
     member.guild.fetchInvites().then(invites => {
         console.log('test1');
         if (invites.find(invite => invite.targetUser == member).inviter.id == '376956266293231628')
