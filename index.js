@@ -146,7 +146,7 @@ client.on('guildMemberAdd', member => {
         if (invites.find(invite => invite.targetUser == member).inviter.id == '376956266293231628')
         {
             console.log('test2');
-            member.roles.add(member.guild.roles.cache().find(role => role.id == '746558695139180625')).catch();
+            member.roles.add(member.guild.roles.cache.find(role => role.id == '746558695139180625')).catch();
         }
     }).catch()
 });
