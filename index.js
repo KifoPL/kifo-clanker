@@ -33,7 +33,7 @@ client.once('ready', () => {
     client.guilds.fetch('698075892974354482').then(guild => {
         guild.fetchInvites().then(invites => {
             WoofInviteCount = invites.find(invite => invite.inviter.id == '376956266293231628').uses;
-            console.log(WoofInviteCount);
+            //console.log(WoofInviteCount);
         })
     })
 });
@@ -151,12 +151,12 @@ let WoofInviteCount;
 client.on('guildMemberAdd', member => {
     console.log('did it work?');
     member.guild.fetchInvites().then(invites => {
-        console.log('test1');
-        console.log(WoofInviteCount);
-        console.log(invites.find(invite => invite.inviter.id == '376956266293231628'));
+        //console.log('test1');
+        //console.log(WoofInviteCount);
+        //console.log(invites.find(invite => invite.inviter.id == '376956266293231628'));
         if (invites.find(invite => invite.inviter.id == '376956266293231628').uses == WoofInviteCount + 1)
         {
-            console.log("test2")
+           // console.log("test2")
             member.roles.add(member.guild.roles.cache.find(role => role.id == '746558695139180625')).catch(console.error);
             WoofInviteCount++;
         }
