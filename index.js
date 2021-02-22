@@ -149,7 +149,7 @@ client.on('message', message => {
 let WoofInviteCount;
 
 client.on('guildMemberAdd', member => {
-    console.log('did it work?');
+    //console.log('did it work?');
     member.guild.fetchInvites().then(invites => {
         //console.log('test1');
         //console.log(WoofInviteCount);
