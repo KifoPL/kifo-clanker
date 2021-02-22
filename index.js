@@ -149,7 +149,7 @@ client.on('guildMemberAdd', member => {
     console.log('did it work?');
     member.guild.fetchInvites().then(invites => {
         console.log('test1');
-        if (invites.find(invite => invite.inviter.id = '376956266293231628') == WoofInviteCount + 1)
+        if (invites.find(invite => invite.inviter.id = '376956266293231628').memberCount == WoofInviteCount + 1)
         {
             console.log("test2")
             member.roles.add(member.guild.roles.cache.find(role => role.id == '746558695139180625')).catch(console.error);
@@ -166,7 +166,6 @@ client.on('guildMemberAdd', member => {
         //         member.roles.add(member.guild.roles.cache.find(role => role.id == '746558695139180625')).catch(console.error);
         //     }
         // }
-        console.log(invites.find(invite => invite.targetUser == member.user));
     }).catch(console.error);
 })
 
