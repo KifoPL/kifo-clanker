@@ -29,6 +29,13 @@ client.commands.set(command.name, command);
 
 client.once('ready', () => {
     console.log('Kifo Clanker is online!');
+    //for WoofWoofWolffe feature
+    client.guilds.fetch('698075892974354482').then(guild => {
+        guild.fetchInvites().then(invites => {
+            WoofInviteCount = invites.find(invite => invite.inviter.id == '376956266293231628').uses;
+            console.log(WoofInviteCount);
+        })
+    })
 });
 
 //USED BY REACT COMMAND
@@ -140,18 +147,14 @@ client.on('message', message => {
 
 //Code for adding WoofWoof role to members added by WoofWoofWolffe
 let WoofInviteCount;
-client.guilds.fetch('698075892974354482').then(guild => {
-    guild.fetchInvites().then(invites => {
-        WoofInviteCount = invites.find(invite => invite.inviter.id == '376956266293231628').memberCount;
-    })
-})
+
 client.on('guildMemberAdd', member => {
     console.log('did it work?');
     member.guild.fetchInvites().then(invites => {
         console.log('test1');
         console.log(WoofInviteCount);
-        console.log(invites.find(invite => invite.inviter.id = '376956266293231628').memberCount);
-        if (invites.find(invite => invite.inviter.id = '376956266293231628').memberCount == WoofInviteCount + 1)
+        console.log(invites.find(invite => invite.inviter.id = '376956266293231628').uses);
+        if (invites.find(invite => invite.inviter.id = '376956266293231628').uses == WoofInviteCount + 1)
         {
             console.log("test2")
             member.roles.add(member.guild.roles.cache.find(role => role.id == '746558695139180625')).catch(console.error);
