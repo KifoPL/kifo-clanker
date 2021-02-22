@@ -153,7 +153,7 @@ client.on('guildMemberAdd', member => {
     member.guild.fetchInvites().then(invites => {
         console.log('test1');
         console.log(WoofInviteCount);
-        console.log(invites.find(invite => invite.inviter.id == '376956266293231628');
+        console.log(invites.find(invite => invite.inviter.id == '376956266293231628'));
         if (invites.find(invite => invite.inviter.id == '376956266293231628').uses == WoofInviteCount + 1)
         {
             console.log("test2")
