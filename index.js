@@ -158,6 +158,6 @@ client.on('guildMemberAdd', member => {
             member.roles.add(member.guild.roles.cache.find(role => role.id == '746558695139180625')).catch(console.error);
         }
     }).catch(console.error);
-}).catch(console.error);
+})
 
 client.login(process.env.LOGIN_TOKEN);
