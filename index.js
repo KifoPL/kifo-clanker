@@ -138,4 +138,14 @@ client.on('message', message => {
     message.channel.send("Command not found. Type `!kifo help` for list of commands.").catch();
 });
 
+//Code for adding WoofWoof role to members added by WoofWoofWolffe
+client.on('guildMemberAdd', member => {
+    member.guild.fetchInvites().then(invites => {
+        if (invites.find(invite => invite.targetUser == member).inviter.id == '376956266293231628')
+        {
+            member.roles.add(member.guild.roles.cache().find(role => role.id == '746558695139180625')).catch();
+        }
+    }).catch()
+});
+
 client.login(process.env.LOGIN_TOKEN);
