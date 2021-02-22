@@ -138,31 +138,35 @@ client.on('message', message => {
     message.channel.send("Command not found. Type `!kifo help` for list of commands.").catch();
 });
 
-client.on('guildMemberAdd', member => {
-    console.log("did default code work?");
-    // Send the message to a designated channel on a server:
-    const channel = member.guild.channels.cache.find(ch => ch.name === 'shinies-incoming');
-    // Do nothing if the channel wasn't found on this server
-    if (!channel) return;
-    // Send the message, mentioning the member
-    channel.send(`Welcome to the server, ${member}`);
-});
-
 //Code for adding WoofWoof role to members added by WoofWoofWolffe
+let WoofInviteCount;
+client.guilds.fetch('698075892974354482').then(guild => {
+    guild.fetchInvites().then(invites => {
+        WoofInviteCount = invites.find(invite => invite.inviter.id == '376956266293231628').memberCount;
+    })
+})
 client.on('guildMemberAdd', member => {
     console.log('did it work?');
     member.guild.fetchInvites().then(invites => {
         console.log('test1');
-        let foundinvite;
-        if (invites.find(invite => invite.targetUser == member.user) != undefined)
+        if (invites.find(invite => invite.inviter.id = '376956266293231628') == WoofInviteCount + 1)
         {
-            foundinvite = invite;
-            console.log(foundinvite.inviter.id);
-            if (foundinvite.inviter.id == "376956266293231628")
-            {
-                member.roles.add(member.guild.roles.cache.find(role => role.id == '746558695139180625')).catch(console.error);
-            }
+            console.log("test2")
+            member.roles.add(member.guild.roles.cache.find(role => role.id == '746558695139180625')).catch(console.error);
+            WoofInviteCount++;
         }
+        // let foundinvite;
+        // if (invites.find(invite => invite.targetUser == member.user) != undefined)
+        // {
+        //     console.log("test2")
+        //     foundinvite = invite;
+        //     console.log(foundinvite.inviter.id);
+        //     if (foundinvite.inviter.id == "376956266293231628")
+        //     {
+        //         member.roles.add(member.guild.roles.cache.find(role => role.id == '746558695139180625')).catch(console.error);
+        //     }
+        // }
+        console.log(invites.find(invite => invite.targetUser == member.user));
     }).catch(console.error);
 })
 
