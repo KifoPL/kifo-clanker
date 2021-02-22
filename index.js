@@ -153,10 +153,12 @@ client.on('guildMemberAdd', member => {
     console.log('did it work?');
     member.guild.fetchInvites().then(invites => {
         console.log('test1');
-        if (invites.find(invite => invite.targetUser == member).inviter.id == '376956266293231628')
-        {
-            console.log('test2');
-            member.roles.add(member.guild.roles.cache.find(role => role.id == '746558695139180625')).catch(console.error);
+        if (invites.find(invite => invite.targetUser == member) != undefined) {
+            if (invites.find(invite => invite.targetUser == member).inviter.id == "376956266293231628")
+            {
+                console.log('test2');
+                member.roles.add(member.guild.roles.cache.find(role => role.id == '746558695139180625')).catch(console.error);
+            }
         }
     }).catch(console.error);
 })
