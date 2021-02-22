@@ -49,6 +49,7 @@ module.exports = {
             else if (howgay < 80) comment = "This is getting out of hand! Now you are gay.";
             else if (howgay < 90) comment = "Why are you gay?";
             else if (howgay < 100) comment = "You're with him! You brought him to #### me!";
+            else comment = "Who are you, so wise in the ways of the gays?";
         }
         else
         {
