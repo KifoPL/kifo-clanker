@@ -1,5 +1,6 @@
 const { timeStamp } = require('console');
 const Discord = require('discord.js');
+//-------------UNCOMMENT BELOW LINE FOR OFFLINE TEST---------------
 //const config = require('./config.json');
 
 const client = new Discord.Client();
@@ -33,7 +34,12 @@ client.once('ready', () => {
     client.guilds.fetch('698075892974354482').then(guild => {
         guild.fetchInvites().then(invites => {
             WoofInviteCount = invites.find(invite => invite.inviter.id == '376956266293231628').uses;
-            //console.log(WoofInviteCount);
+        })
+    })
+    //for HaberJordan feature
+    client.guilds.fetch('698075892974354482').then(guild => {
+        guild.fetchInvites().then(invites => {
+            HaberInviteCount = invites.find(invite => invite.inviter.id == '221771499843878912').uses;
         })
     })
 });
@@ -42,6 +48,7 @@ client.once('ready', () => {
 let reactreturn;
 
 client.on('message', message => {
+
     //IF CORRECT CHANNEL, REACT
     db.exists(message.channel.id, function(err, reply)
     {
@@ -59,9 +66,14 @@ client.on('message', message => {
         }
     })
     if (!message.content.startsWith(prefix) || message.author.bot) return;
+    //No bot in #citizens
     if (message.channel.id == "707650931809976391") return;
+    
+    //No role and @here and @everyone pings
     if (message.mentions.roles.firstKey() != undefined) return message.reply("no roles in commands!");
     if (message.mentions.everyone) return message.reply("don't even try pinging...");
+
+    //If command detected, create args struct
     const args = message.content.slice(prefix.length).split(/ +/);
     const command = args.shift().toLowerCase();
     for (const file of commandFiles) {
@@ -145,32 +157,24 @@ client.on('message', message => {
     message.channel.send("Command not found. Type `!kifo help` for list of commands.").catch();
 });
 
-//Code for adding WoofWoof role to members added by WoofWoofWolffe
+//Code for adding WoofWoof role to members added by WoofWoofWolffe (and for HaberJordan Legion too)
 let WoofInviteCount;
+let HaberInviteCount;
 
 client.on('guildMemberAdd', member => {
-    //console.log('did it work?');
     member.guild.fetchInvites().then(invites => {
-        //console.log('test1');
-        //console.log(WoofInviteCount);
-        //console.log(invites.find(invite => invite.inviter.id == '376956266293231628'));
+        //WoofWoof
         if (invites.find(invite => invite.inviter.id == '376956266293231628').uses == WoofInviteCount + 1)
         {
-           // console.log("test2")
             member.roles.add(member.guild.roles.cache.find(role => role.id == '746558695139180625')).catch(console.error);
             WoofInviteCount++;
         }
-        // let foundinvite;
-        // if (invites.find(invite => invite.targetUser == member.user) != undefined)
-        // {
-        //     console.log("test2")
-        //     foundinvite = invite;
-        //     console.log(foundinvite.inviter.id);
-        //     if (foundinvite.inviter.id == "376956266293231628")
-        //     {
-        //         member.roles.add(member.guild.roles.cache.find(role => role.id == '746558695139180625')).catch(console.error);
-        //     }
-        // }
+        //HaberJordan
+        else if (invites.find(invite => invite.inviter.id == '221771499843878912').uses == HaberInviteCount + 1)
+        {
+            member.roles.add(member.guild.roles.cache.find(role => role.id == '744082967307092039')).catch(console.error);
+            HaberInviteCount++;
+        }
     }).catch(console.error);
 })
 
