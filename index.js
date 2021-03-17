@@ -63,7 +63,7 @@ client.on('message', message => {
                 }
                 else
                 {
-                    if (message.attachments == null) return;
+                    if (message.attachments.first() == null) return;
                 }
                 db.lrange(message.channel.id, 0, -1, function(err, reply) {
                 for (i = 0; i < reply.length; i++) 
