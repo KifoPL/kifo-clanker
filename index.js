@@ -57,7 +57,7 @@ client.on('message', message => {
             if (!message.content.startsWith(prefix))
             {
                 //It will react to his own messages that have attachments, this is so #kenoc-hall-of-fame looks better
-                if (message.author.bot && message.author.id != client.id) return; //TODO STOPS HERE
+                if (message.author.bot && message.author.id != client.user.id) return; //TODO STOPS HERE
                 else
                 {
                     if (message.author.bot && message.attachments == null) return;
