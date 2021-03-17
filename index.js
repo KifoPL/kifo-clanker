@@ -101,6 +101,7 @@ client.on('message', message => {
         else if (command == "react")
         {
             if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("This is ADMIN ONLY command.");
+            if (!args[0]) return message.reply("Insufficient arguments!");
             const event = new Date(Date.now());
             console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", message.guild.name, "at", event.toUTCString());
             if (args[0].toUpperCase() == "LIST")
