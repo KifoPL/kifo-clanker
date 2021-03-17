@@ -57,10 +57,10 @@ client.on('message', message => {
             if (!message.content.startsWith(prefix))
             {
                 //It will react to his own messages that have attachments, this is so #kenoc-hall-of-fame looks better
-                if (message.author.bot) return;
+                if (message.author.bot && message.author.id != client.id) return; //TODO STOPS HERE
                 else
                 {
-                    if (message.author.id != client.id || message.attachments == null) return;
+                    if (message.author.bot && message.attachments == null) return;
                 }
                 db.lrange(message.channel.id, 0, -1, function(err, reply) {
                 for (i = 0; i < reply.length; i++) 

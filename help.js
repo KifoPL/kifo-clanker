@@ -17,7 +17,8 @@ module.exports = {
             message.channel.send(newEmbed);
             return;
             }
-            console.log(commandFiles);
+            //This was clogging logs, leaving for DEBUG purposes
+            //console.log(commandFiles);
             let i = 0;
          for (const file of commandFiles) {
             command = require(`./commands/${file}`);
