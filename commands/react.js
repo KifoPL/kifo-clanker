@@ -1,11 +1,9 @@
 module.exports = {
     name: 'react',
-    description: 'This command tells the bot to react to all messages in the channel with specific reactions.',
-    usage: "!kifo react <on/off> <emote1> <optional_emote2> ... <optional_emoten>\n!kifo react list (lists channels in which it reacts, working kinda junky)",
+    description: 'This command tells the bot to react to all messages in the channel with specific reactions.\n"!kifo react list" to list channels, where the command is active.',
+    usage: "!kifo react <on/off> <emote1> <optional_emote2> ... <optional_emoten>",
     adminonly: true,
     execute(message, args) {
-        if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("This is ADMIN ONLY command.");
-        if (!args[0]) return message.reply("Insufficient arguments!");
         if (!(args[0].toUpperCase() == "ON" || args[0].toUpperCase() == "OFF")) return message.reply("Error: Specify, if you want to enable or disable the command first.");
         let option = args[0].toUpperCase();
         args.shift();
