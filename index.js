@@ -96,7 +96,7 @@ client.on('message', message => {
                     {
                         if (message.createdTimestamp - reply3 <= slowmode)
                         {
-                            let msg = "You can't talk in " + message.channel.name + " for " + ms(slowmode - message.createdTimestamp + reply3, {long : true}) + ".";
+                            let msg = "You can't talk in " + message.channel.name + " for " + ms(slowmode - (message.createdTimestamp - reply3), {long : true}) + ".";
                             message.author.send(msg).catch();
                             message.delete().catch();
                             return;
