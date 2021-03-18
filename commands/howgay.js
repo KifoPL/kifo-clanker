@@ -1,6 +1,8 @@
 module.exports = {
     name: 'howgay',
-    description: `A quick test to find out your gayness level.\nUsage: "!kifo howgay <optional_user>"`,
+    description: `A quick test to find out your gayness level.`,
+    usage: "!kifo howgay <optional_user>",
+    adminonly: false,
     execute(message, args, Discord) {
         let userid = 0;
         let howgay = 0;

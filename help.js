@@ -1,35 +1,41 @@
 module.exports = {
     name: 'help',
     description: "This command lists all commands. Type !kifo help <command> to see help for specific command.",
+    usage: "!kifo help <optional_command>",
+    adminonly: false,
     execute(message, args, Discord) {
         const fs = require('fs');
         const commandFiles = fs.readdirSync('./commands/').filter(file => file.endsWith('.js'));
         const client = message.client;
         let command = {};
+        
+        //!kifo help <command>
         if (args[0])
         {
+            AmIAdmin = false;
+            if (message.member.permissions.has("ADMINISTRATOR")) AmIAdmin = true;
             if (args[0] == 'help')
             {
                 const newEmbed = new Discord.MessageEmbed()
             .setColor('a039a0')
             .setTitle(args[0])
-            .setDescription(this.description);
+            .setDescription(this.description)
+            .addField("Usage:", this.usage);
             message.channel.send(newEmbed);
             return;
             }
             //This was clogging logs, leaving for DEBUG purposes
             //console.log(commandFiles);
-            let i = 0;
          for (const file of commandFiles) {
             command = require(`./commands/${file}`);
             const splitter = (file.length - 3);
-            client.commands.set(command.name, command);
             if (args[0] == file.toLowerCase().substring(0, splitter))
             {
             const newEmbed = new Discord.MessageEmbed()
             .setColor('a039a0')
             .setTitle(command.name)
-            .setDescription(command.description);
+            .setDescription(command.description)
+            .addField("Usage:", command.usage);
             message.channel.send(newEmbed);
             return;
             }
@@ -42,27 +48,25 @@ module.exports = {
         Field.name = this.name;
         Field.value = this.description;
         FieldArr.push(Field);
-        //console.log('1');
-        //console.log(Field);
         var Field = {};
-        //console.log('2');
-        //console.log(FieldArr[0]);
+        let i = 0;
         for (const file of commandFiles) {
             const command = require(`./commands/${file}`);
-            const splitter = (file.length - 3);
-            client.commands.set(command.name, command);
-            var Field = {};
-            Field.name = command.name;
-            Field.value = command.description;
-            FieldArr.push(Field);
-            //console.log('3');
-            //console.log(Field);
+            //Lists everything for admins and only user accessible commands otherwise.
+            if (!command.adminonly || AmIAdmin)
+            {
+                var Field = {};
+                Field.name = command.name;
+                Field.value = command.description;
+                FieldArr.push(Field);
+                i++;
+            }
         }
-        //console.log('4');
-        //console.log(FieldArr);
         const newEmbed = new Discord.MessageEmbed()
         .setColor('a039a0')
-        .setTitle('List of commands:')
+        .setTitle('List of ' + i + 'commands:')
+        .setDescription('Bot is created and developed solely by @KifoPL#3358. For contact with developer, click on this embed.')
+        .setURL('mailto:kifounaabi@gmail.com?subject=I have a question about Kifo Clanker™')
         .addFields(FieldArr);
 
         message.channel.send(newEmbed);

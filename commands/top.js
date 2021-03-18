@@ -1,8 +1,13 @@
 module.exports = {
     name: 'top',
-    description: "This command lists x messages with most reactions from other channel.\nUsage: !top <x> <time_period> <other_channel> <reaction> <ping>\nType 'ping' if you want to mention authors (Admin only!)\n\nBeware! Due to the way Discord API works, if there are more than 100 messages in your time-span, only the last 100 messages will be checked.",
+    description: "This command lists x messages with most reactions from other channel.\nType 'ping' if you want to mention authors.\nBeware! Due to the way Discord API works, if there are more than 100 messages in your time-span, only the last 100 messages will be checked.",
+    usage: "!top <x> <time_period> <other_channel> <reaction> <optional_ping>",
+    //I'm making it admin only because no one else used it anyway.
+    adminonly: true,
     async execute(message, args, Discord) {
+        //This is for timestamps
         const ms = require(`ms`);
+        if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("This is ADMIN ONLY command.");
         if (!args[3]) return message.reply("insufficient arguments. Use !top <x> <time_period> <other_channel> <reaction>.");
         if (isNaN(args[0])) return message.reply("incorrect amount of posts.");
         if (args[0] < 1 || args[0] > 100) return message.reply("incorrect amount of posts. You must select at least 1, but not more than 100.");

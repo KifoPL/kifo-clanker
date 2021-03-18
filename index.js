@@ -8,13 +8,12 @@ const db = require('redis').createClient(process.env.REDIS_URL);
 db.on('connect', function() {
     console.log('Database online!');
 })
-var Redis = require('ioredis');
-var redis = new Redis(process.env.REDIS_URL);
 
 const prefix = '!kifo ';
 
 const fs = require('fs');
 const { SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION } = require('constants');
+const ms = require('ms');
 
 client.commands = new Discord.Collection();
 
@@ -50,9 +49,10 @@ let reactreturn;
 client.on('message', message => {
 
     //IF CORRECT CHANNEL, REACT
-    db.exists(message.channel.id, function(err, reply)
+    db.hexists(message.channel.id, "time", function(err, reply)
     {
-        if (reply === 1)
+        //TODO fix this as soon as I have time to rework react
+        if (reply === 0)
         {
             if (!message.content.startsWith(prefix))
             {
@@ -72,6 +72,38 @@ client.on('message', message => {
                 }
                 });
             }
+        }
+        //TODO for now this means it is super slow-mode, fix when reworking react
+        else if (reply === 1)
+        {
+            let slowmode;
+            db.hget(message.channel.id, "time", function(err, reply2)
+            {
+                slowmode = reply2;
+            })
+            db.hexists(message.channel.id, message.author.id, function(err, reply2)
+            {
+                if (reply2 === 1)
+                {
+                    db.hget(message.channel.id, message.author.id, function(err, reply3)
+                    {
+                        if (message.createdAt.getTime() - reply3 <= slowmode)
+                        {
+                            let msg = "You can't talk in " + message.channel.name + " for " + ms(message.createdAt.getTime() - reply2, {long : true}) + ".";
+                            message.author.send(msg);
+                            message.delete().catch();
+                        }
+                        else
+                        {
+                            db.hset(message.channel.id, message.author.id, message.createdAt.getTime());
+                        }
+                    })
+                }
+                else
+                {
+                    db.hset(message.channel.id, message.author.id, message.createdAt.getTime());
+                }
+            })
         }
     })
     if (!message.content.startsWith(prefix) || message.author.bot) return;
@@ -141,6 +173,7 @@ client.on('message', message => {
                 let arrout = reactreturn[1];
                 for (i = 0; i < arrout.length; i++)
                 {
+                    //TODO add "react" as first field, so it's different from superslow. For now, let's home there is no emote called 'time'.
                     db.rpush([message.channel.id, arrout[i]], function(err, reply)
                     {
                     })
@@ -153,6 +186,57 @@ client.on('message', message => {
                 db.del(message.channel.id);
             }
             return;
+        }
+        else if (command == "superslow")
+        {
+            //DB structure:
+            // channel id
+            // {
+            //     time: ms(time)
+            //     userid: timestamp
+            //     userid: timestamp
+            // }
+
+            if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("This is ADMIN ONLY command.");
+            if (!args[0]) return message.reply("Insufficient arguments!");
+            const event = new Date(Date.now());
+            console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", message.guild.name, "at", event.toUTCString());
+            //[0] - isOff, [1] - ms(args[0])
+            superslowreturn = client.commands.get(command).execute(message, args, Discord, client);
+            if (!superslowreturn[0])
+            {
+                db.hexists(message.channel.id, "time", function(err, reply)
+                {
+                    if (reply === 1)
+                    {
+                        db.hget(message.channel.id, "time", function(err, timestamp)
+                        {
+                            if (timestamp == superslowreturn[1]) return message.reply("it's already set to " + ms(superslowreturn[1], {long: true}) + "!");
+                            db.hset("time", superslowreturn[1]);
+                            return message.reply("Super slow-mode was already activated. It is now set to " + ms(superslowreturn[1], {long: true}));
+                        })
+                    }
+                    else
+                    {
+                        db.hmset(message.channel.id, {
+                            'time': superslowreturn[1]
+                        })
+                        //This is to notify users of Super slow-mode active in the channel.
+                        message.channel.setRateLimitPerUser(10);
+                    }
+                })
+            }
+            else
+            {
+                db.hexists(message.channel.id, "time", function(err, reply)
+                {
+                    if (reply === 1)
+                    {
+                        db.hdel(message.channel.id, "time");
+                    }
+                    else return message.reply("this channel does not have super slow-mode. Maybe you already deleted it?");
+                })
+            }
         }
         else {
             if (command === file.toLowerCase().substring(0, splitter)) {
