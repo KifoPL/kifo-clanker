@@ -8,7 +8,7 @@ module.exports = {
         const commandFiles = fs.readdirSync('./commands/').filter(file => file.endsWith('.js'));
         const client = message.client;
         let command = {};
-        let AmIAdmin = false;
+        var AmIAdmin = false;
         if (message.member.permissions.has("ADMINISTRATOR")) AmIAdmin = true;
 
         //!kifo help <command>
