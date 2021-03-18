@@ -250,8 +250,8 @@ client.on('message', message => {
                     {
                         if (reply === 1)
                         {
-                            db.hget("SM" + channel.id, "time", function(err, reply) {
-                                message.channel.send("<#" + channel.id + ">: " + ms(reply, {long : true})); //TODO fix it someday
+                            db.hget("SM" + channel.id, "time", function(err, reply2) {
+                                message.channel.send("<#" + channel.id + ">: " + ms(reply2, {long : true})); //TODO fix it someday
                             })
                             var FieldReactChannels = {}
                             FieldReactChannels.name = "#" + channel.name;
