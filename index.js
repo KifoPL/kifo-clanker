@@ -77,47 +77,45 @@ client.on('message', message => {
     })
 
     //IF CORRECT CHANNEL, SUPERSLOWMODE
-
-    if (!(message.member.permissions.has("ADMINISTRATOR")))
-    {
         db.exists("SM" + message.channel.id, function(err, reply)
         {
             if (reply === 1)
             {
-                
-                let slowmode;
-                db.hget("SM" + message.channel.id, "time", function(err, reply2)
+                if (!(message.member.permissions.has("ADMINISTRATOR")))
                 {
-                    slowmode = reply2;
-                })
-                if (slowmode == 0) return;
-                db.hexists("SM" + message.channel.id, message.author.id, function(err, reply2)
-                {
-                    if (reply2 === 1)
+                    let slowmode;
+                    db.hget("SM" + message.channel.id, "time", function(err, reply2)
                     {
-                        db.hget("SM" + message.channel.id, message.author.id, function(err, reply3)
+                        slowmode = reply2;
+                    })
+                    if (slowmode == 0) return;
+                    db.hexists("SM" + message.channel.id, message.author.id, function(err, reply2)
+                    {
+                        if (reply2 === 1)
                         {
-                            if (message.createdTimestamp - reply3 <= slowmode)
+                            db.hget("SM" + message.channel.id, message.author.id, function(err, reply3)
                             {
-                                let msg = "You can't talk in " + message.channel.name + " for " + ms(slowmode - (message.createdTimestamp - reply3), {long : true}) + ".";
-                                message.author.send(msg).catch();
-                                message.delete().catch();
-                                return;
-                            }
-                            else
-                            {
-                                db.hset("SM" + message.channel.id, message.author.id, message.createdTimestamp);
-                            }
-                        })
-                    }
-                    else
-                    {
-                        db.hset("SM" + message.channel.id, message.author.id, message.createdTimestamp);
-                    }
-                })
+                                if (message.createdTimestamp - reply3 <= slowmode)
+                                {
+                                    let msg = "You can't talk in " + message.channel.name + " for " + ms(slowmode - (message.createdTimestamp - reply3), {long : true}) + ".";
+                                    message.author.send(msg).catch();
+                                    message.delete().catch();
+                                    return;
+                                }
+                                else
+                                {
+                                    db.hset("SM" + message.channel.id, message.author.id, message.createdTimestamp);
+                                }
+                            })
+                        }
+                        else
+                        {
+                            db.hset("SM" + message.channel.id, message.author.id, message.createdTimestamp);
+                        }
+                    })
+                }
             }
         })
-    }
     if (!message.content.startsWith(prefix) || message.author.bot) return;
 
     //No bot in #citizens
