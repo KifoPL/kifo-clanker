@@ -65,8 +65,8 @@ module.exports = {
         const newEmbed = new Discord.MessageEmbed()
         .setColor('a039a0')
         .setTitle('List of ' + i + 'commands:')
-        .setDescription('Bot is created and developed solely by @KifoPL#3358. For contact with developer, click on this embed.')
-        .setURL('mailto:kifounaabi@gmail.com?subject=I have a question about Kifo Clanker™')
+        .setDescription('Bot is created and developed solely by @KifoPL#3358. For checking out repo, click on this embed.')
+        .setURL('https://github.com/KifoPL/kifo-clanker')
         .addFields(FieldArr);
 
         message.channel.send(newEmbed);
