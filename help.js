@@ -8,12 +8,12 @@ module.exports = {
         const commandFiles = fs.readdirSync('./commands/').filter(file => file.endsWith('.js'));
         const client = message.client;
         let command = {};
-        
+        AmIAdmin = false;
+        if (message.member.permissions.has("ADMINISTRATOR")) AmIAdmin = true;
+
         //!kifo help <command>
         if (args[0])
         {
-            AmIAdmin = false;
-            if (message.member.permissions.has("ADMINISTRATOR")) AmIAdmin = true;
             if (args[0] == 'help')
             {
                 const newEmbed = new Discord.MessageEmbed()
