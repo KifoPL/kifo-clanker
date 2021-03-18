@@ -221,7 +221,7 @@ client.on('message', message => {
             //     userid: timestamp
             // }
 
-            const command = require(`./commands/${file}`);
+            const commandfile = require(`./commands/${file}`);
             if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("This is ADMIN ONLY command.");
             if (!args[0])
             {
@@ -234,7 +234,7 @@ client.on('message', message => {
                             return message.reply("Super slow-mode is already set here to " + ms(reply2, {long : true}));
                         })
                     }
-                    else return message.reply("Super slow-mode is NOT activated. Type " + command.usage + " to set it up.")
+                    else return message.reply("Super slow-mode is NOT activated. Type " + commandfile.usage + " to set it up.")
                 })
             }
             const event = new Date(Date.now());
