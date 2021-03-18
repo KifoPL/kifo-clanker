@@ -78,7 +78,7 @@ client.on('message', message => {
 
     //IF CORRECT CHANNEL, SUPERSLOWMODE
 
-    if (!message.member.permissions.has("ADMINISTRATOR"))
+    if (!(message.member.permissions.has("ADMINISTRATOR")))
     {
         db.exists("SM" + message.channel.id, function(err, reply)
         {
