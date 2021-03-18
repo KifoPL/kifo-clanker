@@ -49,10 +49,9 @@ let reactreturn;
 client.on('message', message => {
 
     //IF CORRECT CHANNEL, REACT
-    db.hexists(message.channel.id, "time", function(err, reply)
+    db.exists("RT" + message.channel.id, function(err, reply)
     {
-        //TODO fix this as soon as I have time to rework react
-        if (reply === 0)
+        if (reply === 1)
         {
             if (!message.content.startsWith(prefix))
             {
@@ -65,48 +64,58 @@ client.on('message', message => {
                 {
                     if (message.attachments.first() == null) return;
                 }
-                db.lrange(message.channel.id, 0, -1, function(err, reply) {
+                db.lrange("RT" + message.channel.id, 0, -1, function(err, reply) {
                 for (i = 0; i < reply.length; i++) 
                 {
                     message.react(reply[i]).catch();
+                    var eventRT = new Date(Date.now());
+                    console.log("Reacted in " + message.guild.name + ", " + message.channel.name + " at " + eventRT.toUTCString());
                 }
                 });
             }
         }
-        //TODO for now this means it is super slow-mode, fix when reworking react
-        else if (reply === 1)
+    })
+
+    //IF CORRECT CHANNEL, SUPERSLOWMODE
+    db.exists("SM" + message.channel.id, function(err, reply)
+    {
+        if (reply === 1)
         {
+            
             let slowmode;
-            db.hget(message.channel.id, "time", function(err, reply2)
+            db.hget("SM" + message.channel.id, "time", function(err, reply2)
             {
                 slowmode = reply2;
             })
-            db.hexists(message.channel.id, message.author.id, function(err, reply2)
+            if (slowmode == 0) return;
+            db.hexists("SM" + message.channel.id, message.author.id, function(err, reply2)
             {
                 if (reply2 === 1)
                 {
-                    db.hget(message.channel.id, message.author.id, function(err, reply3)
+                    db.hget("SM" + message.channel.id, message.author.id, function(err, reply3)
                     {
-                        if (message.createdAt.getTime() - reply3 <= slowmode)
+                        if (message.createdTimestamp - reply3 <= slowmode)
                         {
-                            let msg = "You can't talk in " + message.channel.name + " for " + ms(message.createdAt.getTime() - reply2, {long : true}) + ".";
+                            let msg = "You can't talk in " + message.channel.name + " for " + ms(message.createdTimestamp - reply3, {long : true}) + ".";
                             message.author.send(msg).catch();
                             message.delete().catch();
+                            return;
                         }
                         else
                         {
-                            db.hset(message.channel.id, message.author.id, message.createdAt.getTime());
+                            db.hset("SM" + message.channel.id, message.author.id, message.createdTimestamp);
                         }
                     })
                 }
                 else
                 {
-                    db.hset(message.channel.id, message.author.id, message.createdAt.getTime());
+                    db.hset("SM" + message.channel.id, message.author.id, message.createdTimestamp);
                 }
             })
         }
     })
     if (!message.content.startsWith(prefix) || message.author.bot) return;
+
     //No bot in #citizens
     if (message.channel.id == "707650931809976391") return;
     
@@ -146,11 +155,11 @@ client.on('message', message => {
                 .setColor('a039a0')
                 .setTitle('List of channels, where command is active:');
                 message.guild.channels.cache.each(channel => {
-                    db.exists(channel.id, function(err, reply)
+                    db.exists("RT" +channel.id, function(err, reply)
                     {
                         if (reply === 1)
                         {
-                            db.lrange(channel.id, 0, -1, function(err, reply) {
+                            db.lrange("RT" + channel.id, 0, -1, function(err, reply) {
                                 message.channel.send("<#" + channel.id + ">: " + reply); //TODO fix it someday
                             })
                             var FieldReactChannels = {}
@@ -173,8 +182,7 @@ client.on('message', message => {
                 let arrout = reactreturn[1];
                 for (i = 0; i < arrout.length; i++)
                 {
-                    //TODO add "react" as first field, so it's different from superslow. For now, let's hope there is no emote called 'time'.
-                    db.rpush([message.channel.id, arrout[i]], function(err, reply)
+                    db.rpush(["RT" + message.channel.id, arrout[i]], function(err, reply)
                     {
                     })
                     console.log("I will now react in " + message.channel.name + " with " + arrout);
@@ -183,14 +191,14 @@ client.on('message', message => {
             else if (reactreturn[0] == "OFF")
             {
                 //channellist.delete(message.channel.id);
-                db.del(message.channel.id);
+                db.del("RT" + message.channel.id);
             }
             return;
         }
         else if (command == "superslow")
         {
             //DB structure:
-            // channel id
+            // "SM" + channel id
             // {
             //     time: ms(time)
             //     userid: timestamp
@@ -205,34 +213,38 @@ client.on('message', message => {
             superslowreturn = client.commands.get(command).execute(message, args, Discord, client);
             if (!superslowreturn[0])
             {
-                db.hexists(message.channel.id, "time", function(err, reply)
+                db.hexists("SM" + message.channel.id, "time", function(err, reply)
                 {
                     if (reply === 1)
                     {
-                        db.hget(message.channel.id, "time", function(err, timestamp)
+                        db.hget("SM" + message.channel.id, "time", function(err, timestamp)
                         {
                             if (timestamp == superslowreturn[1]) return message.reply("it's already set to " + ms(superslowreturn[1], {long: true}) + "!");
-                            db.hset("time", superslowreturn[1]);
+                            db.hset("SM" + message.channel.id, "time", superslowreturn[1]);
                             return message.reply("Super slow-mode was already activated. It is now set to " + ms(superslowreturn[1], {long: true}));
                         })
                     }
                     else
                     {
-                        db.hmset(message.channel.id, {
+                        db.hmset("SM" + message.channel.id, {
                             'time': superslowreturn[1]
                         })
+                        message.reply(", set Super slow-mode to " + ms(superslowreturn[1], {long: true}) + ".");
                         //This is to notify users of Super slow-mode active in the channel.
                         message.channel.setRateLimitPerUser(10);
+                        return;
                     }
                 })
             }
             else
             {
-                db.hexists(message.channel.id, "time", function(err, reply)
+                db.hexists("SM" + message.channel.id, "time", function(err, reply)
                 {
                     if (reply === 1)
                     {
-                        db.hdel(message.channel.id, "time");
+                        db.del("SM" + message.channel.id);
+                        message.reply(", Super slow-mode successfully disabled.");
+                        message.channel.setRateLimitPerUser(0);
                     }
                     else return message.reply("this channel does not have super slow-mode. Maybe you already deleted it?");
                 })
