@@ -90,7 +90,7 @@ client.on('message', message => {
                         if (message.createdAt.getTime() - reply3 <= slowmode)
                         {
                             let msg = "You can't talk in " + message.channel.name + " for " + ms(message.createdAt.getTime() - reply2, {long : true}) + ".";
-                            message.author.send(msg);
+                            message.author.send(msg).catch();
                             message.delete().catch();
                         }
                         else
@@ -173,7 +173,7 @@ client.on('message', message => {
                 let arrout = reactreturn[1];
                 for (i = 0; i < arrout.length; i++)
                 {
-                    //TODO add "react" as first field, so it's different from superslow. For now, let's home there is no emote called 'time'.
+                    //TODO add "react" as first field, so it's different from superslow. For now, let's hope there is no emote called 'time'.
                     db.rpush([message.channel.id, arrout[i]], function(err, reply)
                     {
                     })
@@ -237,6 +237,7 @@ client.on('message', message => {
                     else return message.reply("this channel does not have super slow-mode. Maybe you already deleted it?");
                 })
             }
+            return;
         }
         else {
             if (command === file.toLowerCase().substring(0, splitter)) {

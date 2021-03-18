@@ -1,4 +1,3 @@
-const {MessageMentions} = require('discord.js');
 module.exports = {
     name: 'reverse',
     description: 'This command reverses anything you type.',
