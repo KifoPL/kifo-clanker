@@ -96,7 +96,7 @@ client.on('message', message => {
                     {
                         if (message.createdTimestamp - reply3 <= slowmode)
                         {
-                            let msg = "You can't talk in " + message.channel.name + " for " + ms(message.createdTimestamp - reply3, {long : true}) + ".";
+                            let msg = "You can't talk in " + message.channel.name + " for " + ms(slowmode - message.createdTimestamp + reply3, {long : true}) + ".";
                             message.author.send(msg).catch();
                             message.delete().catch();
                             return;
@@ -229,7 +229,7 @@ client.on('message', message => {
                         db.hmset("SM" + message.channel.id, {
                             'time': superslowreturn[1]
                         })
-                        message.reply(", set Super slow-mode to " + ms(superslowreturn[1], {long: true}) + ".");
+                        message.reply("set Super slow-mode to " + ms(superslowreturn[1], {long: true}) + ".");
                         //This is to notify users of Super slow-mode active in the channel.
                         message.channel.setRateLimitPerUser(10);
                         return;
@@ -243,7 +243,7 @@ client.on('message', message => {
                     if (reply === 1)
                     {
                         db.del("SM" + message.channel.id);
-                        message.reply(", Super slow-mode successfully disabled.");
+                        message.reply("Super slow-mode successfully disabled.");
                         message.channel.setRateLimitPerUser(0);
                     }
                     else return message.reply("this channel does not have super slow-mode. Maybe you already deleted it?");
