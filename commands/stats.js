@@ -55,7 +55,7 @@ module.exports = {
 			let member;
 			if (args[0].toUpperCase() == "ME")
 			{
-				member = message.author.member;
+				member = message.member;
 			}
 			else
 			{
@@ -94,6 +94,6 @@ module.exports = {
 			)
 		}
 		message.channel.send(newEmbed).catch();
-		message.channel.stopTyping().catch();
+		message.channel.stopTyping();
     }
 }
