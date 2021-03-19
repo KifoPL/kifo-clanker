@@ -85,7 +85,7 @@ module.exports = {
 			.setAuthor('Kifo Clanker™, by KifoPL#3358')
 			.setFooter(`Account created at: ${member.user.createdAt.toUTCString()}\nAccount joined server at: ${member.joinedAt.toUTCString()}\nIt is ${ms(usertime, {long : true})} old\nIt joined server ${ms(membertime, {long : true})} ago (current time: ${time.toUTCString()}).`)
 			.addFields(
-				{name: "Info", value: `<@${member.user.id}>, ${member.nickname == undefined ? "No nickname set" : member.nickname }, ${member.user.tag}.`},
+				{name: "Info", value: `<@${member.user.id}>, ${member.nickname == undefined ? "No nickname set" : member.nickname }, AKA ${member.user.tag}.`},
 				{name: `Boost status:`, value: `${member.premiumSince != undefined ? `Boosting since ${member.premiumSince.toUTCString()}, that's ${ms(time - member.premiumSince.getTime(), {long : true})}!` : `Not boosting... ***yet***.`}`},
 				{name: `Roles`, value: `${rolecount} roles, highest role is ${member.roles.highest.name}, hoisted as ${member.roles.hoist.name}.`},
 				{name: `Status`, value: `User is currently ${member.presence.status}.`},
