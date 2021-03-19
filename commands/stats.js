@@ -5,8 +5,8 @@ module.exports = {
     adminonly: false,
     async execute(message, args, Discord) {
 		if (message.guild == null) return message.reply("you can only run this command on the server.");
-		message.channel.startTyping();
-		const newEmbed = new Discord.Embed();
+		message.channel.startTyping().catch();
+		const newEmbed = new Discord.MessageEmbed();
         if (args[0] == undefined)
 		{
 			let botcount = 0;
@@ -47,6 +47,7 @@ module.exports = {
 				{name: "More", value: "If you want this command to have more stats, reach out to this bot developer!"}
 			)
 		}
-		message.channel.send(newEmbed);
+		message.channel.send(newEmbed).catch();
+		message.channel.stopTyping().catch();
     }
 }
