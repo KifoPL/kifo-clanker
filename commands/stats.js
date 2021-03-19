@@ -69,7 +69,7 @@ module.exports = {
 					if (message.mentions.users.firstKey() != undefined)
 					{
 						if (!message.guild.members.resolve(message.mentions.users.firstKey())) return message.reply("user not found.");
-						member = message.mentions.users.first();
+						member = message.mentions.members.first();
 					}
 				}
 			}
