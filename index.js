@@ -153,7 +153,7 @@ client.on('message', message => {
         }
         else if (command == "react")
         {
-            const command2 = require(`./commands/${file}`);
+            const command2 = require(`./commands/react.js`);
             if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("This is ADMIN ONLY command.");
             if (!args[0])
             {
@@ -230,7 +230,7 @@ client.on('message', message => {
             //     userid: timestamp
             // }
 
-            const commandfile = require(`./commands/${file}`);
+            const commandfile = require(`./commands/superslow.js`);
             if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("This is ADMIN ONLY command.");
             if (!args[0])
             {
