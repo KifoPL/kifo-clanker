@@ -58,7 +58,8 @@ client.on('message', message => {
                 //It will react to his own messages that have attachments, this is so #kenoc-hall-of-fame looks better
                 if (message.author.id != client.user.id)
                 {
-                    if (message.author.bot) return;
+                    //my bot will also react to r5, to make #server-feedback work.
+                    if (message.author.bot && message.author.id != 204255221017214977) return;
                 }
                 else
                 {
