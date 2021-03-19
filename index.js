@@ -69,8 +69,8 @@ client.on('message', message => {
                 {
                     message.react(reply[i]).catch();
                     var eventRT = new Date(Date.now());
-                    console.log("Reacted in " + message.guild.name + ", " + message.channel.name + " at " + eventRT.toUTCString());
                 }
+                console.log("Reacted in " + message.guild.name + ", " + message.channel.name + " at " + eventRT.toUTCString());
                 });
             }
         }
@@ -156,11 +156,11 @@ client.on('message', message => {
             if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("This is ADMIN ONLY command.");
             if (!args[0])
             {
-                db.exists("SM" + message.channel.id, function(err, reply)
+                db.exists("RT" + message.channel.id, function(err, reply)
                 {
                     if (reply === 1)
                     {
-                        db.hget("SM" + message.channel.id, "time", function(err, reply2)
+                        db.hget("RT" + message.channel.id, "time", function(err, reply2)
                         {
                             return message.reply("react is already ON!");
                         })
@@ -207,8 +207,8 @@ client.on('message', message => {
                     db.rpush(["RT" + message.channel.id, arrout[i]], function(err, reply)
                     {
                     })
-                    console.log("I will now react in " + message.channel.name + " with " + arrout);
                 }
+                console.log("I will now react in " + message.channel.name + " with " + arrout);
             }
             else if (reactreturn[0] == "OFF")
             {
