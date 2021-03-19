@@ -1,6 +1,8 @@
 module.exports = {
     name: 'howgay',
-    description: `A quick test to find out your gayness level.\nUsage: "!kifo howgay <optional_user>"`,
+    description: `A quick test to find out your gayness level.`,
+    usage: "!kifo howgay <optional_user>",
+    adminonly: false,
     execute(message, args, Discord) {
         let userid = 0;
         let howgay = 0;
@@ -31,8 +33,7 @@ module.exports = {
         }
         else userid = message.author.id;
         if (userid == 289119054130839552 || args[0] == 795638549730295820) Troll = true;
-        let username = message.guild.members.resolve(userid).nickname;
-        if (username == null) username = message.guild.members.resolve(userid).user.username;
+        let username = message.guild.members.resolve(userid).displayName;
         if (!Troll)
         {
             howgay = userid % 101;

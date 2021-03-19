@@ -8,13 +8,12 @@ const db = require('redis').createClient(process.env.REDIS_URL);
 db.on('connect', function() {
     console.log('Database online!');
 })
-var Redis = require('ioredis');
-var redis = new Redis(process.env.REDIS_URL);
 
 const prefix = '!kifo ';
 
 const fs = require('fs');
 const { SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION } = require('constants');
+const ms = require('ms');
 
 client.commands = new Discord.Collection();
 
@@ -50,7 +49,7 @@ let reactreturn;
 client.on('message', message => {
 
     //IF CORRECT CHANNEL, REACT
-    db.exists(message.channel.id, function(err, reply)
+    db.exists("RT" + message.channel.id, function(err, reply)
     {
         if (reply === 1)
         {
@@ -65,16 +64,66 @@ client.on('message', message => {
                 {
                     if (message.attachments.first() == null) return;
                 }
-                db.lrange(message.channel.id, 0, -1, function(err, reply) {
+                db.lrange("RT" + message.channel.id, 0, -1, function(err, reply) {
                 for (i = 0; i < reply.length; i++) 
                 {
                     message.react(reply[i]).catch();
+                    var eventRT = new Date(Date.now());
+                    console.log("Reacted in " + message.guild.name + ", " + message.channel.name + " at " + eventRT.toUTCString());
                 }
                 });
             }
         }
     })
+
+    //IF CORRECT CHANNEL, SUPERSLOWMODE
+        db.exists("SM" + message.channel.id, function(err, reply)
+        {
+            if (reply === 1)
+            {
+                if (!(message.member.permissions.has("ADMINISTRATOR")))
+                {
+                    let slowmode;
+                    db.hget("SM" + message.channel.id, "time", function(err, reply2)
+                    {
+                        slowmode = reply2;
+                    })
+                    if (slowmode == 0) return;
+                    db.hexists("SM" + message.channel.id, message.author.id, function(err, reply2)
+                    {
+                        if (reply2 === 1)
+                        {
+                            db.hget("SM" + message.channel.id, message.author.id, function(err, reply3)
+                            {
+                                if (message.createdTimestamp - reply3 <= slowmode)
+                                {
+                                    let msg = "You can't talk in " + message.channel.name + " for " + ms(slowmode - (message.createdTimestamp - reply3), {long : true}) + ".";
+                                    message.author.send(msg).catch();
+                                    message.delete().catch();
+                                    return;
+                                }
+                                else
+                                {
+                                    if (message.content.trim() == prefix.trim())
+                                    {
+                                        message.author.send(`You can already talk in #${message.channel.id}.`).catch();
+                                        message.delete().catch();
+                                        return;
+                                    }
+                                    else db.hset("SM" + message.channel.id, message.author.id, message.createdTimestamp);
+                                }
+                            })
+                        }
+                        else
+                        {
+                            db.hset("SM" + message.channel.id, message.author.id, message.createdTimestamp);
+                        }
+                    })
+                }
+            }
+        })
     if (!message.content.startsWith(prefix) || message.author.bot) return;
+
     //No bot in #citizens
     if (message.channel.id == "707650931809976391") return;
     
@@ -103,8 +152,22 @@ client.on('message', message => {
         }
         else if (command == "react")
         {
+            const command = require(`./commands/${file}`);
             if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("This is ADMIN ONLY command.");
-            if (!args[0]) return message.reply("Insufficient arguments!");
+            if (!args[0])
+            {
+                db.exists("SM" + message.channel.id, function(err, reply)
+                {
+                    if (reply === 1)
+                    {
+                        db.hget("SM" + message.channel.id, "time", function(err, reply2)
+                        {
+                            return message.reply("react is already ON!");
+                        })
+                    }
+                    else return message.reply("react is OFF. Type " + command.usage + " to set it up.")
+                })
+            }
             const event = new Date(Date.now());
             console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", message.guild.name, "at", event.toUTCString());
             if (args[0].toUpperCase() == "LIST")
@@ -114,11 +177,11 @@ client.on('message', message => {
                 .setColor('a039a0')
                 .setTitle('List of channels, where command is active:');
                 message.guild.channels.cache.each(channel => {
-                    db.exists(channel.id, function(err, reply)
+                    db.exists("RT" +channel.id, function(err, reply)
                     {
                         if (reply === 1)
                         {
-                            db.lrange(channel.id, 0, -1, function(err, reply) {
+                            db.lrange("RT" + channel.id, 0, -1, function(err, reply) {
                                 message.channel.send("<#" + channel.id + ">: " + reply); //TODO fix it someday
                             })
                             var FieldReactChannels = {}
@@ -141,7 +204,7 @@ client.on('message', message => {
                 let arrout = reactreturn[1];
                 for (i = 0; i < arrout.length; i++)
                 {
-                    db.rpush([message.channel.id, arrout[i]], function(err, reply)
+                    db.rpush(["RT" + message.channel.id, arrout[i]], function(err, reply)
                     {
                     })
                     console.log("I will now react in " + message.channel.name + " with " + arrout);
@@ -150,7 +213,107 @@ client.on('message', message => {
             else if (reactreturn[0] == "OFF")
             {
                 //channellist.delete(message.channel.id);
-                db.del(message.channel.id);
+                db.del("RT" + message.channel.id);
+            }
+            return;
+        }
+        else if (command == "superslow")
+        {
+            //DB structure:
+            // "SM" + channel id
+            // {
+            //     time: ms(time)
+            //     userid: timestamp
+            //     userid: timestamp
+            // }
+
+            const commandfile = require(`./commands/${file}`);
+            if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("This is ADMIN ONLY command.");
+            if (!args[0])
+            {
+                db.exists("SM" + message.channel.id, function(err, reply)
+                {
+                    if (reply === 1)
+                    {
+                        db.hget("SM" + message.channel.id, "time", function(err, reply2)
+                        {
+                            return message.reply("Super slow-mode is already set here to " + ms(reply2, {long : true}));
+                        })
+                    }
+                    else return message.reply("Super slow-mode is NOT activated. Type " + commandfile.usage + " to set it up.")
+                })
+            }
+            const event = new Date(Date.now());
+            console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", message.guild.name, "at", event.toUTCString());
+            if (args[0].toUpperCase() == "LIST")
+            {
+                var FieldReactChannels = {name: "name", value: "description"};
+                const newReactChannelsEmbed = new Discord.MessageEmbed()
+                .setColor('a039a0')
+                .setTitle('List of channels, where command is active:');
+                message.guild.channels.cache.each(channel => {
+                    db.exists("SM" +channel.id, function(err, reply)
+                    {
+                        if (reply === 1)
+                        {
+                            db.hget("SM" + channel.id, "time", function(err, reply2) {
+                                message.channel.send("<#" + channel.id + ">: " + ms(reply2, {long : true})); //TODO fix it someday
+                            })
+                            var FieldReactChannels = {}
+                            FieldReactChannels.name = "#" + channel.name;
+                            FieldReactChannels.value = "Super slow-mode ON.";
+                            newReactChannelsEmbed.addField(FieldReactChannels.name, FieldReactChannels.value);
+                            //console.log(newReactChannelsEmbed.fields);
+                        }
+                    })
+                })
+                //console.log(newReactChannelsEmbed);
+                message.channel.send(newReactChannelsEmbed);
+                message.channel.send("End of list!");
+                return;
+            }
+            //[0] - isOff, [1] - ms(args[0])
+            superslowreturn = client.commands.get(command).execute(message, args, Discord, client);
+            if (superslowreturn == null) return;
+            //Just making sure lmao
+            if (superslowreturn[0] == undefined) return;
+            if (!superslowreturn[0])
+            {
+                db.hexists("SM" + message.channel.id, "time", function(err, reply)
+                {
+                    if (reply === 1)
+                    {
+                        db.hget("SM" + message.channel.id, "time", function(err, timestamp)
+                        {
+                            if (timestamp == superslowreturn[1]) return message.reply("it's already set to " + ms(superslowreturn[1], {long: true}) + "!");
+                            db.hset("SM" + message.channel.id, "time", superslowreturn[1]);
+                            return message.reply("Super slow-mode was already activated. It is now set to " + ms(superslowreturn[1], {long: true}));
+                        })
+                    }
+                    else
+                    {
+                        db.hmset("SM" + message.channel.id, {
+                            'time': superslowreturn[1]
+                        })
+                        message.reply("set Super slow-mode to " + ms(superslowreturn[1], {long: true}) + ".");
+                        //This is to notify users of Super slow-mode active in the channel.
+                        message.channel.setRateLimitPerUser(10);
+                        return;
+                    }
+                })
+            }
+            else if (superslowreturn[0])
+            {
+                db.hexists("SM" + message.channel.id, "time", function(err, reply)
+                {
+                    if (reply === 1)
+                    {
+                        db.del("SM" + message.channel.id);
+                        message.reply("Super slow-mode successfully disabled.");
+                        message.channel.setRateLimitPerUser(0);
+                    }
+                    else return message.reply("this channel does not have super slow-mode. Maybe you already deleted it?");
+                })
             }
             return;
         }
