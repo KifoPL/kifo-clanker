@@ -17,18 +17,18 @@ module.exports = {
 			let channelvoicecount = 0;
 			let channeltextcount = 0;
 			let channelcategorycount = 0;
-			await message.guild.members.cache().filter(member => member.user.bot).each(member => {
+			await message.guild.members.cache.filter(member => member.user.bot).each(member => {
 				if (member.user.bot) botcount++;
 			})
-			await message.guild.members.cache().filter(member => member.presence.status == "online" || member.presence.status == "dnd").each(onlinecount++);
-			await message.guild.members.cache().filter(member => member.premiumSince != null).each(member => {
+			await message.guild.members.cache.filter(member => member.presence.status == "online" || member.presence.status == "dnd").each(onlinecount++);
+			await message.guild.members.cache.filter(member => member.premiumSince != null).each(member => {
 				if (member.user.premiumSince != null) boostcount++;
 			})
-			await message.guild.roles.cache().each(rolecount++);
-			await message.guild.channels().cache().each(channelcount++);
-			await message.guild.channels().cache().filter(channel => channel.type == "voice").each(channelvoicecount++);
-			await message.guild.channels().cache().filter(channel => channel.type == "text").each(channeltextcount++);
-			await message.guild.channels().cache().filter(channel => channel.type == "category").each(channelcategorycount++);
+			await message.guild.roles.cache.each(rolecount++);
+			await message.guild.channels().cache.each(channelcount++);
+			await message.guild.channels().cache.filter(channel => channel.type == "voice").each(channelvoicecount++);
+			await message.guild.channels().cache.filter(channel => channel.type == "text").each(channeltextcount++);
+			await message.guild.channels().cache.filter(channel => channel.type == "category").each(channelcategorycount++);
 			let time = new Date(Date.now());
 			let servertime = time.getTime() - message.guild.createdAt.getTime();
 			newEmbed
