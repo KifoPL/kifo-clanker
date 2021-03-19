@@ -168,6 +168,8 @@ client.on('message', message => {
                     }
                     else return message.reply("react is OFF. Type " + command2.usage + " to set it up.")
                 })
+                //just in case
+                return;
             }
             const event = new Date(Date.now());
             console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", message.guild.name, "at", event.toUTCString());
