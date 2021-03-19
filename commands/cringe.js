@@ -1,6 +1,8 @@
 module.exports = {
     name: 'cringe',
-    description: `Express your feelings to another discord user with this beautiful poem.\nUsage: "!kifo cringe <optional_ping>"`,
+    description: `Express your feelings to another discord user with this beautiful poem.`,
+    usage: "!kifo cringe <optional_ping>",
+    adminonly: false,
     execute(message, args) {
         let reply = "Roses are red,\nViolets are blue,\nYou are cringe.\nSeriously. You're cringe.";
         if (args[1] != undefined) return message.reply("Too many arguments!");

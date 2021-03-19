@@ -1,6 +1,8 @@
 module.exports = {
     name: 'pp',
-    description: `Measure your PP length with this totally reliable pp length calculator. Each user has his own constant pp length (like irl), it's not random.\nUsage: "!kifo pp <optional_user>"`,
+    description: `Measure your PP length with this totally reliable pp length calculator. Each user has his own constant pp length (like irl), it's not random.`,
+    usage: "!kifo pp <optional_user>",
+    adminonly: false,
     execute(message, args, Discord) {
         let userid = 0;
         let pplen = 0;
@@ -31,8 +33,7 @@ module.exports = {
         }
         else userid = message.author.id;
         if (userid == 289119054130839552 || args[0] == 795638549730295820) Troll = true;
-        let username = message.guild.members.resolve(userid).nickname;
-        if (username == null) username = message.guild.members.resolve(userid).user.username;
+        let username = message.guild.members.resolve(userid).displayName;
         if (!Troll)
         {
             pplen = userid % 13;
