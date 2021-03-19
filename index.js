@@ -152,7 +152,7 @@ client.on('message', message => {
         }
         else if (command == "react")
         {
-            const command = require(`./commands/${file}`);
+            const command2 = require(`./commands/${file}`);
             if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("This is ADMIN ONLY command.");
             if (!args[0])
             {
@@ -165,7 +165,7 @@ client.on('message', message => {
                             return message.reply("react is already ON!");
                         })
                     }
-                    else return message.reply("react is OFF. Type " + command.usage + " to set it up.")
+                    else return message.reply("react is OFF. Type " + command2.usage + " to set it up.")
                 })
             }
             const event = new Date(Date.now());
