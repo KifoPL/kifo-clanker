@@ -12,7 +12,7 @@ module.exports = {
         if (!args[0]) return message.reply(`Usage: ${this.usage}`);
         if (message.guild == null) return message.reply("you can only run this command on the server.");
         if (isNaN(ms(args[0]))) return message.reply("incorrect time period. Please specify correct time period.");
-        if (ms(args[0]) < shortest && ms(args[0]) != 0) return message.reply("Just use normal Discord slow-mode, no need to waste my bot's resources.");
+        if (ms(args[0]) < shortest && ms(args[0]) != 0) return message.reply("just use normal Discord slow-mode, no need to waste my bot's resources.");
         if (ms(args[0]) > longest) return message.reply("incorrect amount of time. For the command to work, please input period of time that is between " + ms(shortest, {long : true}) + " and " + ms(longest, {long : true}) + ".");
         let isOff = false;
         if (ms(args[0]) == 0) isOff = true;

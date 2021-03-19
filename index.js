@@ -243,10 +243,12 @@ client.on('message', message => {
                     }
                     else return message.reply("Super slow-mode is NOT activated. Type " + commandfile.usage + " to set it up.")
                 })
+                //just in case
+                return;
             }
             const event = new Date(Date.now());
             console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", message.guild.name, "at", event.toUTCString());
-            if (args[0].toUpperCase() == "LIST")
+            if (args[0]?.toUpperCase() == "LIST")
             {
                 var FieldReactChannels = {name: "name", value: "description"};
                 const newReactChannelsEmbed = new Discord.MessageEmbed()
