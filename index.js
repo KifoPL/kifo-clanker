@@ -104,7 +104,13 @@ client.on('message', message => {
                                 }
                                 else
                                 {
-                                    db.hset("SM" + message.channel.id, message.author.id, message.createdTimestamp);
+                                    if (message.content.trim() == prefix.trim())
+                                    {
+                                        message.author.send(`You can already talk in #${message.channel.id}.`).catch();
+                                        message.delete().catch();
+                                        return;
+                                    }
+                                    else db.hset("SM" + message.channel.id, message.author.id, message.createdTimestamp);
                                 }
                             })
                         }

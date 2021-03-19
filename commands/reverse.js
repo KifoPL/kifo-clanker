@@ -4,7 +4,7 @@ module.exports = {
 	usage: "!kifo reverse <text>",
 	adminonly: false,
     execute(message, args, Discord) {
-		if (!args[0]) return message.reply("Forgot to type in text you wish to reverse. Use `!kifo reverse <text>`");
+		if (!args[0]) return message.reply(`Usage: ${this.usage}.`);
 		var array = args.join(" ").split("");
 		array.reverse();
 		var output = array.join("");

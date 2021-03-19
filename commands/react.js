@@ -4,7 +4,8 @@ module.exports = {
     usage: "!kifo react <on/off> <emote1> <optional_emote2> ... <optional_emoten>",
     adminonly: true,
     execute(message, args) {
-        if (!(args[0].toUpperCase() == "ON" || args[0].toUpperCase() == "OFF")) return message.reply("Error: Specify, if you want to enable or disable the command first.");
+        if (message.guild == null) return message.reply("you can only run this command on the server.");
+        if (!(args[0].toUpperCase() == "ON" || args[0].toUpperCase() == "OFF")) return message.reply(`Usage: ${this.usage}.`);
         let option = args[0].toUpperCase();
         args.shift();
         let emotes = args;
@@ -18,7 +19,7 @@ module.exports = {
 
         if (option == "ON")
         {
-            if (!args[0]) return message.reply("Insufficient arguments!");
+            if (!args[0]) return message.reply(`Usage: ${this.usage}.`);
             let params = [option, emotes];
             message.reply("it's ON!");
             return params;
