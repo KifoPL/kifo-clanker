@@ -105,6 +105,22 @@ client.on('message', message => {
         {
             if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("This is ADMIN ONLY command.");
             if (!args[0]) return message.reply("Insufficient arguments!");
+            const command2 = require(`./commands/${file}`);
+            if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("This is ADMIN ONLY command.");
+            if (!args[0])
+            {
+                db.exists("SM" + message.channel.id, function(err, reply)
+                {
+                    if (reply === 1)
+                    {
+                        db.hget("SM" + message.channel.id, "time", function(err, reply2)
+                        {
+                            return message.reply("react is already ON!");
+                        })
+                    }
+                    else return message.reply("react is OFF. Type " + command2.usage + " to set it up.")
+                })
+            }
             const event = new Date(Date.now());
             console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", message.guild.name, "at", event.toUTCString());
             if (args[0].toUpperCase() == "LIST")
