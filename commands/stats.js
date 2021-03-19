@@ -6,7 +6,7 @@ module.exports = {
     async execute(message, args, Discord) {
 		if (message.guild == null) return message.reply("you can only run this command on the server.");
 		message.channel.startTyping();
-		const newEmbed;
+		const newEmbed = new Discord.Embed();
         if (args[0] == undefined)
 		{
 			let botcount = 0;
@@ -31,7 +31,7 @@ module.exports = {
 			await message.guild.channels().cache().filter(channel => channel.type == "category").each(channelcategorycount++);
 			let time = new Date(Date.now());
 			let servertime = time.getTime() - message.guild.createdAt.getTime();
-			newEmbed = new Discord.MessageEmbed()
+			newEmbed
 			.setColor('a039a0')
 			.setTitle(message.guild.name + " stats:")
 			.setDescription(message.guild.description)
