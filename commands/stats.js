@@ -4,6 +4,8 @@ module.exports = {
     usage: '!kifo stats <opional_user>',
     adminonly: false,
     async execute(message, args, Discord) {
+		//This is for timestamps
+		const ms = require(`ms`);
 		if (message.guild == null) return message.reply("you can only run this command on the server.");
 		message.channel.startTyping().catch();
 		const newEmbed = new Discord.MessageEmbed();
