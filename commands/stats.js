@@ -25,10 +25,10 @@ module.exports = {
 				if (member.user.premiumSince != null) boostcount++;
 			})
 			await message.guild.roles.cache.each(member => rolecount++);
-			await message.guild.channels().cache.each(member => channelcount++);
-			await message.guild.channels().cache.filter(channel => channel.type == "voice").each(member => channelvoicecount++);
-			await message.guild.channels().cache.filter(channel => channel.type == "text").each(member => channeltextcount++);
-			await message.guild.channels().cache.filter(channel => channel.type == "category").each(member => channelcategorycount++);
+			await message.guild.channels.cache.each(member => channelcount++);
+			await message.guild.channels.cache.filter(channel => channel.type == "voice").each(member => channelvoicecount++);
+			await message.guild.channels.cache.filter(channel => channel.type == "text").each(member => channeltextcount++);
+			await message.guild.channels.cache.filter(channel => channel.type == "category").each(member => channelcategorycount++);
 			let time = new Date(Date.now());
 			let servertime = time.getTime() - message.guild.createdAt.getTime();
 			newEmbed
