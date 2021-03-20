@@ -42,7 +42,7 @@ module.exports = {
 			.setFooter(`Server created at ${message.guild.createdAt.toUTCString()}, it is ${ms(servertime, {long : true})} old (current time: ${time.toUTCString()}).`)
 			.addFields(
 				{name: "Member Count:", value: `Users: ${message.guild.memberCount - botcount} (${onlinecount} online), Bots: ${botcount}, Total: ${message.guild.memberCount}.`},
-				{name: `Boosts status:`, value: `Tier ${message.guild.premiumTier}, thanks to ${message.guild.premiumSubscriptionCount} boosts from ${boostcount} members.`},
+				{name: `Boosts status:`, value: `Tier ${message.guild.premiumTier}, thanks to ${message.guild.premiumSubscriptionCount} boosts. ${boostcount} members boosted throughout server's existence.`},
 				{name: `Region`, value: `${message.guild.region}`},
 				{name: `Roles`, value: `${rolecount}`},
 				{name: `Channels`, value: `${channelvoicecount} voice channels, ${channeltextcount} text channels, ${channelcategorycount} categories, Total: ${channelcount}.`},
