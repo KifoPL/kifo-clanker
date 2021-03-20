@@ -1,18 +1,23 @@
 const { timeStamp } = require('console');
 const Discord = require('discord.js');
+require('dotenv')?.config();
 //-------------UNCOMMENT BELOW LINE FOR OFFLINE TEST---------------
 //const config = require('./config.json');
 
 const client = new Discord.Client();
+async function loadowner()
+{
+    clientapp = await client.fetchApplication().catch();
+    Owner = clientapp.owner;
+}
 const db = require('redis').createClient(process.env.REDIS_URL);
 db.on('connect', function() {
     console.log('Database online!');
 })
 
-const prefix = '!kifo ';
+const prefix = `${process.env.PREFIX} `;
 
 const fs = require('fs');
-const { SSL_OP_NO_SESSION_RESUMPTION_ON_RENEGOTIATION } = require('constants');
 const ms = require('ms');
 
 client.commands = new Discord.Collection();
@@ -27,8 +32,16 @@ for (const file of commandFiles) {
 command = require(`./help.js`);
 client.commands.set(command.name, command);
 
+let debug = false;
+let clientapp;
+//that's @KifoPL#3358
+let Owner;
+
 client.once('ready', () => {
     console.log('Kifo Clanker is online!');
+
+    loadowner();
+
     //for WoofWoofWolffe feature
     client.guilds.fetch('698075892974354482').then(guild => {
         guild.fetchInvites().then(invites => {
@@ -133,6 +146,22 @@ client.on('message', message => {
                 }
             }
         })
+    if (message.content.trim() == prefix.trim())
+    {
+        message.channel.startTyping().catch();
+        const helloEmbed = new Discord.MessageEmbed()
+        .setAuthor("Hello there (click for invite link)!", null, "https://discord.com/api/oauth2/authorize?client_id=795638549730295820&permissions=8&scope=applications.commands%20bot")
+        .setColor('a039a0')
+        .setTitle("About me (click for commands list)")
+        .setURL("https://github.com/KifoPL/kifo-clanker/wiki")
+        .setThumbnail(message.guild.me?.user?.avatarURL({format: "png", dynamic: true, size: 64}))
+        .setDescription("Feel free to follow my [repo](https://github.com/KifoPL/kifo-clanker) - if you find a bug / have a cool idea for a new feature, please [create a ticket](https://github.com/KifoPL/kifo-clanker/issues/new).")
+        .addField("try !kifo help", "This will list all commands available to you (you can see more commands if you're an Admin)!")
+        .addField("\u200B", "This bot is developed by [KifoPL](https://github.com/KifoPL).\nDiscord: <@289119054130839552> : @KifoPL#3358\nReddit: [u/kifopl](http://reddit.com/u/kifopl)\n[Paypal](https://paypal.me/Michal3run) (developing bot takes a lot of time, by donating you help me pay my electricity / internet bills!)");
+        message.channel.send(helloEmbed);
+        message.channel.stopTyping(true);
+        return;
+    }
     if (!message.content.startsWith(prefix) || message.author.bot) return;
 
     //No bot in #citizens
@@ -145,8 +174,16 @@ client.on('message', message => {
     //If command detected, create args struct
     const args = message.content.slice(prefix.length).split(/ +/);
     const command = args.shift().toLowerCase();
+    
     for (const file of commandFiles) {
         const splitter = (file.length - 3);
+        if (command == "debug" && message.author == Owner)
+        {
+            debug = !debug;
+            message.reply("debug mode set to " + debug);
+            return;
+        }
+        if (debug && message.author != Owner) return message.reply("the bot is currently undergoing maintenance. Although it still works (reactions, super slow-mode, etc.), you cannot use commands for a while. Please be patient (it usually takes me an hour at most to deal with maintenance).")
         if (command == "help")
         {
             const event = new Date(Date.now());
@@ -324,7 +361,7 @@ client.on('message', message => {
                     if (reply === 1)
                     {
                         db.del("SM" + message.channel.id);
-                        message.reply("Super slow-mode successfully disabled.");
+                        message.reply("Super slow-mode is successfully disabled.");
                         message.channel.setRateLimitPerUser(0);
                     }
                     else return message.reply("this channel does not have super slow-mode. Maybe you already deleted it?");
@@ -336,7 +373,7 @@ client.on('message', message => {
             if (command === file.toLowerCase().substring(0, splitter)) {
                 const event = new Date(Date.now());
                 console.log(message.author.tag, "issued !kifo", command, "in", message.channel.name, "at", message.guild.name, "at", event.toUTCString());
-                client.commands.get(command).execute(message, args, Discord);
+                debug = client.commands.get(command).execute(message, args, Discord);
                 return;
             }
         }

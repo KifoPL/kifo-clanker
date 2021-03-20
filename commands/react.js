@@ -20,6 +20,7 @@ module.exports = {
         if (option == "ON")
         {
             if (!args[0]) return message.reply(`Usage: ${this.usage}.`);
+            if (args[22]) return message.reply(`Too many reactions!`);
             let params = [option, emotes];
             message.reply("it's ON!");
             return params;

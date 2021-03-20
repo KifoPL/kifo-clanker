@@ -1,6 +1,6 @@
 module.exports = {
     name: 'help',
-    description: "This command lists all commands. Type !kifo help <command> to see help for specific command.",
+    description: "This command lists all commands. Type !kifo help <command> to see help for a specific command.",
     usage: "!kifo help <optional_command>",
     adminonly: false,
     execute(message, args, Discord) {
@@ -65,8 +65,8 @@ module.exports = {
         const newEmbed = new Discord.MessageEmbed()
         .setColor('a039a0')
         .setTitle('List of ' + i + ' commands, by KifoPL:')
-        .setDescription('Bot is created and developed solely by @KifoPL#3358. If you want to check out source code, click on the title.')
-        .setURL('https://github.com/KifoPL/kifo-clanker')
+        .setDescription('Bot is created and developed solely by @KifoPL#3358. If you want to check out bot documentation, click on the title.')
+        .setURL('https://github.com/KifoPL/kifo-clanker/wiki/')
         .addFields(FieldArr);
 
         message.channel.send(newEmbed);
