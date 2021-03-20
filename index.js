@@ -96,12 +96,22 @@ client.on('message', message => {
                         {
                             db.hget("SM" + message.channel.id, message.author.id, function(err, reply3)
                             {
+                                
                                 if (message.createdTimestamp - reply3 <= slowmode)
                                 {
-                                    let msg = "You can't talk in " + message.channel.name + " for " + ms(slowmode - (message.createdTimestamp - reply3), {long : true}) + ".";
-                                    message.author.send(msg).catch();
-                                    message.delete().catch();
-                                    return;
+                                    if (message.content.trim() == prefix.trim())
+                                    {
+                                        message.author.send(`You can't talk in #${message.channel.id} yet, please wait another ${ms(slowmode - (message.createdTimestamp - reply3), {long : true})}.`).catch();
+                                        message.delete().catch();
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        let msg = "You can't talk in " + message.channel.name + " for " + ms(slowmode - (message.createdTimestamp - reply3), {long : true}) + ". You can check, if you can talk (without risking waiting " + ms(slowmode, {long : true}) + "), by typing **" + prefix.trim() + "**.";
+                                        message.author.send(msg).catch();
+                                        message.delete().catch();
+                                        return;
+                                    }
                                 }
                                 else
                                 {

@@ -37,7 +37,7 @@ module.exports = {
 			.setColor('a039a0')
 			.setTitle(message.guild.name + ` stats: ||also try "!kifo stats me"||`)
 			.setDescription(message.guild.description)
-			.setImage(message.guild.bannerURL())
+			.setImage(message.guild.bannerURL({format: "png", dynamic: true, size: 512}))
 			.setAuthor('Kifo Clanker™, by KifoPL#3358')
 			.setFooter(`Server created at ${message.guild.createdAt.toUTCString()}, it is ${ms(servertime, {long : true})} old (current time: ${time.toUTCString()}).`)
 			.addFields(
@@ -86,13 +86,13 @@ module.exports = {
 			.setColor('a039a0')
 			.setTitle(`${member.displayName} stats:`)
 			//.setDescription(`${member.nickname ?? "none"}`)
-			.setImage(message.guild.bannerURL())
+			.setImage(message.user.displayAvatarURL({format: "png", dynamic: true, size: 512}))
 			.setAuthor('Kifo Clanker™, by KifoPL#3358')
-			.setFooter(`Account created at: ${member.user.createdAt.toUTCString()}\nAccount joined server at: ${member.joinedAt.toUTCString()}\nIt is ${ms(usertime, {long : true})} old\nIt joined server ${ms(membertime, {long : true})} ago (it joined ${ms(member.joinedAt.getTime() - member.user.createdAt.getTime(), {long : true})} after creation).\n${member.joinedAt.getTime() - member.user.createdAt.getTime() < ms("1h") ? `It *could* be an alt.` : `It *probably* isn't alt.`}`)
+			.setFooter(`Account created at: ${member.user.createdAt.toUTCString()}\nAccount joined server at: ${member.joinedAt.toUTCString()}\nIt is ${ms(usertime, {long : true})} old.\nIt joined server ${ms(membertime, {long : true})} ago (it joined ${ms(member.joinedAt.getTime() - member.user.createdAt.getTime(), {long : true})} after creation).\n${member.joinedAt.getTime() - member.user.createdAt.getTime() < ms("1h") ? `It *could* be an alt.` : `It *probably* isn't alt.`}`)
 			.addFields(
 				{name: "Info", value: `<@${member.user.id}>, ${member.nickname == undefined ? "No nickname set" : member.nickname }, AKA ${member.user.tag}.`},
 				{name: `Boost status:`, value: `${member.premiumSince != undefined ? `Boosting since ${member.premiumSince.toUTCString()}, that's ${ms(time - member.premiumSince.getTime(), {long : true})}!` : `Not boosting... ***yet***.`}`},
-				{name: `Roles`, value: `${rolecount} roles, highest role is ${member.roles.highest.name}, hoisted as ${member.roles.hoist.name}.`},
+				{name: `Roles`, value: `${rolecount != 0 ? `${rolecount} roles, highest role is ${member.roles.highest.name}, hoisted as ${member.roles.hoist.name}.` : `This account has no roles yet.`}`},
 				{name: `Status`, value: `User is currently ${member.presence.status}.`},
 				//{name: "Also:", value: `You can check your own stats with "!kifo stats me", or someone else's stats by ${this.usage}`},
 				{name: "More", value: "If you want this command to have more stats, reach out to bot developer (KifoPL#3358)!"}
