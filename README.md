@@ -1,7 +1,30 @@
-# kifo-clanker
-Kifo Clanker is a Discord Bot that helps you manage top posts in channels. "!kifo top" is the strength of this bot for now, but I may add more very useful commands later on. Run "!kifo help" to see list of available commands.
+# Kifo Clanker - When general purpose bots fail, run !kifo
+## Super slow-mode, auto reactions, detailed stats and more!
 
-This bot is in very early stages of development, so some features may be missing, not working, etc..
-If you find any bugs, please notify me on Discord: @KifoPL#3358, or directly here on github.
+Kifo Clanker is a Discord Bot that helps you manage top posts in channels, auto reactions, super slow-mode (Up to 1 year!), and many more. It doesn't feature general commands, like mute, ban, etc. - it's not a general purpose bot, it's *special forces* bot. 
 
-The code is on GNU AGPL v3.0 license.
+This bot is in early stages of development, so some features may be missing, not working, etc..
+If you find any bugs, please notify me on Discord: @KifoPL#3358, or submit a [ticket](https://github.com/KifoPL/kifo-clanker/issues/new).
+
+
+
+*The code is on GNU AGPL v3.0 license.*
+
+~ by [KifoPL](https://github.com/KifoPL)
+
+***
+
+### My socials:
+* [Reddit](http://reddit.com/u/kifopl)
+* [Youtube](https://www.youtube.com/channel/UC4yZgTHfmVDmKlDIhDwVp3w?sub_confirmation=1)
+* [PayPal](https://paypal.me/Michal3run) - *(electricity and internet bills cost a lot of money, donations motivate me to continue my work developing this bot)*
+
+***
+
+
+
+### Do you want to be a part of amazing Star Wars community?
+* Join The Galactic Republic [Discord Server](https://discord.gg/Hhp74va)!
+* Subscribe The Galactic Republic [Youtube channel](https://www.youtube.com/channel/UC8-8TAqa9pr1aTfa5Ei83wg?sub_confirmation=1)!
+* Check out our [subreddit](https://www.reddit.com/r/republicdiscord/)
+* [Wiki](https://tgr-discord-server.fandom.com/wiki/TGR_Discord_Server_Wiki) of our own RP server canon
