@@ -21,11 +21,11 @@ module.exports = {
 			let channelvoicecount = 0;
 			let channeltextcount = 0;
 			let channelcategorycount = 0;
-			await message.guild.members.cache.filter(member => member.user.bot).each(member => {
+			await message.guild.members.cache.each(member => {
 				if (member.user.bot) botcount++;
 			})
-			await message.guild.members.cache.filter(member => member.presence.status != "offline").each(member => onlinecount++);
-			await message.guild.members.cache.each(member => {if (member.premiumSinceTimestamp != undefined) botcount++;})
+			await message.guild.members.cache.filter(member => member.presence.status != "offline" && !member.user.bot).each(member => onlinecount++);
+			await message.guild.members.cache.each(member => {if (member.premiumSinceTimestamp != undefined) boostcount++;})
 			await message.guild.roles.cache.each(member => rolecount++);
 			await message.guild.channels.cache.each(member => channelcount++);
 			await message.guild.channels.cache.filter(channel => channel.type == "voice").each(member => channelvoicecount++);
@@ -92,13 +92,13 @@ module.exports = {
 			.addFields(
 				{name: "Info", value: `<@${member.user.id}>, ${member.nickname == undefined ? "No nickname set" : member.nickname }, AKA ${member.user.tag}.`},
 				{name: `Boost status:`, value: `${member.premiumSince != undefined ? `Boosting since ${member.premiumSince.toUTCString()}, that's ${ms(time - member.premiumSince.getTime(), {long : true})}!` : `Not boosting... ***yet***.`}`},
-				{name: `Roles`, value: `${rolecount != 0 ? `${rolecount} roles, highest role is ${member.roles.highest.name}, hoisted as ${member.roles.hoist.name}.` : `This account has no roles yet.`}`},
+				{name: `Roles`, value: `${rolecount != 0 ? `${rolecount} roles, highest role is ${member.roles?.highest.name}, hoisted as ${member.roles?.hoist.name}.` : `This account has no roles yet.`}`},
 				{name: `Status`, value: `User is currently ${member.presence.status}.`},
 				//{name: "Also:", value: `You can check your own stats with "!kifo stats me", or someone else's stats by ${this.usage}`},
 				{name: "More", value: "If you want this command to have more stats, reach out to bot developer (KifoPL#3358)!"}
 			)
 		}
 		message.channel.send(newEmbed).catch();
-		message.channel.stopTyping();
+		message.channel.stopTyping(true);
     }
 }
