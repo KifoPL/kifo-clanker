@@ -90,9 +90,9 @@ module.exports = {
 			.setAuthor('Kifo Clanker™, by KifoPL#3358')
 			.setFooter(`Account created at: ${member.user.createdAt.toUTCString()}\nAccount joined server at: ${member.joinedAt.toUTCString()}\nIt is ${ms(usertime, {long : true})} old.\nIt joined server ${ms(membertime, {long : true})} ago (it joined ${ms(member.joinedAt.getTime() - member.user.createdAt.getTime(), {long : true})} after creation).\n${member.joinedAt.getTime() - member.user.createdAt.getTime() < ms("1h") ? `It *could* be an alt.` : `It *probably* isn't alt.`}`)
 			.addFields(
-				{name: "Info", value: `<@${member.user.id}>, ${member.nickname == undefined ? "No nickname set" : member.nickname }, AKA ${member.user.tag}.`},
+				{name: "Info", value: `<@${member.user.id}>, ${member.nickname == undefined ? "No nickname set," : `${member.nickname}, AKA` } ${member.user.tag}.`},
 				{name: `Boost status:`, value: `${member.premiumSince != undefined ? `Boosting since ${member.premiumSince.toUTCString()}, that's ${ms(time - member.premiumSince.getTime(), {long : true})}!` : `Not boosting... ***yet***.`}`},
-				{name: `Roles`, value: `${rolecount != 1 ? `${rolecount} roles, highest role is ${member.roles?.highest?.name}, ${member.roles?.hoist?.name == undefined ? `not hoisted.` : `hoisted as ${member.roles?.hoist?.name}`}.` : `This account has no roles yet.`}`},
+				{name: `Roles`, value: `${rolecount != 1 ? `${rolecount} roles, highest role is ${member.roles?.highest?.name}, ${member.roles?.hoist?.name == undefined ? `not hoisted` : `hoisted as ${member.roles?.hoist?.name}`}.` : `This account has no roles yet.`}`},
 				{name: `Status`, value: `User is currently ${member.presence.status}.`},
 				//{name: "Also:", value: `You can check your own stats with "!kifo stats me", or someone else's stats by ${this.usage}`},
 				{name: "More", value: "If you want this command to have more stats, reach out to bot developer (KifoPL#3358)!"}
