@@ -146,6 +146,9 @@ client.on('message', message => {
                 }
             }
         })
+    //No bot in #citizens
+    if (message.channel.id == "707650931809976391") return;
+    if (!message.guild.me.permissions.has("ADMINISTRATOR")) return message.reply("Until I have time to calculate all permissions for individual commands, this bot requires Admin to work.");
     if (message.content.trim() == prefix.trim())
     {
         message.channel.startTyping().catch();
@@ -164,8 +167,7 @@ client.on('message', message => {
     }
     if (!message.content.startsWith(prefix) || message.author.bot) return;
 
-    //No bot in #citizens
-    if (message.channel.id == "707650931809976391") return;
+
     
     //No role and @here and @everyone pings
     if (message.mentions.roles.firstKey() != undefined) return message.reply("no roles in commands!");
