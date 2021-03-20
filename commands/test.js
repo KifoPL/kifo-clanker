@@ -1,6 +1,6 @@
 module.exports = {
     name: 'test',
-    description: 'This is just to test the funcionality of the bot, as well as perms settings.\nUsage: "!kifo test"',
+    description: 'This is just to test the functionality of the bot, as well as perms settings.',
     usage: "!kifo test",
     adminonly: false,
     execute(message, args) {

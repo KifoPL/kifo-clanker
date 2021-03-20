@@ -1,7 +1,7 @@
 module.exports = {
     name: 'cringe',
     description: `Express your feelings to another discord user with this beautiful poem.`,
-    usage: "!kifo cringe <optional_ping>",
+    usage: "!kifo cringe <optional_user>",
     adminonly: false,
     execute(message, args) {
         let reply = "Roses are red,\nViolets are blue,\nYou are cringe.\nSeriously. You're cringe.";
