@@ -36,7 +36,7 @@ module.exports = {
 			newEmbed
 			.setColor('a039a0')
 			.setTitle(message.guild.name + ` stats: ||also try "!kifo stats me"||`)
-			.setDescription(message.guild.description)
+			.setDescription(message.guild.description != null ? message.guild.description : "")
 			.setImage(message.guild.bannerURL({format: "png", dynamic: true, size: 512}))
 			.setAuthor('Kifo Clanker™, by KifoPL#3358')
 			.setFooter(`Server created at ${message.guild.createdAt.toUTCString()}, it is ${ms(servertime, {long : true})} old (current time: ${time.toUTCString()}).`)
@@ -88,7 +88,7 @@ module.exports = {
 			//.setDescription(`${member.nickname ?? "none"}`)
 			.setImage(member.user.displayAvatarURL({format: "png", dynamic: true, size: 512}))
 			.setAuthor('Kifo Clanker™, by KifoPL#3358')
-			.setFooter(`Account created at: ${member.user.createdAt.toUTCString()}\nAccount joined server at: ${member.joinedAt.toUTCString()}\nIt is ${ms(usertime, {long : true})} old.\nIt joined server ${ms(membertime, {long : true})} ago (it joined ${ms(member.joinedAt.getTime() - member.user.createdAt.getTime(), {long : true})} after creation).\n${member.joinedAt.getTime() - member.user.createdAt.getTime() < ms("1h") ? `It *could* be an alt.` : `It *probably* isn't alt.`}`)
+			.setFooter(`Account created at: ${member.user.createdAt.toUTCString()}\nAccount joined server at: ${member.joinedAt.toUTCString()}, ${ms(member.joinedAt.getTime() - member.guild.createdAt.getTime(), {long : true})} after server creation.\nIt is ${ms(usertime, {long : true})} old.\nIt joined server ${ms(membertime, {long : true})} ago (it joined ${ms(member.joinedAt.getTime() - member.user.createdAt.getTime(), {long : true})} after creation).\n${member.joinedAt.getTime() - member.user.createdAt.getTime() < ms("1h") ? `It *could* be an alt.` : `It *probably* isn't alt.`}`)
 			.addFields(
 				{name: "Info", value: `<@${member.user.id}>, ${member.nickname == undefined ? "No nickname set," : `${member.nickname}, AKA` } ${member.user.tag}.`},
 				{name: `Boost status:`, value: `${member.premiumSince != undefined ? `Boosting since ${member.premiumSince.toUTCString()}, that's ${ms(time - member.premiumSince.getTime(), {long : true})}!` : `Not boosting... ***yet***.`}`},
