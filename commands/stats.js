@@ -25,7 +25,7 @@ module.exports = {
 				if (member.user.bot) botcount++;
 			})
 			await message.guild.members.cache.filter(member => member.presence.status != "offline").each(member => onlinecount++);
-			await message.guild.members.cache.filter(member => !isNaN(member.premiumSinceTimestamp)).each(member => boostcount++)
+			await message.guild.members.cache.filter(member => !isNaN(member.premiumSinceTimestamp)).each(member => {if (member.premiumSinceTimestamp != undefined) botcount++;})
 			await message.guild.roles.cache.each(member => rolecount++);
 			await message.guild.channels.cache.each(member => channelcount++);
 			await message.guild.channels.cache.filter(channel => channel.type == "voice").each(member => channelvoicecount++);
@@ -72,6 +72,11 @@ module.exports = {
 						member = message.mentions.members.first();
 					}
 				}
+			}
+			if (member.user.bot)
+			{
+				message.channel.stopTyping(true)
+				return message.reply("you can't check bot stats for now.");
 			}
 			let usertime = time.getTime() - member.user.createdAt.getTime();
 			let membertime = time.getTime() - member.joinedAt.getTime();
