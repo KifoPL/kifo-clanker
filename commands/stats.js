@@ -25,7 +25,7 @@ module.exports = {
 				if (member.user.bot) botcount++;
 			})
 			await message.guild.members.cache.filter(member => member.presence.status != "offline").each(member => onlinecount++);
-			await message.guild.members.cache.filter(member => !isNaN(member.premiumSinceTimestamp)).each(member => {if (member.premiumSinceTimestamp != undefined) botcount++;})
+			await message.guild.members.cache.each(member => {if (member.premiumSinceTimestamp != undefined) botcount++;})
 			await message.guild.roles.cache.each(member => rolecount++);
 			await message.guild.channels.cache.each(member => channelcount++);
 			await message.guild.channels.cache.filter(channel => channel.type == "voice").each(member => channelvoicecount++);
@@ -88,7 +88,7 @@ module.exports = {
 			//.setDescription(`${member.nickname ?? "none"}`)
 			.setImage(message.guild.bannerURL())
 			.setAuthor('Kifo Clanker™, by KifoPL#3358')
-			.setFooter(`Account created at: ${member.user.createdAt.toUTCString()}\nAccount joined server at: ${member.joinedAt.toUTCString()}\nIt is ${ms(usertime, {long : true})} old\nIt joined server ${ms(membertime, {long : true})} ago (current time: ${time.toUTCString()}).`)
+			.setFooter(`Account created at: ${member.user.createdAt.toUTCString()}\nAccount joined server at: ${member.joinedAt.toUTCString()}\nIt is ${ms(usertime, {long : true})} old\nIt joined server ${ms(membertime, {long : true})} ago (it joined ${ms(member.joinedAt.getTime() - member.user.createdAt.getTime(), {long : true})} after creation).\n${member.joinedAt.getTime() - member.user.createdAt.getTime() < ms("1h") ? `It *could* be an alt.` : `It *probably* isn't alt.`}`)
 			.addFields(
 				{name: "Info", value: `<@${member.user.id}>, ${member.nickname == undefined ? "No nickname set" : member.nickname }, AKA ${member.user.tag}.`},
 				{name: `Boost status:`, value: `${member.premiumSince != undefined ? `Boosting since ${member.premiumSince.toUTCString()}, that's ${ms(time - member.premiumSince.getTime(), {long : true})}!` : `Not boosting... ***yet***.`}`},
