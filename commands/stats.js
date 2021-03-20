@@ -86,7 +86,7 @@ module.exports = {
 			.setColor('a039a0')
 			.setTitle(`${member.displayName} stats:`)
 			//.setDescription(`${member.nickname ?? "none"}`)
-			.setImage(message.user.displayAvatarURL({format: "png", dynamic: true, size: 512}))
+			.setImage(member.user.displayAvatarURL({format: "png", dynamic: true, size: 512}))
 			.setAuthor('Kifo Clanker™, by KifoPL#3358')
 			.setFooter(`Account created at: ${member.user.createdAt.toUTCString()}\nAccount joined server at: ${member.joinedAt.toUTCString()}\nIt is ${ms(usertime, {long : true})} old.\nIt joined server ${ms(membertime, {long : true})} ago (it joined ${ms(member.joinedAt.getTime() - member.user.createdAt.getTime(), {long : true})} after creation).\n${member.joinedAt.getTime() - member.user.createdAt.getTime() < ms("1h") ? `It *could* be an alt.` : `It *probably* isn't alt.`}`)
 			.addFields(
