@@ -155,8 +155,9 @@ async function superslow(message) {
 function checks(message)
 {
     //No bot in #citizens
+
     if (message.channel.id == "707650931809976391") return false;
-    
+  
     //Only I can use Offline test
     if (message.content.startsWith(prefix.trim()) && message.guild?.me.id == "796447999747948584" && message.author.id != "289119054130839552") {message.reply("Only KifoPL#3358 can use this bot."); return false;}
 
