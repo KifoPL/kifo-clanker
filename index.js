@@ -1,24 +1,23 @@
-const { timeStamp } = require('console');
+//libraries
 const Discord = require('discord.js');
 require('dotenv')?.config();
-//-------------UNCOMMENT BELOW LINE FOR OFFLINE TEST---------------
-//const config = require('./config.json');
+const fs = require('fs');
+const ms = require('ms');
+const prefix = `${process.env.PREFIX} `;
 
+//client login
 const client = new Discord.Client();
 async function loadowner()
 {
     clientapp = await client.fetchApplication().catch();
     Owner = clientapp.owner;
 }
+
+//DATABASE CONNECTION
 const db = require('redis').createClient(process.env.REDIS_URL);
 db.on('connect', function() {
     console.log('Database online!');
 })
-
-const prefix = `${process.env.PREFIX} `;
-
-const fs = require('fs');
-const ms = require('ms');
 
 client.commands = new Discord.Collection();
 
@@ -32,127 +31,15 @@ for (const file of commandFiles) {
 command = require(`./help.js`);
 client.commands.set(command.name, command);
 
-let debug = false;
-let clientapp;
-//that's @KifoPL#3358
-let Owner;
-
-client.once('ready', () => {
-    console.log('Kifo Clanker is online!');
-
-    loadowner();
-
-    //for WoofWoofWolffe feature
-    client.guilds.fetch('698075892974354482').then(guild => {
-        guild.fetchInvites().then(invites => {
-            WoofInviteCount = invites.find(invite => invite.inviter.id == '376956266293231628').uses;
-        })
-    })
-    //for HaberJordan feature
-    client.guilds.fetch('698075892974354482').then(guild => {
-        guild.fetchInvites().then(invites => {
-            HaberInviteCount = invites.find(invite => invite.inviter.id == '221771499843878912').uses;
-        })
-    })
-});
-
-//USED BY REACT COMMAND
-let reactreturn;
-
-client.on('message', message => {
-
-    //IF CORRECT CHANNEL, REACT
-    db.exists("RT" + message.channel.id, function(err, reply)
-    {
-        if (reply === 1)
-        {
-            if (!message.content.startsWith(prefix))
-            {
-                //It will react to his own messages that have attachments, this is so #kenoc-hall-of-fame looks better
-                if (message.author.id != client.user.id)
-                {
-                    //my bot will also react to r5, to make #server-feedback work.
-                    if (message.author.bot && message.author.id != 204255221017214977) return;
-                }
-                else
-                {
-                    if (message.attachments.first() == null) return;
-                }
-                db.lrange("RT" + message.channel.id, 0, -1, function(err, reply) {
-                for (i = 0; i < reply.length; i++) 
-                {
-                    message.react(reply[i]).catch();
-                    var eventRT = new Date(Date.now());
-                }
-                console.log("Reacted in " + message.guild.name + ", " + message.channel.name + " at " + eventRT.toUTCString());
-                });
-            }
-        }
-    })
-
-    //IF CORRECT CHANNEL, SUPERSLOWMODE
-        db.exists("SM" + message.channel.id, function(err, reply)
-        {
-            if (reply === 1)
-            {
-                if (!(message.member.permissions.has("ADMINISTRATOR")))
-                {
-                    let slowmode;
-                    db.hget("SM" + message.channel.id, "time", function(err, reply2)
-                    {
-                        slowmode = reply2;
-                    })
-                    if (slowmode == 0) return;
-                    db.hexists("SM" + message.channel.id, message.author.id, function(err, reply2)
-                    {
-                        if (reply2 === 1)
-                        {
-                            db.hget("SM" + message.channel.id, message.author.id, function(err, reply3)
-                            {
-                                
-                                if (message.createdTimestamp - reply3 <= slowmode)
-                                {
-                                    if (message.content.trim() == prefix.trim())
-                                    {
-                                        message.author.send(`You can't talk in #${message.channel.id} yet, please wait another ${ms(slowmode - (message.createdTimestamp - reply3), {long : true})}.`).catch();
-                                        message.delete().catch();
-                                        return;
-                                    }
-                                    else
-                                    {
-                                        let msg = "You can't talk in " + message.channel.name + " for " + ms(slowmode - (message.createdTimestamp - reply3), {long : true}) + ". You can check, if you can talk (without risking waiting " + ms(slowmode, {long : true}) + "), by typing **" + prefix.trim() + "**.";
-                                        message.author.send(msg).catch();
-                                        message.delete().catch();
-                                        return;
-                                    }
-                                }
-                                else
-                                {
-                                    if (message.content.trim() == prefix.trim())
-                                    {
-                                        message.author.send(`You can already talk in #${message.channel.id}.`).catch();
-                                        message.delete().catch();
-                                        return;
-                                    }
-                                    else db.hset("SM" + message.channel.id, message.author.id, message.createdTimestamp);
-                                }
-                            })
-                        }
-                        else
-                        {
-                            db.hset("SM" + message.channel.id, message.author.id, message.createdTimestamp);
-                        }
-                    })
-                }
-            }
-        })
-    //No bot in #citizens
-    if (message.channel.id == "707650931809976391") return;
-    //only enters second "If" if first is true, the most optimize way to beg for perms I came up with
-    if (!message.guild.me.permissions.has("ADMINISTRATOR")) if (message.content.startsWith(prefix) && !message.author.bot) return message.reply("Until I have time to calculate all permissions for individual commands, this bot requires Admin to work.");
+//Hello message
+async function hello(message) {
+    //I have to do it here too
     if (message.content.trim() == prefix.trim())
     {
+        if (message.deleted) return;
         message.channel.startTyping().catch();
+        const event = new Date(Date.now());
+            console.log(message.author.tag, "issued !kifo (welcome msg) in", message.channel.name, "at", event.toUTCString());
         const helloEmbed = new Discord.MessageEmbed()
         .setAuthor("Hello there (click for invite link)!", null, "https://discord.com/api/oauth2/authorize?client_id=795638549730295820&permissions=8&scope=applications.commands%20bot")
         .setColor('a039a0')
@@ -166,14 +53,119 @@ client.on('message', message => {
         message.channel.stopTyping(true);
         return;
     }
-    if (!message.content.startsWith(prefix) || message.author.bot) return;
+}
+//can be useful at some point in the future
+// function sleep(ms) {
+//     return new Promise((resolve) => {
+//         setTimeout(resolve, ms);
+//     });
+// }
 
+//IF CORRECT CHANNEL, REACT
+async function react(message) {
+    db.exists("RT" + message.channel.id, function(err, reply)
+    {
+        if (reply === 1)
+        {
+            if (!message.content.startsWith(prefix))
+            {
+                //It will react to his own messages that have attachments, this is so #kenoc-hall-of-fame looks better
+                if (message.author.id != client.user.id)
+                {
+                    if (message.author.bot) return;
+                }
+                else
+                {
+                    if (message.embeds[0] == null) return;
+                }
+                db.lrange("RT" + message.channel.id, 0, -1, function(err, reply) {
+                for (i = 0; i < reply.length; i++) 
+                {
+                    if (message.deleted) return;
+                    message.react(reply[i]).catch();
+                    var eventRT = new Date(Date.now());
+                }
+                console.log("Reacted in " + message.guild.name + ", " + message.channel.name + " at " + eventRT.toUTCString());
+                });
+            }
+        }
+    })
+}
+//IF CORRECT CHANNEL, SUPERSLOWMODE
+async function superslow(message) {
+    db.exists("SM" + message.channel.id, function(err, reply)
+    {
+        if (reply === 1)
+        {
+            if (!(message.member.permissions.has("ADMINISTRATOR")))
+            {
+                let slowmode;
+                db.hget("SM" + message.channel.id, "time", function(err, reply2)
+                {
+                    slowmode = reply2;
+                })
+                if (slowmode == 0) return;
+                db.hexists("SM" + message.channel.id, message.author.id, function(err, reply2)
+                {
+                    if (reply2 === 1)
+                    {
+                        db.hget("SM" + message.channel.id, message.author.id, async function(err, reply3)
+                        {
+                            
+                            if (message.createdTimestamp - reply3 <= slowmode)
+                            {
+                                if (message.content.trim() == prefix.trim())
+                                {
 
+                                    message.author.send(`You can't talk in ${message.channel.name} yet, please wait another ${ms(slowmode - (message.createdTimestamp - reply3), {long : true})}.`).catch();
+                                    await message.delete().catch();
+                                    return;
+                                }
+                                else
+                                {
+                                    //I'm not kidding this msg works, because apparently subtraction forces integer type ¯\_(ツ)_/¯
+                                    let msg = "You can't talk in " + message.channel.name + " for **" + ms(slowmode - (message.createdTimestamp - reply3), {long : true}) + "**. You can check, if you can talk (without risking waiting another " + ms(slowmode - (message.createdTimestamp - reply3) + (message.createdTimestamp - reply3), {long : true}) + "), by typing **" + prefix.trim() + "**.";
+                                    message.author.send(msg).catch();
+                                    await message.delete().catch();
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                if (message.content.trim() == prefix.trim())
+                                {
+                                    message.author.send(`You can already talk in #${message.channel.name}.`).catch();
+                                    await message.delete().catch();
+                                    return;
+                                }
+                                else db.hset("SM" + message.channel.id, message.author.id, message.createdTimestamp);
+                            }
+                        })
+                    }
+                    else
+                    {
+                        db.hset("SM" + message.channel.id, message.author.id, message.createdTimestamp);
+                    }
+                })
+            }
+        }
+    })
+}
+//various checks if we can proceed with commands
+function checks(message)
+{
+    //No bot in #citizens
+    if (message.channel.id == "707650931809976391") return false;
     
-    //No role and @here and @everyone pings
-    if (message.mentions.roles.firstKey() != undefined) return message.reply("no roles in commands!");
-    if (message.mentions.everyone) return message.reply("don't even try pinging...");
+    //Only I can use Offline test
+    if (message.content.startsWith(prefix.trim()) && message.guild?.me.id == "796447999747948584" && message.author.id != "289119054130839552") {message.reply("Only KifoPL#3358 can use this bot."); return false;}
 
+    //Perms beggar, only enters second "If" if first is true, the most optimized way to beg for perms I came up with
+    if (!message.guild?.me.permissions.has("ADMINISTRATOR")) if (message.content.startsWith(prefix) && !message.author.bot) {message.reply("until I have time to calculate all permissions for individual commands, this bot requires Admin to work."); return false;}
+
+    return true;
+}
+async function commands(message) {
     //If command detected, create args struct
     const args = message.content.slice(prefix.length).split(/ +/);
     const command = args.shift().toLowerCase();
@@ -184,6 +176,21 @@ client.on('message', message => {
         {
             debug = !debug;
             message.reply("debug mode set to " + debug);
+            if (debug)
+            {
+
+                client.user.setStatus('dnd').then(() => client.user.setActivity({
+                    name: "The bot is undergoing maintenance, the commands are disabled for now (passive functions still work).",
+                    type: 'PLAYING',
+                }));
+            }
+            else
+            {
+                client.user.setStatus('online').then(() => client.user.setActivity({
+                    name: `Type ${prefix}to interact with the bot! (also Kifo Clanker >>>> Giratina)`,
+                    type: 'PLAYING',
+                }));
+            }
             return;
         }
         if (debug && message.author != Owner) return message.reply("the bot is currently undergoing maintenance. Although it still works (reactions, super slow-mode, etc.), you cannot use commands for a while. Please be patient (it usually takes me an hour at most to deal with maintenance).")
@@ -380,9 +387,71 @@ client.on('message', message => {
                 return;
             }
         }
-        
     }
     message.channel.send("Command not found. Type `!kifo help` for list of commands.").catch();
+}
+async function onmessage(message) {
+
+    react(message).catch();
+    await superslow(message).catch();
+
+    if (message.deleted) return;
+
+    speakcheck = checks(message);
+    
+    if (speakcheck) {
+
+        hello(message).catch();
+    
+        if (!message.content.startsWith(prefix) || message.author.bot) return;
+    
+        //No role and @here and @everyone pings
+        if (message.mentions.roles.firstKey() != undefined) return message.reply("no roles in commands!");
+        if (message.mentions.everyone) return message.reply("don't even try pinging...");
+
+        if (message.content.startsWith(prefix) && message.content.length > prefix.length)
+            commands(message).catch(); 
+    }
+}
+
+let debug;
+let clientapp;
+//that's @KifoPL#3358
+let Owner;
+
+client.once('ready', () => {
+    console.log('Kifo Clanker™ is online!');
+
+    loadowner();
+    debug = false;
+
+    //This line is executed by default, but I'm just making sure the status is online (other factors could change the status)
+    client.user.setStatus('online');
+    client.user.setActivity({
+        name: `Type "${prefix}" to interact with me! (also Kifo Clanker >>>> Giratina)`,
+        type: 'PLAYING',
+    })
+
+    //for WoofWoofWolffe feature
+    client.guilds.fetch('698075892974354482').then(guild => {
+        guild.fetchInvites().then(invites => {
+            WoofInviteCount = invites.find(invite => invite.inviter.id == '376956266293231628').uses;
+        })
+    })
+    //for HaberJordan feature
+    client.guilds.fetch('698075892974354482').then(guild => {
+        guild.fetchInvites().then(invites => {
+            HaberInviteCount = invites.find(invite => invite.inviter.id == '221771499843878912').uses;
+        })
+    })
+});
+
+//USED BY REACT COMMAND
+let reactreturn;
+
+client.on('message', message => {
+    //this allows me to 1. catch stuff and 2. use async
+    onmessage(message).catch(err => {console.log(err)});    
 });
 
 //Code for adding WoofWoof role to members added by WoofWoofWolffe (and for HaberJordan Legion too)

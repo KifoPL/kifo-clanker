@@ -1,7 +1,7 @@
 module.exports = {
     name: 'top',
-    description: "This command lists x messages with most reactions from other channel.\nType 'ping' if you want to mention authors.\nBeware! Due to the way Discord API works, if there are more than 100 messages in your time-span, only the last 100 messages will be checked.",
-    usage: "!top <x> <time_period> <other_channel> <reaction> <optional_ping>",
+    description: "This command lists x messages with most reactions from other channel.\nBeware! Due to the way Discord API works, if there are more than 100 messages in your time-span, only the last 100 messages will be checked.",
+    usage: "!kifo top <x> <time_period> <other_channel> <reaction>",
     //I'm making it admin only because no one else used it anyway.
     adminonly: true,
     async execute(message, args, Discord) {
@@ -16,64 +16,42 @@ module.exports = {
         if (isNaN(ms(args[1]))) return message.reply("incorrect time period. Please specify correct time period.")
         if (ms(args[1]) < ms('10s') || ms(args[1]) > ms('14d')) return message.reply("incorrect amount of time. For the command to work, please input period of time that is between 10 seconds and 14 days.");
         if (message.guild.channels.cache.find(channel => channel.id == args[2].slice(2, 20)) == undefined) return message.reply("channel does not exist. Please input correct channel.");
-        //if !(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("sorry, only Admins can ping authors.");
-        //console.log(message.guild.emojis.cache.find(emojis => emojis.id == args[3].slice(args[3].length-19,args[3].length-1)));
-        //console.log(args[3].slice(args[3].length-19,args[3].length-1));
         if (message.guild.emojis.cache.find(emojis => emojis.id == args[3].slice(args[3].length - 19, args[3].length - 1)) == undefined) return message.reply("this reaction does not exist / is not from this server. Please use only emotes from this server.");
-        let ping = false;
-        if (args[4] != undefined) {
-            if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("sorry, only Admins can ping authors."); else if (args[4] == "ping") ping = true; else return message.reply("type **ping** if you want to ping authors. If not, end the command at emote.");
-        }
+        if (args[4] != undefined) return message.reply(`too many arguments! Use ${this.usage}`);
+        // let ping = false;
+        // if (args[4] != undefined) {
+        //     if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("sorry, only Admins can ping authors."); else if (args[4] == "ping") ping = true; else return message.reply("type **ping** if you want to ping authors. If not, end the command at emote.");
+        // }
+
         let now = Date.now();
         let whichchannel = message.channel.guild.channels.cache.find(channel => channel.id == args[2].slice(2, 20));
         let chmessages = [];
         let key = args[3].slice(args[3].length - 19, args[3].length - 1);
-        //if (whichchannel.messages.resolve(checklimit).createdTimestamp >= now - ms(args[1])) message.channel.send("Warning! Over 100 messages detected. Every message before " + whichchannel.messages.resolve(checklimit).createdTimestamp + " will not be included.");
         await whichchannel.messages.fetch().then(messages => messages.filter(m => now - m.createdTimestamp <= ms(args[1]))).then(messages => messages.filter(m => m.reactions.resolve(key) != undefined)).then(messages => chmessages = messages.array()).catch(err => console.log(err));
         if (!chmessages[0]) return message.reply("no posts found matching criteria. Maybe try longer time period?");
-        //console.log("////////////////////////////chmessages////////////////////////////");
-        //console.log(chmessages);
-        //console.log(chmessages[0].reactions.cache);
         chmessages.sort((a, b) => {
             if (b.reactions.cache.find(reaction => reaction.emoji.id == args[3].slice(args[3].length - 19, args[3].length - 1)) == undefined) {
-                //console.log("b is undefined...");
                 return -1;
             }
             if (a.reactions.cache.find(reaction => reaction.emoji.id == args[3].slice(args[3].length - 19, args[3].length - 1)) == undefined) {
-                //console.log("a is undefined...");
                 return 1;
             }
             return b.reactions.resolve(key).count - a.reactions.resolve(key).count;
         });
-        //console.log(chmessages);
         let loops = 0;
         if (!chmessages[x]) {
             while (chmessages[loops] != undefined) loops++;
         }
         else loops = x;
-        // for (i = 0; i < loops; i++)
-        // {
-        //    console.log("////////////////////////////chmessages" + i + "/////////////////////////////////");
-        //    console.log(chmessages[i]);
-        // }
         let ii = 1;
         let userids = [];
         message.channel.startTyping();
         for (i = 0; i < loops; i++) {
-            if (i > 0 && chmessages[i].reactions.resolve(key).count == chmessages[i - 1].reactions.resolve(key).count) {
-                loops++;
-                ii--;
-                if (!chmessages[loops])
-                {
-                    loops--;
-                } 
-            }
+
             //one person can only get one place.
-            userids.push(chmessages[i].author.id);
-            if (userids.find(userid => userid = chmessages[i].author.id) != undefined)
+            if (userids.find(userid => userid == chmessages[i].author.id) != undefined)
             {
                 loops++;
-                ii--;
                 if (!chmessages[loops])
                 {
                     loops--;
@@ -81,25 +59,40 @@ module.exports = {
             }
             else
             {
-                message.channel.startTyping().catch();
-                if (ping) {
-                    message.channel.send("**Top " + ii + "** by <@" + chmessages[i].author.id + "> with **" + chmessages[i].reactions.resolve(key).count + "** <:" + chmessages[i].reactions.resolve(key).name + ":" + key + ">").catch();
-    
-                } else {
-                    message.channel.send("**Top " + ii + "** by **" + chmessages[i].author.username + "** with **" + chmessages[i].reactions.resolve(key).count + "** <:" + chmessages[i].reactions.resolve(key).name + ":" + key + ">").catch();
+                userids.push(chmessages[i].author.id);
+
+                const newEmbed = new Discord.MessageEmbed()
+                newEmbed.setColor('a039a0');
+                newEmbed.setThumbnail(chmessages[i].author.displayAvatarURL({format: "png", dynamic: true, size: 64}))
+                newEmbed.setAuthor("Powered by !kifo top", message.guild.me?.user?.avatarURL({format: "png", dynamic: true, size: 32}), "https://github.com/KifoPL/kifo-clanker/wiki");
+
+                //if two posts have the same amount of upvotes, they're equal place
+                if (i > 0 && chmessages[i].reactions.resolve(key).count == chmessages[i - 1].reactions.resolve(key).count) {
+                    loops++;
+                    ii--;
+                    if (!chmessages[loops])
+                    {
+                        loops--;
+                    }
                 }
+
                 message.channel.startTyping().catch();
-                if (chmessages[i].content.length > 0) message.channel.send("> ```" + chmessages[i].content + "```");
-                message.channel.startTyping().catch();
+                newEmbed.setTitle("**Top " + ii + "** by **" + chmessages[i].author.username + "** with **" + chmessages[i].reactions.resolve(key).count + "** <:" + chmessages[i].reactions.resolve(key).name + ":" + key + ">");
+
+                if (chmessages[i].content.length > 0)
+                {
+                    newEmbed.setDescription(chmessages[i].content);
+                }
+                
                 if (chmessages[i].attachments.array().length > 0 && chmessages[i].attachments.array()[0] != undefined)
                 {
-                    await message.channel.send(chmessages[i].attachments.array()[0]).catch()
-                    message.channel.send(`Original post: https://discord.com/channels/${chmessages[i].channel.guild.id}/${chmessages[i].channel.id}/${chmessages[i].id}`).catch();
+                    newEmbed.setImage(chmessages[i].attachments.array()[0].url);
                 }
-                else message.channel.send(`Original post: https://discord.com/channels/${chmessages[i].channel.guild.id}/${chmessages[i].channel.id}/${chmessages[i].id}`).catch();
+                newEmbed.setURL(`https://discord.com/channels/${chmessages[i].channel.guild.id}/${chmessages[i].channel.id}/${chmessages[i].id}`)
+                message.channel.send(newEmbed).catch();
+                ii++;
             }
-            ii++;
-            message.channel.startTyping().catch();
+            //message.channel.startTyping().catch();
         }
         message.channel.stopTyping(true);
         if (loops < args[0]) message.channel.send("No more posts with given criteria found.").catch();
