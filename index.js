@@ -171,7 +171,7 @@ async function commands(message) {
     const args = message.content.slice(prefix.length).split(/ +/);
     const command = args.shift().toLowerCase();
     var debug = 'false';
-    db.get('debug', function(err, reply) {
+    await db.get('debug', function(err, reply) {
         debug = reply;
     });
     
