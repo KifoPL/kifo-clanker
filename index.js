@@ -170,7 +170,7 @@ async function commands(message) {
     //If command detected, create args struct
     const args = message.content.slice(prefix.length).split(/ +/);
     const command = args.shift().toLowerCase();
-    var debug = 'true';
+    var debug = 'false';
     db.get('debug', function(err, reply) {
         debug = reply;
     });
