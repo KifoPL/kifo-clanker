@@ -6,13 +6,22 @@ module.exports = {
     async execute(message, args, Discord) {
 		//This is for timestamps
 		const ms = require(`ms`);
+
+		//PRECHECKS
 		if (message.guild == null) return message.reply("you can only run this command on the server.");
 		if (args[1] != undefined) return message.reply("too many arguments!");
 		message.channel.startTyping().catch();
 		const newEmbed = new Discord.MessageEmbed();
 		let time = new Date(Date.now());
+		let guildcount = 0;
+
+		message.client.guilds.cache.each(() => {
+			guildcount++;
+		})
+
         if (args[0] == undefined)
 		{
+			let owner = message.guild.owner;
 			let botcount = 0;
 			let onlinecount = 0;
 			let boostcount = 0;
@@ -36,18 +45,21 @@ module.exports = {
 			newEmbed
 			.setColor('a039a0')
 			.setTitle(message.guild.name + ` stats: ||also try "!kifo stats me"||`)
+			.setThumbnail(message.guild.iconURL({format: "png", dynamic: true, size: 64}))
 			.setDescription(message.guild.description != null ? message.guild.description : "")
 			.setImage(message.guild.bannerURL({format: "png", dynamic: true, size: 512}))
-			.setAuthor('Kifo Clanker™, by KifoPL#3358')
+			.setAuthor(`Kifo Clanker™, helping ${guildcount} servers!`, message.guild.me?.user?.avatarURL({format: "png", dynamic: true, size: 64}), "https://github.com/KifoPL/kifo-clanker/")
 			.setFooter(`Server created at ${message.guild.createdAt.toUTCString()}, it is ${ms(servertime, {long : true})} old (current time: ${time.toUTCString()}).`)
 			.addFields(
-				{name: "Member Count:", value: `Users: ${message.guild.memberCount - botcount} (${onlinecount} online), Bots: ${botcount}, Total: ${message.guild.memberCount}.`},
-				{name: `Boosts status:`, value: `Tier ${message.guild.premiumTier}, thanks to ${message.guild.premiumSubscriptionCount} boosts. ${boostcount} members boosted throughout server's existence.`},
-				{name: `Region`, value: `${message.guild.region}`},
-				{name: `Roles`, value: `${rolecount}`},
-				{name: `Channels`, value: `${channelvoicecount} voice channels, ${channeltextcount} text channels, ${channelcategorycount} categories, Total: ${channelcount}.`},
+				{name: "Member Count:", value: `Users: <:offline:823658022957613076> ${message.guild.memberCount - botcount} (<:online:823658022974521414> ${onlinecount} online), 🤖 Bots: ${botcount}, Total: ${message.guild.memberCount}.`},
+				{name: `Boosts status:`, value: `<:boost:823658698412392449> Tier ${message.guild.premiumTier}, thanks to ${message.guild.premiumSubscriptionCount} boosts. ${boostcount} members boosted throughout server's existence.`},
+				{name: `Region`, value: `${message.guild.region}`, inline: true},
+				{name: `Roles`, value: `<:role:823658022948700240> ${rolecount}`, inline: true},
+				{name: `<:owner:823658022785908737> Owner`, value: `${owner.nickname == undefined ? "No nickname set," : `${owner.nickname}, AKA` } ${owner.user.tag}.`, inline: true},
+				{name: `Channels`, value: `<:voice:823658022684721164> ${channelvoicecount} voice channels, <:textchannel:823658022849085512> ${channeltextcount} text channels, <:category:823658022706217011> ${channelcategorycount} categories, Total: ${channelcount}.`},
+				{name: `\u200B`, value: `\u200B`},
 				//{name: "Also:", value: `You can check your own stats with "!kifo stats me", or someone else's stats by ${this.usage}`},
-				{name: "More", value: "If you want this command to have more stats, reach out to bot developer (KifoPL#3358)!"}
+				{name: "More", value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358)!"}
 			)
 		}
 		else
@@ -87,7 +99,7 @@ module.exports = {
 			.setTitle(`${member.displayName} stats:`)
 			//.setDescription(`${member.nickname ?? "none"}`)
 			.setImage(member.user.displayAvatarURL({format: "png", dynamic: true, size: 512}))
-			.setAuthor('Kifo Clanker™, by KifoPL#3358')
+			.setAuthor('Kifo Clanker™, by KifoPL#3358', message.guild.me?.user?.avatarURL({format: "png", dynamic: true, size: 64}), "https://github.com/KifoPL/kifo-clanker/")
 			.setFooter(`Account created at: ${member.user.createdAt.toUTCString()}\nAccount joined server at: ${member.joinedAt.toUTCString()}, ${ms(member.joinedAt.getTime() - member.guild.createdAt.getTime(), {long : true})} after server creation.\nIt is ${ms(usertime, {long : true})} old.\nIt joined server ${ms(membertime, {long : true})} ago (it joined ${ms(member.joinedAt.getTime() - member.user.createdAt.getTime(), {long : true})} after server creation).\n${member.joinedAt.getTime() - member.user.createdAt.getTime() < ms("1h") ? `It *could* be an alt.` : `It *probably* isn't alt.`}`)
 			.addFields(
 				{name: "Info", value: `<@${member.user.id}>, ${member.nickname == undefined ? "No nickname set," : `${member.nickname}, AKA` } ${member.user.tag}.`},
