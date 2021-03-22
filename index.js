@@ -149,7 +149,7 @@ client.on('message', message => {
     //No bot in #citizens
     if (message.channel.id == "707650931809976391") return;
     //only enters second "If" if first is true, the most optimize way to beg for perms I came up with
-    if (!message.guild.me.permissions.has("ADMINISTRATOR")) if (message.content.startsWith(prefix) && !message.author.bot) return message.reply("Until I have time to calculate all permissions for individual commands, this bot requires Admin to work.");
+    if (!message.guild?.me?.permissions.has("ADMINISTRATOR")) if (message.content.startsWith(prefix) && !message.author.bot) return message.reply("Until I have time to calculate all permissions for individual commands, this bot requires Admin to work.");
     if (message.content.trim() == prefix.trim())
     {
         message.channel.startTyping().catch();
