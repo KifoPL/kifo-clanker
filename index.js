@@ -297,7 +297,7 @@ async function commands(message) {
                     {
                         db.hget("SM" + message.channel.id, "time", function(err, reply2)
                         {
-                            return message.reply("Super slow-mode is already set here to " + ms(reply2, {long : true}));
+                            return message.reply("Super slow-mode is already set here to " + ms(ms(reply2, {long : true})));
                         })
                     }
                     else return message.reply("Super slow-mode is NOT activated. Type " + commandfile.usage + " to set it up.")
