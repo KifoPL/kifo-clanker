@@ -170,14 +170,19 @@ async function commands(message) {
     //If command detected, create args struct
     const args = message.content.slice(prefix.length).split(/ +/);
     const command = args.shift().toLowerCase();
+    var debug = 'true';
+    db.get('debug', function(err, reply) => {
+        debug = reply;
+    });
     
     for (const file of commandFiles) {
         const splitter = (file.length - 3);
         if (command == "debug" && message.author == Owner)
         {
-            debug = !debug;
+            debug == 'true' ? debug = 'false' : debug = 'true';
             message.reply("debug mode set to " + debug);
-            if (debug)
+            db.set('debug', debug);
+            if (debug == 'true')
             {
 
                 client.user.setStatus('dnd').then(() => client.user.setActivity({
@@ -194,7 +199,7 @@ async function commands(message) {
             }
             return;
         }
-        if (debug && message.author != Owner) return message.reply("the bot is currently undergoing maintenance. Although it still works (reactions, super slow-mode, etc.), you cannot use commands for a while. Please be patient (it usually takes me an hour at most to deal with maintenance).")
+        if (debug == 'true' && message.author != Owner) return message.reply("the bot is currently undergoing maintenance. Although it still works (reactions, super slow-mode, etc.), you cannot use commands for a while. Please be patient (it usually takes me an hour at most to deal with maintenance).")
         if (command == "help")
         {
             const event = new Date(Date.now());
