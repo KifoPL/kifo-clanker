@@ -201,6 +201,18 @@ async function commands(message) {
             return;
         }
         if (debug == 'true' && message.author != Owner) return message.reply("the bot is currently undergoing maintenance. Although it still works (reactions, super slow-mode, etc.), you cannot use commands for a while. Please be patient (it usually takes me an hour at most to deal with maintenance).")
+        if (command == 'serverlist' && message.author == Owner)
+        {
+            console.log("run SERVERLIST command");
+            let serversarr = [];
+            let serverembed = new Discord.MessageEmbed();
+            await message.client.guilds.cache.each(guild => {
+                serversarr.push({name: guild.name, value: `<:owner:823658022785908737> ${guild.owner.user.tag}, ${guild.memberCount} members.`});
+            })
+            serverembed.addFields(serversarr).setTitle("Server list:").setFooter(new Date(Date.now()).toUTCString()).setColor('a039a0');
+            message.channel.send(serverembed).catch();
+            return;
+        }
         if (command == "help")
         {
             const event = new Date(Date.now());

@@ -57,8 +57,7 @@ module.exports = {
 				{name: `Roles`, value: `<:role:823658022948700240> ${rolecount}`, inline: true},
 				{name: `<:owner:823658022785908737> Owner`, value: `${owner.nickname == undefined ? "No nickname set," : `${owner.nickname}, AKA` } ${owner.user.tag}.`, inline: true},
 				{name: `Channels`, value: `<:voice:823658022684721164> ${channelvoicecount} voice channels, <:textchannel:823658022849085512> ${channeltextcount} text channels, <:category:823658022706217011> ${channelcategorycount} categories, Total: ${channelcount}.`},
-				{name: `\u200B`, value: `\u200B`},
-				//{name: "Also:", value: `You can check your own stats with "!kifo stats me", or someone else's stats by ${this.usage}`},
+				// {name: `\u200B`, value: `\u200B`},
 				{name: "More", value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358)!"}
 			)
 		}
@@ -93,6 +92,9 @@ module.exports = {
 			let usertime = time.getTime() - member.user.createdAt.getTime();
 			let membertime = time.getTime() - member.joinedAt.getTime();
 			let rolecount = 0;
+			let statusicon;
+			if (member.presence.status == 'online' || member.presence.status == 'idle') statusicon = "<:online:823658022974521414>";
+			else statusicon = "<:offline:823658022957613076>";
 			await (member.roles.cache.each(role => rolecount++));
 			newEmbed
 			.setColor('a039a0')
@@ -102,12 +104,12 @@ module.exports = {
 			.setAuthor('Kifo Clanker™, by KifoPL#3358', message.guild.me?.user?.avatarURL({format: "png", dynamic: true, size: 64}), "https://github.com/KifoPL/kifo-clanker/")
 			.setFooter(`Account created at: ${member.user.createdAt.toUTCString()}\nAccount joined server at: ${member.joinedAt.toUTCString()}, ${ms(member.joinedAt.getTime() - member.guild.createdAt.getTime(), {long : true})} after server creation.\nIt is ${ms(usertime, {long : true})} old.\nIt joined server ${ms(membertime, {long : true})} ago (it joined ${ms(member.joinedAt.getTime() - member.user.createdAt.getTime(), {long : true})} after server creation).\n${member.joinedAt.getTime() - member.user.createdAt.getTime() < ms("1h") ? `It *could* be an alt.` : `It *probably* isn't alt.`}`)
 			.addFields(
-				{name: "Info", value: `<@${member.user.id}>, ${member.nickname == undefined ? "No nickname set," : `${member.nickname}, AKA` } ${member.user.tag}.`},
-				{name: `Boost status:`, value: `${member.premiumSince != undefined ? `Boosting since ${member.premiumSince.toUTCString()}, that's ${ms(time - member.premiumSince.getTime(), {long : true})}!` : `Not boosting... ***yet***.`}`},
-				{name: `Roles`, value: `${rolecount != 1 ? `${rolecount - 1} roles, highest role is ${member.roles?.highest?.name}, ${member.roles?.hoist?.name == undefined ? `not hoisted` : `hoisted as ${member.roles?.hoist?.name}`}.` : `This account has no roles yet.`}`},
-				{name: `Status`, value: `User is currently ${member.presence.status}.`},
+				{name: "Info", value: `<:info:823907804200435713> <@${member.user.id}>, ${member.nickname == undefined ? "No nickname set," : `${member.nickname}, AKA` } ${member.user.tag}.`},
+				{name: `Boost status:`, value: `<:boost:823658698412392449> ${member.premiumSince != undefined ? `Boosting since ${member.premiumSince.toUTCString()}, that's ${ms(time - member.premiumSince.getTime(), {long : true})}!` : `Not boosting... ***yet***.`}`},
+				{name: `Roles`, value: `<:role:823658022948700240> ${rolecount != 1 ? `${rolecount - 1} roles, highest role is ${member.roles?.highest?.name}, ${member.roles?.hoist?.name == undefined ? `not hoisted` : `\nhoisted as <:hoist:823907804141322311> ${member.roles?.hoist?.name}`}.` : `This account has no roles yet.`}`},
+				{name: `Status`, value: `${statusicon} User is currently **${member.presence.status}**.`},
 				//{name: "Also:", value: `You can check your own stats with "!kifo stats me", or someone else's stats by ${this.usage}`},
-				{name: "More", value: "If you want this command to have more stats, reach out to bot developer (KifoPL#3358)!"}
+				{name: "More", value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358)!"}
 			)
 		}
 		message.channel.send(newEmbed).catch();
