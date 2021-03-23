@@ -179,7 +179,7 @@ async function commands(message) {
         const splitter = (file.length - 3);
         if (command == "debug" && message.author == Owner)
         {
-            console.log(`${debug} again`);
+            await sleep(200);
             debug == 'true' ? debug = 'false' : debug = 'true';
             message.reply("debug mode set to " + debug);
             db.set('debug', debug);
