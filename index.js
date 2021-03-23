@@ -55,11 +55,11 @@ async function hello(message) {
     }
 }
 //can be useful at some point in the future
-// function sleep(ms) {
-//     return new Promise((resolve) => {
-//         setTimeout(resolve, ms);
-//     });
-// }
+function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
 
 //IF CORRECT CHANNEL, REACT
 async function react(message) {
@@ -171,7 +171,7 @@ async function commands(message) {
     const args = message.content.slice(prefix.length).split(/ +/);
     const command = args.shift().toLowerCase();
     var debug = 'false';
-    await db.get('debug', function(err, reply) {
+    db.get('debug', function (err, reply) {
         debug = reply;
     });
     
@@ -179,6 +179,7 @@ async function commands(message) {
         const splitter = (file.length - 3);
         if (command == "debug" && message.author == Owner)
         {
+            console.log(`${debug} again`);
             debug == 'true' ? debug = 'false' : debug = 'true';
             message.reply("debug mode set to " + debug);
             db.set('debug', debug);
@@ -416,7 +417,7 @@ async function onmessage(message) {
         if (message.mentions.everyone) return message.reply("don't even try pinging...");
 
         if (message.content.startsWith(prefix) && message.content.length > prefix.length)
-            commands(message).catch(); 
+            commands(message); 
     }
 }
 
