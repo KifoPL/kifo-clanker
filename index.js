@@ -1,5 +1,6 @@
 //libraries
 const Discord = require('discord.js');
+const WOKCommands = require('wokcommands');
 require('dotenv')?.config();
 const fs = require('fs');
 const ms = require('ms');
@@ -438,8 +439,29 @@ let clientapp;
 //that's @KifoPL#3358
 let Owner;
 
+const guildIdTest = '822800862581751848';
+
 client.once('ready', () => {
     console.log('Kifo Clanker™ is online!');
+
+    new WOKCommands(client, {
+        commandsDir: 'commands',
+        testServers: [guildIdTest]
+    }).setBotOwner('289119054130839552')
+    .setCategorySettings([
+        {
+            name: 'Miscellaneous',
+            emoji: '822925174885449738'
+        },
+        {
+            name: 'Measures',
+            emoji: '📐'
+        },
+        {
+            name: 'Admin-only zone',
+            emoji: '🚧'
+        }
+    ])
 
     loadowner();
     debug = false;
