@@ -1,13 +1,12 @@
 //libraries
 const Discord = require('discord.js');
-const WOKCommands = require('wokcommands');
 require('dotenv')?.config();
 const fs = require('fs');
 const ms = require('ms');
 const prefix = `${process.env.PREFIX} `;
 
 //client login
-const client = new Discord.Client();
+const client = new Discord.Client({partials: [`MESSAGE`, `CHANNEL`, `REACTION`]});
 async function loadowner()
 {
     clientapp = await client.fetchApplication().catch();
@@ -45,10 +44,10 @@ async function hello(message) {
         const helloEmbed = new Discord.MessageEmbed()
         .setAuthor("Hello there (click for invite link)!", null, "https://discord.com/api/oauth2/authorize?client_id=795638549730295820&permissions=8&scope=applications.commands%20bot")
         .setColor('a039a0')
-        .setTitle("About me (click for commands list)")
-        .setURL("https://github.com/KifoPL/kifo-clanker/wiki")
+        .setTitle("See what's new! (click for server invite)")
+        .setURL("https://discord.gg/HxUFQCxPFp")
         .setThumbnail(message.guild.me?.user?.avatarURL({format: "png", dynamic: true, size: 64}))
-        .setDescription("Feel free to follow my [repo](https://github.com/KifoPL/kifo-clanker) - if you find a bug / have a cool idea for a new feature, please [create a ticket](https://github.com/KifoPL/kifo-clanker/issues/new).")
+        .addField(`Follow my GitHub repo`,"[LINK](https://github.com/KifoPL/kifo-clanker) - if you find a bug / have a cool idea for a new feature, please [create a ticket](https://github.com/KifoPL/kifo-clanker/issues/new).")
         .addField("try !kifo help", "This will list all commands available to you (you can see more commands if you're an Admin)!")
         .addField("\u200B", "This bot is developed by [KifoPL](https://github.com/KifoPL).\nDiscord: <@289119054130839552> : @KifoPL#3358\nReddit: [u/kifopl](http://reddit.com/u/kifopl)\n[Paypal](https://paypal.me/Michal3run) (developing bot takes a lot of time, by donating you help me pay my electricity / internet bills!)");
         message.channel.send(helloEmbed);
@@ -476,6 +475,20 @@ let reactreturn;
 client.on('message', message => {
     //this allows me to 1. catch stuff and 2. use async
     onmessage(message).catch(err => {console.log(err)});    
+});
+
+//USED BY TODO COMMAND
+client.on('messageReactionAdd', async msgReaction => {
+    let msg = msgReaction.message;
+    if (msg.partial)
+    {
+        await msg.fetch().catch();
+    }
+    if (msg.channel.type == 'dm' && msg.author.bot && !msgReaction.me && msg.embeds[0]?.author?.name == `TODO`)
+    {
+        msg.delete().catch();
+    }
+    else return;
 });
 
 //Code for adding WoofWoof role to members added by WoofWoofWolffe (and for HaberJordan Legion too)
