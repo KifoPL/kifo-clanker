@@ -210,7 +210,7 @@ async function commands(message) {
             await message.client.guilds.cache.each(guild => {
                 serversarr.push({name: guild.name, value: `<:owner:823658022785908737> ${guild.owner.user.tag}, ${guild.memberCount} members.`});
             })
-            serverembed.addFields(serversarr).setTitle("Server list:").setFooter(new Date(Date.now()).toUTCString()).setColor('a039a0');
+            serverembed.addFields(serversarr).setTitle("Server list:").setFooter(`I am in ${serversarr.length} servers as of ${new Date(Date.now()).toUTCString()}`).setColor('a039a0');
             message.channel.send(serverembed).catch();
             return;
         }
