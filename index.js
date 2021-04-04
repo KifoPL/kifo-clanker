@@ -12,6 +12,7 @@ async function loadowner()
 {
     clientapp = await client.fetchApplication().catch();
     Owner = clientapp.owner;
+    console.log("Bot owner object loaded!");
 }
 
 //DATABASE CONNECTION
@@ -443,28 +444,10 @@ const guildIdTest = '822800862581751848';
 
 client.once('ready', () => {
     console.log('Kifo Clanker™ is online!');
-
-    new WOKCommands(client, {
-        commandsDir: 'commands',
-        testServers: [guildIdTest]
-    }).setBotOwner('289119054130839552')
-    .setCategorySettings([
-        {
-            name: 'Miscellaneous',
-            emoji: '822925174885449738'
-        },
-        {
-            name: 'Measures',
-            emoji: '📐'
-        },
-        {
-            name: 'Admin-only zone',
-            emoji: '🚧'
-        }
-    ])
-
     loadowner();
     debug = false;
+
+    //DELETING SLASH COMMANDS CODE FOR NOW, I tried using prebuilt API, but it was "too" prebuild and it didn't fit my bot at all. Will have to do stuff manually...
 
     //This line is executed by default, but I'm just making sure the status is online (other factors could change the status)
     client.user.setStatus('online');
