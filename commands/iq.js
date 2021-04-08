@@ -64,7 +64,7 @@ module.exports = {
 			else
 				comment = "Your brain is so big it can't fit through the door.";
 		} else {
-			reply = "420";
+			reply = "420 IQ";
 			comment = `Yeah, this is big brain time.`;
 		}
 		//console.log(userid, iq, comment);
