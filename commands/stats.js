@@ -210,7 +210,7 @@ module.exports = {
 						member.joinedAt.getTime() -
 							member.user.createdAt.getTime(),
 						{ long: true }
-					)} after server creation).\n${
+					)} after account creation).\n${
 						member.joinedAt.getTime() -
 							member.user.createdAt.getTime() <
 						ms("1h")
