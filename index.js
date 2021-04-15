@@ -246,13 +246,12 @@ function checks(message) {
 
 	if (message.channel.id == "707650931809976391") return false;
 
-	//Only I can use Offline test
+	//Only me and @Tester can use Offline test
 	if (
 		message.content.startsWith(prefix.trim()) &&
-		message.guild?.me.id == "796447999747948584" &&
-		message.author.id != "289119054130839552"
-	) {
-		message.reply("Only KifoPL#3358 can use this bot.");
+		message.guild?.me.id == "796447999747948584"
+	) if (message.author.id != "289119054130839552" && message.member?.roles.cache.find(role => role.id == "832194217493135400") == undefined) {
+		message.reply("Only KifoPL#3358 and testers can use this bot.");
 		return false;
 	}
 
@@ -312,7 +311,7 @@ async function commands(message) {
 			await message.client.guilds.cache.each((guild) => {
 				serversarr.push({
 					name: guild.name,
-					value: `<:owner:823658022785908737> ${guild.owner.user.tag}, ${guild.memberCount} members.`,
+					value: `<:owner:823658022785908737> ${guild.owner.user.tag}, ${guild.memberCount} members. ${guild.available ? '<:online:823658022974521414>' : '<:offline:823658022957613076> OUTAGE!'}`,
 				});
 			});
 			serverembed

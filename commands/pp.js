@@ -3,12 +3,13 @@ module.exports = {
 	description: `Measure your PP length with this totally reliable pp length calculator. Each user has his own constant pp length (like irl), it's not random.`,
 	usage: "!kifo pp <optional_user>",
 	adminonly: false,
-	execute(message, args, Discord) {
+	execute(message, args, Discord, isStats = false, userID = 0) {
 		let userid = 0;
 		let pplen = 0;
 		let pp = "8";
 		let Troll = false;
 		let ppvalue = "";
+		if (userID != 0) args[0] = userID;
 		if (args[0]) {
 			if (!isNaN(args[0])) {
 				//console.log(message.guild.members.resolve(args[0]));
@@ -51,10 +52,12 @@ module.exports = {
 			pp = "8==============================D";
 			ppvalue = "69 cm";
 		}
+		const field = {name: pp, value: ppvalue};
+		if (isStats) return field;
 		const newEmbed = new Discord.MessageEmbed()
 			.setColor("a039a0")
 			.setTitle(username + "'s PP:")
-			.addFields({ name: pp, value: ppvalue });
+			.addFields(field);
 		message.channel.send(newEmbed).catch();
 	},
 };

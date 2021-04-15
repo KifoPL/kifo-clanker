@@ -3,12 +3,13 @@ module.exports = {
 	description: `A very quick and accurate IQ test.`,
 	usage: "!kifo iq <optional_user>",
 	adminonly: false,
-	execute(message, args, Discord) {
+	execute(message, args, Discord, isStats = false, userID = 0) {
 		let userid = 0;
 		let iq = 0;
 		let reply = "";
 		let comment = "";
 		let Troll = false;
+		if (userID != 0) args[0] = userID;
 		if (args[0]) {
 			if (!isNaN(args[0])) {
 				//console.log(message.guild.members.resolve(args[0]));
@@ -52,7 +53,7 @@ module.exports = {
 			else if (iq < 150)
 				comment = "Deathsticks' dealer would be proud of you.";
 			else if (iq < 175)
-				comment = "You are reaching an IQ level of chimpanzee";
+				comment = "You are reaching an IQ level of chimpanzee.";
 			else if (iq < 200)
 				comment = "Taking IQ test twice doesn't add the result.";
 			else if (iq < 225)
@@ -69,6 +70,8 @@ module.exports = {
 		}
 		//console.log(userid, iq, comment);
 
+		const returnField = {name: reply, value: comment};
+		if (isStats) return returnField;
 		const newEmbed = new Discord.MessageEmbed()
 			.setColor("a039a0")
 			.setTitle(username + "'s IQ level is:")

@@ -3,12 +3,13 @@ module.exports = {
 	description: `A quick test to find out your gayness level.`,
 	usage: "!kifo howgay <optional_user>",
 	adminonly: false,
-	execute(message, args, Discord) {
+	execute(message, args, Discord, isStats = false, userID = 0) {
 		let userid = 0;
 		let howgay = 0;
 		let reply = "";
 		let comment = "";
 		let Troll = false;
+		if (userID != 0) args[0] = userID;
 		if (args[0]) {
 			if (!isNaN(args[0])) {
 				//console.log(message.guild.members.resolve(args[0]));
@@ -74,10 +75,12 @@ module.exports = {
 		}
 		//console.log(userid, howgay, comment);
 
+		const returnField = {name: reply, value: comment};
+		if (isStats) return returnField;
 		const newEmbed = new Discord.MessageEmbed()
 			.setColor("a039a0")
 			.setTitle(username + "'s gay level is:")
-			.addFields({ name: reply, value: comment });
+			.addField(returnField);
 		message.channel.send(newEmbed).catch();
 	},
 };
