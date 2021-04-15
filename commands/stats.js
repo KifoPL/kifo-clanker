@@ -555,7 +555,7 @@ module.exports = {
 							inline: true,
 						},
 						{
-							name: `Is mentionable by anyone?`,
+							name: `Is mentionable by everyone?`,
 							value: `${entity.mentionable ? "Yes." : "No."}`,
 							inline: true,
 						},
