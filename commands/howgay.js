@@ -80,7 +80,7 @@ module.exports = {
 		const newEmbed = new Discord.MessageEmbed()
 			.setColor("a039a0")
 			.setTitle(username + "'s gay level is:")
-			.addField(returnField);
+			.addField({name: reply, value: comment});
 		message.channel.send(newEmbed).catch();
 	},
 };
