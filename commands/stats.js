@@ -411,7 +411,7 @@ module.exports = {
 						"https://github.com/KifoPL/kifo-clanker/"
 					)
 					.setFooter(
-						`Bot created at: ${entity.user.createdAt.toUTCString()}\Bot joined server at: ${entity.joinedAt.toUTCString()}, ${ms(
+						`Bot created at: ${entity.user.createdAt.toUTCString()}\nBot joined server at: ${entity.joinedAt.toUTCString()}, ${ms(
 							entity.joinedAt.getTime() -
 								entity.guild.createdAt.getTime(),
 							{ long: true }
@@ -510,10 +510,10 @@ module.exports = {
 						"https://github.com/KifoPL/kifo-clanker/"
 					)
 					.setFooter(
-						`Role created at: ${entity.createdAt.toUTCString()}, ${ms(
-							rolecreationAt
+						`Role created at: ${entity.createdAt.toUTCString()} - ${ms(
+							rolecreationAt, {long: true}
 						)} ago, ${ms(
-							entity.createdAt - message.guild.createdAt
+							entity.createdAt - message.guild.createdAt, {long: true}
 						)} after server creation.`
 					)
 					.addFields(
