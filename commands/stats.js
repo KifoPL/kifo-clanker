@@ -561,7 +561,7 @@ module.exports = {
 						},
 						{
 							name: `Permissions:`,
-							value: `${strperms}`,
+							value: `${strperms.length != 0 ? strperms : "none"}`,
 						},
 						//{name: "Also:", value: `You can check your own stats with "!kifo stats me", or someone else's stats by ${this.usage}`},
 						{
