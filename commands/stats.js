@@ -572,6 +572,7 @@ module.exports = {
 					);
 			}
 			else if (whatami == "channel") {
+				message.channel.stopTyping(true);
 				return message.reply("channel stats will be implemented one day.");
 			}
 		}
