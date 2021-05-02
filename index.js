@@ -30,14 +30,16 @@ db.on("connect", function () {
 
 client.commands = new Discord.Collection();
 
-const commandFiles = fs
-	.readdirSync("./commands/")
-	.filter((file) => file.endsWith(".js"));
-for (const file of commandFiles) {
-	const command = require(`./commands/${file}`);
-
-	client.commands.set(command.name, command);
-	console.log(file);
+const commandFolders = fs.readdirSync("./commands");
+for (const folder of commandFolders) {
+	const commandFiles = fs
+		.readdirSync(`./commands/${folder}`)
+		.filter((file) => file.endsWith(".js"));
+	for (const file of commandFiles) {
+		const command = require(`./commands/${folder}/${file}`);
+		client.commands.set(command.name, command);
+		console.log(file);
+	}
 }
 command = require(`./help.js`);
 client.commands.set(command.name, command);
@@ -250,10 +252,16 @@ function checks(message) {
 	if (
 		message.content.startsWith(prefix.trim()) &&
 		message.guild?.me.id == "796447999747948584"
-	) if (message.author.id != "289119054130839552" && message.member?.roles.cache.find(role => role.id == "832194217493135400") == undefined) {
-		message.reply("Only KifoPL#3358 and testers can use this bot.");
-		return false;
-	}
+	)
+		if (
+			message.author.id != "289119054130839552" &&
+			message.member?.roles.cache.find(
+				(role) => role.id == "832194217493135400"
+			) == undefined
+		) {
+			message.reply("Only KifoPL#3358 and testers can use this bot.");
+			return false;
+		}
 
 	//Perms beggar, only enters second "If" if first is true, the most optimized way to beg for perms I came up with
 	if (!message.guild?.me.permissions.has("ADMINISTRATOR"))
@@ -275,392 +283,409 @@ async function commands(message) {
 		debug = reply;
 	});
 
-	for (const file of commandFiles) {
-		const splitter = file.length - 3;
-		if (command == "debug" && message.author == Owner) {
-			await sleep(200);
-			debug == "true" ? (debug = "false") : (debug = "true");
-			message.reply("debug mode set to " + debug);
-			db.set("debug", debug);
-			if (debug == "true") {
-				client.user.setStatus("dnd").then(() =>
-					client.user.setActivity({
-						name:
-							"The bot is undergoing maintenance, the commands are disabled for now (passive functions still work).",
-						type: "PLAYING",
-					})
-				);
-			} else {
-				client.user.setStatus("online").then(() =>
-					client.user.setActivity({
-						name: `Type ${prefix}to interact with the bot! (also Kifo Clanker >>>> Giratina)`,
-						type: "PLAYING",
-					})
+	if (!client.commands.has(command)) {
+		const embedreply = new Discord.MessageEmbed();
+		embedreply
+			.setColor("a039a0")
+			.setAuthor(
+				"Powered by Kifo Clanker™",
+				null,
+				`https://discord.gg/HxUFQCxPFp`
+			)
+			.setTitle(`Command ${this.name} issued by ${message.author.tag}`)
+			.addField(
+				`Command ${command} not found.`,
+				`Run ${prefix.trim()} help to get list of available commands.`
+			);
+		return message.channel.send(embedreply);
+	}
+
+	if (command == "debug" && message.author == Owner) {
+		await sleep(200);
+		debug == "true" ? (debug = "false") : (debug = "true");
+		message.reply("debug mode set to " + debug);
+		db.set("debug", debug);
+		if (debug == "true") {
+			client.user.setStatus("dnd").then(() =>
+				client.user.setActivity({
+					name:
+						"The bot is undergoing maintenance, the commands are disabled for now (passive functions still work).",
+					type: "PLAYING",
+				})
+			);
+		} else {
+			client.user.setStatus("online").then(() =>
+				client.user.setActivity({
+					name: `Type ${prefix}to interact with the bot! (also Kifo Clanker >>>> Giratina)`,
+					type: "PLAYING",
+				})
+			);
+		}
+		return;
+	}
+	if (debug == "true" && message.author != Owner)
+		return message.reply(
+			"the bot is currently undergoing maintenance. Although it still works (reactions, super slow-mode, etc.), you cannot use commands for a while. Please be patient (it usually takes me an hour at most to deal with maintenance)."
+		);
+	if (command == "serverlist" && message.author == Owner) {
+		console.log("run SERVERLIST command");
+		let serversarr = [];
+		let serverembed = new Discord.MessageEmbed();
+		await message.client.guilds.cache.each((guild) => {
+			serversarr.push({
+				name: guild.name,
+				value: `<:owner:823658022785908737> ${guild.owner.user.tag}, ${
+					guild.memberCount
+				} members. ${
+					guild.available
+						? "<:online:823658022974521414>"
+						: "<:offline:823658022957613076> OUTAGE!"
+				}`,
+			});
+		});
+		serverembed
+			.addFields(serversarr)
+			.setTitle("Server list:")
+			.setFooter(
+				`I am in ${serversarr.length} servers as of ${new Date(
+					Date.now()
+				).toUTCString()}`
+			)
+			.setColor("a039a0");
+		message.channel.send(serverembed).catch();
+		return;
+	}
+	if (command == "help") {
+		const event = new Date(Date.now());
+		console.log(
+			message.author.tag,
+			"issued !kifo",
+			command,
+			"in",
+			message.channel.name,
+			"at",
+			event.toUTCString()
+		);
+		client.commands.get(command).execute(message, args, Discord);
+		return;
+	} else if (command == "error") {
+		const event = new Date(Date.now());
+		console.log(
+			message.author.tag,
+			"issued !kifo",
+			command,
+			"in",
+			message.channel.name,
+			"at",
+			message.guild.name,
+			"at",
+			event.toUTCString()
+		);
+		client.commands.get(command).execute(message, args, Discord, client);
+		return;
+	} else if (command == "react") {
+		const command2 = require(`./commands/best/react.js`);
+		if (!message.member.permissions.has("ADMINISTRATOR"))
+			return message.reply("This is ADMIN ONLY command.");
+		if (!args[0]) {
+			db.exists("RT" + message.channel.id, function (err, reply) {
+				if (reply === 1) {
+					db.hget(
+						"RT" + message.channel.id,
+						"time",
+						function (err, reply2) {
+							return message.reply("react is already ON!");
+						}
+					);
+				} else return message.reply("react is OFF. Type " + command2.usage + " to set it up.");
+			});
+			//just in case
+			return;
+		}
+		const event = new Date(Date.now());
+		console.log(
+			message.author.tag,
+			"issued !kifo",
+			command,
+			"in",
+			message.channel.name,
+			"at",
+			message.guild.name,
+			"at",
+			event.toUTCString()
+		);
+		if (args[0].toUpperCase() == "LIST") {
+			var FieldReactChannels = { name: "name", value: "description" };
+			const newReactChannelsEmbed = new Discord.MessageEmbed()
+				.setColor("a039a0")
+				.setAuthor("Powered by Kifo Clanker™")
+				.setTitle("List of channels, where command is active:");
+			await message.guild.channels.cache
+				.each(async (channel) => {
+					await db.exists(
+						"RT" + channel.id,
+						async function (err, reply) {
+							if (reply === 1) {
+								await db.lrange(
+									"RT" + channel.id,
+									0,
+									-1,
+									async function (err, reply) {
+										await message.channel.send(
+											"<#" + channel.id + ">: " + reply
+										); //TODO fix it someday
+										newReactChannelsEmbed.addField(
+											`#${channel.name}`,
+											`${reply}`
+										);
+										//console.log(`1 ${newReactChannelsEmbed.fields.toString()}`)
+									}
+								);
+								//console.log(`2 ${newReactChannelsEmbed.fields.toString()}`)
+							}
+						}
+					);
+				})
+				.then(message.channel.send(newReactChannelsEmbed));
+			//console.log(newReactChannelsEmbed);
+			//message.channel.send(newReactChannelsEmbed);
+			//message.channel.send("End of list!");
+			return;
+		}
+		reactreturn = client.commands
+			.get(command)
+			.execute(message, args, Discord, client);
+		if (reactreturn[0] == "ON") {
+			//channellist.set(message.channel.id, message.channel);
+			let arrout = reactreturn[1];
+			for (i = 0; i < arrout.length; i++) {
+				db.rpush(
+					["RT" + message.channel.id, arrout[i]],
+					function (err, reply) {}
 				);
 			}
-			return;
-		}
-		if (debug == "true" && message.author != Owner)
-			return message.reply(
-				"the bot is currently undergoing maintenance. Although it still works (reactions, super slow-mode, etc.), you cannot use commands for a while. Please be patient (it usually takes me an hour at most to deal with maintenance)."
+			console.log(
+				"I will now react in " +
+					message.channel.name +
+					" with " +
+					arrout
 			);
-		if (command == "serverlist" && message.author == Owner) {
-			console.log("run SERVERLIST command");
-			let serversarr = [];
-			let serverembed = new Discord.MessageEmbed();
-			await message.client.guilds.cache.each((guild) => {
-				serversarr.push({
-					name: guild.name,
-					value: `<:owner:823658022785908737> ${guild.owner.user.tag}, ${guild.memberCount} members. ${guild.available ? '<:online:823658022974521414>' : '<:offline:823658022957613076> OUTAGE!'}`,
-				});
+		} else if (reactreturn[0] == "OFF") {
+			//channellist.delete(message.channel.id);
+			db.del("RT" + message.channel.id);
+		}
+		return;
+	} else if (command == "superslow") {
+		//DB structure:
+		// "SM" + channel id
+		// {
+		//     time: ms(time)
+		//     userid: timestamp
+		//     userid: timestamp
+		// }
+
+		const embedsuperslowreply = new Discord.MessageEmbed();
+		embedsuperslowreply
+			.setColor("a039a0")
+			.setAuthor(
+				"Powered by Kifo Clanker™",
+				null,
+				`https://discord.gg/HxUFQCxPFp`
+			)
+			.setTitle(
+				`Command "${this.name.toUpperCase()}" issued by ${
+					message.author.tag
+				}`
+			);
+
+		const commandfile = require(`./commands/best/superslow.js`);
+		if (!message.member.permissions.has("ADMINISTRATOR"))
+			return message.reply("This is ADMIN ONLY command.");
+		if (!args[0]) {
+			db.exists("SM" + message.channel.id, function (err, reply) {
+				if (reply === 1) {
+					db.hget(
+						"SM" + message.channel.id,
+						"time",
+						function (err, reply2) {
+							embedsuperslowreply
+								.setTitle("Result:")
+								.setDescription(
+									"Super slow-mode is already set here to " +
+										ms(ms(reply2, { long: true }))
+								);
+							return message.reply(embedsuperslowreply);
+						}
+					);
+				} else {
+					embedsuperslowreply
+						.setTitle("Result:")
+						.setDescription(
+							"Super slow-mode is NOT activated.\nType " +
+								commandfile.usage +
+								" to set it up."
+						);
+					return message.reply(embedsuperslowreply);
+				}
 			});
-			serverembed
-				.addFields(serversarr)
-				.setTitle("Server list:")
-				.setFooter(
-					`I am in ${serversarr.length} servers as of ${new Date(
-						Date.now()
-					).toUTCString()}`
-				)
-				.setColor("a039a0");
-			message.channel.send(serverembed).catch();
+			//just in case
 			return;
 		}
-		if (command == "help") {
-			const event = new Date(Date.now());
-			console.log(
-				message.author.tag,
-				"issued !kifo",
-				command,
-				"in",
-				message.channel.name,
-				"at",
-				event.toUTCString()
-			);
-			client.commands.get(command).execute(message, args, Discord);
-			return;
-		} else if (command == "error") {
-			const event = new Date(Date.now());
-			console.log(
-				message.author.tag,
-				"issued !kifo",
-				command,
-				"in",
-				message.channel.name,
-				"at",
-				message.guild.name,
-				"at",
-				event.toUTCString()
-			);
-			client.commands
-				.get(command)
-				.execute(message, args, Discord, client);
-			return;
-		} else if (command == "react") {
-			const command2 = require(`./commands/react.js`);
-			if (!message.member.permissions.has("ADMINISTRATOR"))
-				return message.reply("This is ADMIN ONLY command.");
-			if (!args[0]) {
-				db.exists("RT" + message.channel.id, function (err, reply) {
+		const event = new Date(Date.now());
+		console.log(
+			message.author.tag,
+			"issued !kifo",
+			command,
+			"in",
+			message.channel.name,
+			"at",
+			message.guild.name,
+			"at",
+			event.toUTCString()
+		);
+		if (args[0]?.toUpperCase() == "LIST") {
+			var FieldReactChannels = { name: "name", value: "description" };
+			const newReactChannelsEmbed = new Discord.MessageEmbed()
+				.setColor("a039a0")
+				.setTitle("List of channels, where command is active:");
+			message.guild.channels.cache.each((channel) => {
+				db.exists("SM" + channel.id, function (err, reply) {
 					if (reply === 1) {
 						db.hget(
-							"RT" + message.channel.id,
+							"SM" + channel.id,
 							"time",
 							function (err, reply2) {
-								return message.reply("react is already ON!");
+								message.channel.send(
+									"<#" +
+										channel.id +
+										">: " +
+										ms(reply2, { long: true })
+								); //TODO fix it someday
 							}
 						);
-					} else return message.reply("react is OFF. Type " + command2.usage + " to set it up.");
+						var FieldReactChannels = {};
+						FieldReactChannels.name = "#" + channel.name;
+						FieldReactChannels.value = "Super slow-mode ON.";
+						newReactChannelsEmbed.addField(
+							FieldReactChannels.name,
+							FieldReactChannels.value
+						);
+						//console.log(newReactChannelsEmbed.fields);
+					}
 				});
-				//just in case
-				return;
-			}
-			const event = new Date(Date.now());
-			console.log(
-				message.author.tag,
-				"issued !kifo",
-				command,
-				"in",
-				message.channel.name,
-				"at",
-				message.guild.name,
-				"at",
-				event.toUTCString()
-			);
-			if (args[0].toUpperCase() == "LIST") {
-				var FieldReactChannels = { name: "name", value: "description" };
-				const newReactChannelsEmbed = new Discord.MessageEmbed()
-					.setColor("a039a0")
-					.setAuthor("Powered by Kifo Clanker™")
-					.setTitle("List of channels, where command is active:");
-				await message.guild.channels.cache
-					.each(async (channel) => {
-						await db.exists(
-							"RT" + channel.id,
-							async function (err, reply) {
-								if (reply === 1) {
-									await db.lrange(
-										"RT" + channel.id,
-										0,
-										-1,
-										async function (err, reply) {
-											await message.channel.send(
-												"<#" +
-													channel.id +
-													">: " +
-													reply
-											); //TODO fix it someday
-											newReactChannelsEmbed.addField(
-												`#${channel.name}`,
-												`${reply}`
-											);
-											//console.log(`1 ${newReactChannelsEmbed.fields.toString()}`)
-										}
-									);
-									//console.log(`2 ${newReactChannelsEmbed.fields.toString()}`)
-								}
-							}
-						);
-					})
-					.then(message.channel.send(newReactChannelsEmbed));
-				//console.log(newReactChannelsEmbed);
-				//message.channel.send(newReactChannelsEmbed);
-				//message.channel.send("End of list!");
-				return;
-			}
-			reactreturn = client.commands
-				.get(command)
-				.execute(message, args, Discord, client);
-			if (reactreturn[0] == "ON") {
-				//channellist.set(message.channel.id, message.channel);
-				let arrout = reactreturn[1];
-				for (i = 0; i < arrout.length; i++) {
-					db.rpush(
-						["RT" + message.channel.id, arrout[i]],
-						function (err, reply) {}
-					);
-				}
-				console.log(
-					"I will now react in " +
-						message.channel.name +
-						" with " +
-						arrout
-				);
-			} else if (reactreturn[0] == "OFF") {
-				//channellist.delete(message.channel.id);
-				db.del("RT" + message.channel.id);
-			}
+			});
+			//console.log(newReactChannelsEmbed);
+			message.channel.send(newReactChannelsEmbed);
+			message.channel.send("End of list!");
 			return;
-		} else if (command == "superslow") {
-			//DB structure:
-			// "SM" + channel id
-			// {
-			//     time: ms(time)
-			//     userid: timestamp
-			//     userid: timestamp
-			// }
-
-			const embedsuperslowreply = new Discord.MessageEmbed();
-			embedsuperslowreply
-				.setColor("a039a0")
-				.setAuthor(
-					"Powered by Kifo Clanker™",
-					null,
-					`https://discord.gg/HxUFQCxPFp`
-				)
-                .setTitle(`Command "${this.name.toUpperCase()}" issued by ${message.author.tag}`);
-
-			const commandfile = require(`./commands/superslow.js`);
-			if (!message.member.permissions.has("ADMINISTRATOR"))
-				return message.reply("This is ADMIN ONLY command.");
-			if (!args[0]) {
-				db.exists("SM" + message.channel.id, function (err, reply) {
+		}
+		//[0] - isOff, [1] - ms(args[0])
+		superslowreturn = client.commands
+			.get(command)
+			.execute(message, args, Discord, client);
+		if (superslowreturn == null) return;
+		//Just making sure lmao
+		if (superslowreturn[0] == undefined) return;
+		if (!superslowreturn[0]) {
+			db.hexists(
+				"SM" + message.channel.id,
+				"time",
+				function (err, reply) {
 					if (reply === 1) {
 						db.hget(
 							"SM" + message.channel.id,
 							"time",
-							function (err, reply2) {
+							function (err, timestamp) {
+								if (timestamp == superslowreturn[1]) {
+									embedsuperslowreply
+										.setTitle("Result:")
+										.setDescription(
+											"it's already set to " +
+												ms(superslowreturn[1], {
+													long: true,
+												}) +
+												"!"
+										);
+									return message.reply(embedsuperslowreply);
+								}
+								db.hset(
+									"SM" + message.channel.id,
+									"time",
+									superslowreturn[1]
+								);
 								embedsuperslowreply
 									.setTitle("Result:")
 									.setDescription(
-										"Super slow-mode is already set here to " +
-											ms(ms(reply2, { long: true }))
+										"Super slow-mode was already activated. It is now set to " +
+											ms(superslowreturn[1], {
+												long: true,
+											})
 									);
 								return message.reply(embedsuperslowreply);
 							}
 						);
 					} else {
+						db.hmset("SM" + message.channel.id, {
+							time: superslowreturn[1],
+						});
 						embedsuperslowreply
 							.setTitle("Result:")
 							.setDescription(
-								"Super slow-mode is NOT activated.\nType " +
-									commandfile.usage +
-									" to set it up."
+								"set Super slow-mode to " +
+									ms(superslowreturn[1], { long: true }) +
+									"."
 							);
-						return message.reply(embedsuperslowreply);
+						message.reply(embedsuperslowreply);
+						//This is to notify users of Super slow-mode active in the channel.
+						message.channel.setRateLimitPerUser(10);
+						return;
 					}
-				});
-				//just in case
-				return;
-			}
-			const event = new Date(Date.now());
-			console.log(
-				message.author.tag,
-				"issued !kifo",
-				command,
-				"in",
-				message.channel.name,
-				"at",
-				message.guild.name,
-				"at",
-				event.toUTCString()
+				}
 			);
-			if (args[0]?.toUpperCase() == "LIST") {
-				var FieldReactChannels = { name: "name", value: "description" };
-				const newReactChannelsEmbed = new Discord.MessageEmbed()
-					.setColor("a039a0")
-					.setTitle("List of channels, where command is active:");
-				message.guild.channels.cache.each((channel) => {
-					db.exists("SM" + channel.id, function (err, reply) {
-						if (reply === 1) {
-							db.hget(
-								"SM" + channel.id,
-								"time",
-								function (err, reply2) {
-									message.channel.send(
-										"<#" +
-											channel.id +
-											">: " +
-											ms(reply2, { long: true })
-									); //TODO fix it someday
-								}
+		} else if (superslowreturn[0]) {
+			db.hexists(
+				"SM" + message.channel.id,
+				"time",
+				function (err, reply) {
+					if (reply === 1) {
+						db.del("SM" + message.channel.id);
+						embedsuperslowreply
+							.setTitle("Result:")
+							.setDescription(
+								"Super slow-mode is successfully disabled."
 							);
-							var FieldReactChannels = {};
-							FieldReactChannels.name = "#" + channel.name;
-							FieldReactChannels.value = "Super slow-mode ON.";
-							newReactChannelsEmbed.addField(
-								FieldReactChannels.name,
-								FieldReactChannels.value
+						message.reply(embedsuperslowreply);
+						message.channel.setRateLimitPerUser(0);
+					} else
+						embedsuperslowreply
+							.setTitle("Result:")
+							.setDescription(
+								"this channel does not have super slow-mode. Maybe you already deleted it?"
 							);
-							//console.log(newReactChannelsEmbed.fields);
-						}
-					});
-				});
-				//console.log(newReactChannelsEmbed);
-				message.channel.send(newReactChannelsEmbed);
-				message.channel.send("End of list!");
-				return;
-			}
-			//[0] - isOff, [1] - ms(args[0])
-			superslowreturn = client.commands
-				.get(command)
-				.execute(message, args, Discord, client);
-			if (superslowreturn == null) return;
-			//Just making sure lmao
-			if (superslowreturn[0] == undefined) return;
-			if (!superslowreturn[0]) {
-				db.hexists(
-					"SM" + message.channel.id,
-					"time",
-					function (err, reply) {
-						if (reply === 1) {
-							db.hget(
-								"SM" + message.channel.id,
-								"time",
-								function (err, timestamp) {
-									if (timestamp == superslowreturn[1]) {
-										embedsuperslowreply
-											.setTitle("Result:")
-											.setDescription(
-												"it's already set to " +
-													ms(superslowreturn[1], {
-														long: true,
-													}) +
-													"!"
-											);
-										return message.reply(
-											embedsuperslowreply
-										);
-									}
-									db.hset(
-										"SM" + message.channel.id,
-										"time",
-										superslowreturn[1]
-									);
-									embedsuperslowreply
-										.setTitle("Result:")
-										.setDescription(
-											"Super slow-mode was already activated. It is now set to " +
-												ms(superslowreturn[1], {
-													long: true,
-												})
-										);
-									return message.reply(embedsuperslowreply);
-								}
-							);
-						} else {
-							db.hmset("SM" + message.channel.id, {
-								time: superslowreturn[1],
-							});
-							embedsuperslowreply
-								.setTitle("Result:")
-								.setDescription(
-									"set Super slow-mode to " +
-										ms(superslowreturn[1], { long: true }) +
-										"."
-								);
-							message.reply(embedsuperslowreply);
-							//This is to notify users of Super slow-mode active in the channel.
-							message.channel.setRateLimitPerUser(10);
-							return;
-						}
-					}
-				);
-			} else if (superslowreturn[0]) {
-				db.hexists(
-					"SM" + message.channel.id,
-					"time",
-					function (err, reply) {
-						if (reply === 1) {
-							db.del("SM" + message.channel.id);
-							embedsuperslowreply
-								.setTitle("Result:")
-								.setDescription(
-									"Super slow-mode is successfully disabled."
-								);
-							message.reply(embedsuperslowreply);
-							message.channel.setRateLimitPerUser(0);
-						} else
-							embedsuperslowreply
-								.setTitle("Result:")
-								.setDescription(
-									"this channel does not have super slow-mode. Maybe you already deleted it?"
-								);
-						return message.reply(embedsuperslowreply);
-					}
-				);
-			}
-			return;
-		} else {
-			if (command === file.toLowerCase().substring(0, splitter)) {
-				const event = new Date(Date.now());
-				console.log(
-					message.author.tag,
-					"issued !kifo",
-					command,
-					"in",
-					message.channel.name,
-					"at",
-					message.guild.name,
-					"at",
-					event.toUTCString()
-				);
-				debug = client.commands
-					.get(command)
-					.execute(message, args, Discord);
-				return;
-			}
+					return message.reply(embedsuperslowreply);
+				}
+			);
 		}
+		return;
+	} else {
+		const event = new Date(Date.now());
+		console.log(
+			message.author.tag,
+			"issued !kifo",
+			command,
+			"in",
+			message.channel.name,
+			"at",
+			message.guild.name,
+			"at",
+			event.toUTCString()
+		);
+		debug = client.commands.get(command).execute(message, args, Discord);
+		return;
+	}
+
+	for (const file of commandFiles) {
+		const splitter = file.length - 3;
 	}
 	message.channel
 		.send("Command not found. Type `!kifo help` for list of commands.")

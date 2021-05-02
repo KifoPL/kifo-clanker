@@ -152,9 +152,9 @@ module.exports = {
 			//NOT SERVER STATS (user, bot, role, channel)
 			let entity;
 			let whatami = `assign to either "user | bot | role | channel | not found"`;
-			const ppcmd = await require(`./pp.js`);
-			const howgaycmd = await require(`./howgay.js`);
-			const iqcmd = await require(`./iq.js`);
+			const ppcmd = await require(`./pp.js.js`);
+			const howgaycmd = await require(`./howgay.js.js`);
+			const iqcmd = await require(`./iq.js.js`);
 
 			//WHAT ARE YOU CHECK ? - determines if you wanna check stats of user, bot, role, or channel
 			if (args[0].toUpperCase() == "ME") {
@@ -571,6 +571,7 @@ module.exports = {
 						}
 					);
 			}
+			//CHANNEL STATS --- NOT YET IMPLEMENTED
 			else if (whatami == "channel") {
 				message.channel.stopTyping(true);
 				return message.reply("channel stats will be implemented one day.");
