@@ -152,9 +152,13 @@ module.exports = {
 			//NOT SERVER STATS (user, bot, role, channel)
 			let entity;
 			let whatami = `assign to either "user | bot | role | channel | not found"`;
-			const ppcmd = await require(`./pp.js.js`);
-			const howgaycmd = await require(`./howgay.js.js`);
-			const iqcmd = await require(`./iq.js.js`);
+
+			//someday fix it, possibly with "findit" npm
+			const folder = "fun";
+
+			const ppcmd = require(`../${folder}/pp.js`);
+			const howgaycmd = require(`../${folder}/howgay.js`);
+			const iqcmd = require(`../${folder}/iq.js`);
 
 			//WHAT ARE YOU CHECK ? - determines if you wanna check stats of user, bot, role, or channel
 			if (args[0].toUpperCase() == "ME") {
