@@ -725,9 +725,33 @@ let Owner;
 
 const guildIdTest = "822800862581751848";
 
+function setCommandList() {
+	let content = "";
+	content += `{\n`;
+	for (const folder of commandFolders) {
+		const commandFiles = fs
+			.readdirSync(`./commands/${folder}`)
+			.filter((file) => file.endsWith(".js"));
+		for (const file of commandFiles) {
+			content += `"${file.slice(0, file.length - 3)}": {\n`;
+			content += `\t"file": "${file}",\n`;
+			content += `\t"path": "commands/${folder}/${file}",\n`;
+			content += `\t"relativepath": "../${folder}/${file}"\n\t},\n`;
+		}
+	}
+	content = content.slice(0, content.length - 2);
+	content += `\n}`;
+	fs.writeFile(`commandList.json`, content, (err) => {
+		//console.error(err);
+		return;
+	});
+	console.log(`Created commandList.json file.`);
+}
+
 client.once("ready", () => {
 	console.log("Kifo Clanker™ is online!");
 	loadowner();
+	setCommandList();
 	debug = false;
 
 	//DELETING SLASH COMMANDS CODE FOR NOW, I tried using prebuilt API, but it was "too" prebuild and it didn't fit my bot at all. Will have to do stuff manually...
