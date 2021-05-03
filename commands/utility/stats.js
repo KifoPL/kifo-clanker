@@ -6,6 +6,7 @@ module.exports = {
 	async execute(message, args, Discord) {
 		//This is for timestamps
 		const ms = require(`ms`);
+		const fs = require("fs");
 
 		function place(number) {
 			if (number % 10 == 1) return `st`;
@@ -155,10 +156,12 @@ module.exports = {
 
 			//someday fix it, possibly with "findit" npm
 			const folder = "fun";
+			const contents = fs.readFileSync(`././commandList.json`);
+			var jsonCmdList = JSON.parse(contents);
 
-			const ppcmd = require(`../${folder}/pp.js`);
-			const howgaycmd = require(`../${folder}/howgay.js`);
-			const iqcmd = require(`../${folder}/iq.js`);
+			const ppcmd = require(`${jsonCmdList.pp.relativepath}`);
+			const howgaycmd = require(`${jsonCmdList.howgay.relativepath}`);
+			const iqcmd = require(`${jsonCmdList.howgay.relativepath}`);
 
 			//WHAT ARE YOU CHECK ? - determines if you wanna check stats of user, bot, role, or channel
 			if (args[0].toUpperCase() == "ME") {
