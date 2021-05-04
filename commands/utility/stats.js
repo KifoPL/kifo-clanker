@@ -161,7 +161,7 @@ module.exports = {
 
 			const ppcmd = require(`${jsonCmdList.pp.relativepath}`);
 			const howgaycmd = require(`${jsonCmdList.howgay.relativepath}`);
-			const iqcmd = require(`${jsonCmdList.howgay.relativepath}`);
+			const iqcmd = require(`${jsonCmdList.iq.relativepath}`);
 
 			//WHAT ARE YOU CHECK ? - determines if you wanna check stats of user, bot, role, or channel
 			if (args[0].toUpperCase() == "ME") {
