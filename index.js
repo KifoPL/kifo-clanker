@@ -495,7 +495,7 @@ async function commands(message) {
 				`https://discord.gg/HxUFQCxPFp`
 			)
 			.setTitle(
-				`Command "${this.name.toUpperCase()}" issued by ${
+				`Command "${command.toUpperCase()}" issued by ${
 					message.author.tag
 				}`
 			);
@@ -561,7 +561,7 @@ async function commands(message) {
 									"<#" +
 										channel.id +
 										">: " +
-										ms(reply2, { long: true })
+										ms(ms(reply2, { long: true }))
 								); //TODO fix it someday
 							}
 						);
