@@ -387,6 +387,19 @@ async function commands(message) {
 		return;
 	} else if (command == "react") {
 		const command2 = require(`./${jsonCmdList.react.path}`);
+		const embedreactreply = new Discord.MessageEmbed();
+		embedreactreply
+			.setColor("a039a0")
+			.setAuthor(
+				"Powered by Kifo Clanker™",
+				null,
+				`https://discord.gg/HxUFQCxPFp`
+			)
+			.setTitle(
+				`Command "${command.toUpperCase()}" issued by ${
+					message.author.tag
+				}`
+			);
 		if (!message.member.permissions.has("ADMINISTRATOR"))
 			return message.reply("This is ADMIN ONLY command.");
 		if (!args[0]) {
@@ -396,10 +409,20 @@ async function commands(message) {
 						"RT" + message.channel.id,
 						"time",
 						function (err, reply2) {
-							return message.reply("react is already ON!");
+							embedreactreply.addField(
+								"Warning:",
+								"React is already ON!"
+							);
+							return message.reply(embedreactreply);
 						}
 					);
-				} else return message.reply("react is OFF. Type " + command2.usage + " to set it up.");
+				} else {
+					embedreactreply.addField(
+						"Warning:",
+						`React is Off. Type ${command2.usage} to set it up.`
+					);
+					return message.reply(embedreactreply);
+				}
 			});
 			//just in case
 			return;
@@ -547,7 +570,7 @@ async function commands(message) {
 		);
 		if (args[0]?.toUpperCase() == "LIST") {
 			var FieldReactChannels = { name: "name", value: "description" };
-			const newReactChannelsEmbed = new Discord.MessageEmbed()
+			const newSuperslowChannelsEmbed = new Discord.MessageEmbed()
 				.setColor("a039a0")
 				.setTitle("List of channels, where command is active:");
 			message.guild.channels.cache.each((channel) => {
@@ -568,7 +591,7 @@ async function commands(message) {
 						var FieldReactChannels = {};
 						FieldReactChannels.name = "#" + channel.name;
 						FieldReactChannels.value = "Super slow-mode ON.";
-						newReactChannelsEmbed.addField(
+						newSuperslowChannelsEmbed.addField(
 							FieldReactChannels.name,
 							FieldReactChannels.value
 						);
@@ -577,7 +600,7 @@ async function commands(message) {
 				});
 			});
 			//console.log(newReactChannelsEmbed);
-			message.channel.send(newReactChannelsEmbed);
+			message.channel.send(newSuperslowChannelsEmbed);
 			message.channel.send("End of list!");
 			return;
 		}
