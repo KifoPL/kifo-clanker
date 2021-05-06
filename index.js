@@ -292,13 +292,15 @@ async function commands(message) {
 				null,
 				`https://discord.gg/HxUFQCxPFp`
 			)
-			.setTitle(`Command ${this.name} issued by ${message.author.tag}`)
+			.setTitle(`Command ${command} not found.`)
 			.addField(
-				`Command ${command} not found.`,
 				`Run ${prefix.trim()} help to get list of available commands.`
 			);
 		return message.channel.send(embedreply);
 	}
+
+	const contents = fs.readFileSync(`./commandList.json`);
+	var jsonCmdList = JSON.parse(contents);
 
 	if (command == "debug" && message.author == Owner) {
 		await sleep(200);
@@ -384,7 +386,7 @@ async function commands(message) {
 		client.commands.get(command).execute(message, args, Discord, client);
 		return;
 	} else if (command == "react") {
-		const command2 = require(`./commands/best/react.js`);
+		const command2 = require(`./${jsonCmdList.react.path}`);
 		if (!message.member.permissions.has("ADMINISTRATOR"))
 			return message.reply("This is ADMIN ONLY command.");
 		if (!args[0]) {
@@ -498,7 +500,7 @@ async function commands(message) {
 				}`
 			);
 
-		const commandfile = require(`./commands/best/superslow.js`);
+		const commandfile = require(`./${jsonCmdList.superslow.path}`);
 		if (!message.member.permissions.has("ADMINISTRATOR"))
 			return message.reply("This is ADMIN ONLY command.");
 		if (!args[0]) {
@@ -683,13 +685,6 @@ async function commands(message) {
 		debug = client.commands.get(command).execute(message, args, Discord);
 		return;
 	}
-
-	for (const file of commandFiles) {
-		const splitter = file.length - 3;
-	}
-	message.channel
-		.send("Command not found. Type `!kifo help` for list of commands.")
-		.catch();
 }
 async function onmessage(message) {
 	react(message).catch();
