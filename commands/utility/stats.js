@@ -23,7 +23,7 @@ module.exports = {
 				"you can only run this command on the server."
 			);
 		if (args[1] != undefined) return message.reply("too many arguments!");
-		message.channel.startTyping().catch();
+		message.channel.startTyping().catch(() => {});
 		const newEmbed = new Discord.MessageEmbed();
 		let time = new Date(Date.now());
 		let guildcount = 0;

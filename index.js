@@ -17,7 +17,7 @@ const client = new Discord.Client({
 	partials: [`MESSAGE`, `CHANNEL`, `REACTION`],
 });
 async function loadowner() {
-	clientapp = await client.fetchApplication().catch();
+	clientapp = await client.fetchApplication().catch(() => {});
 	Owner = clientapp.owner;
 	console.log("Bot owner object loaded!");
 }
@@ -47,9 +47,9 @@ client.commands.set(command.name, command);
 //Hello message
 async function hello(message) {
 	//I have to do it here too
-	if (message.content.trim() == prefix.trim()) {
+	if (message.content.toLowerCase().trim() == prefix.toLowerCase().trim()) {
 		if (message.deleted) return;
-		message.channel.startTyping().catch();
+		message.channel.startTyping().catch(() => {});
 		const event = new Date(Date.now());
 		console.log(
 			message.author.tag,
@@ -116,7 +116,7 @@ async function react(message) {
 					function (err, reply) {
 						for (i = 0; i < reply.length; i++) {
 							if (message.deleted) return;
-							message.react(reply[i]).catch();
+							message.react(reply[i]).catch(() => {});
 							var eventRT = new Date(Date.now());
 						}
 						console.log(
@@ -175,8 +175,8 @@ async function superslow(message) {
 														{ long: true }
 													)}.`
 												)
-												.catch();
-											await message.delete().catch();
+												.catch(() => {});
+											await message.delete().catch(() => {});
 											return;
 										} else {
 											//I'm not kidding this msg works, because apparently subtraction forces integer type ¯\_(ツ)_/¯
@@ -204,8 +204,8 @@ async function superslow(message) {
 												"), by typing **" +
 												prefix.trim() +
 												"**.";
-											message.author.send(msg).catch();
-											await message.delete().catch();
+											message.author.send(msg).catch(() => {});
+											await message.delete().catch(() => {});
 											return;
 										}
 									} else {
@@ -217,8 +217,8 @@ async function superslow(message) {
 												.send(
 													`You can already talk in #${message.channel.name}.`
 												)
-												.catch();
-											await message.delete().catch();
+												.catch(() => {});
+											await message.delete().catch(() => {});
 											return;
 										} else
 											db.hset(
@@ -354,7 +354,7 @@ async function commands(message) {
 				).toUTCString()}`
 			)
 			.setColor("a039a0");
-		message.channel.send(serverembed).catch();
+		message.channel.send(serverembed).catch(() => {});
 		return;
 	}
 	if (command == "help") {
@@ -710,17 +710,17 @@ async function commands(message) {
 	}
 }
 async function onmessage(message) {
-	react(message).catch();
-	await superslow(message).catch();
+	react(message).catch(() => {});
+	await superslow(message).catch(() => {});
 
 	if (message.deleted) return;
 
 	speakcheck = checks(message);
 
 	if (speakcheck) {
-		hello(message).catch();
+		hello(message).catch(() => {});
 
-		if (!message.content.startsWith(prefix) || message.author.bot) return;
+		if (!message.content.toLowerCase().startsWith(prefix.toLowerCase().trim()) || message.author.bot) return;
 
 		//No role and @here and @everyone pings
 		if (message.mentions.roles.firstKey() != undefined)
@@ -729,7 +729,7 @@ async function onmessage(message) {
 			return message.reply("don't even try pinging...");
 
 		if (
-			message.content.startsWith(prefix) &&
+			message.content.toLowerCase().startsWith(prefix.toLowerCase().trim()) &&
 			message.content.length > prefix.length
 		)
 			commands(message);
@@ -813,7 +813,7 @@ client.on("message", (message) => {
 client.on("messageReactionAdd", async (msgReaction) => {
 	let msg = msgReaction.message;
 	if (msg.partial) {
-		await msg.fetch().catch();
+		await msg.fetch().catch(() => {});
 	}
 	if (
 		msg.channel.type == "dm" &&
@@ -821,7 +821,7 @@ client.on("messageReactionAdd", async (msgReaction) => {
 		!msgReaction.me &&
 		msg.embeds[0]?.author?.name == `TODO`
 	) {
-		msg.delete().catch();
+		msg.delete().catch(() => {});
 	} else return;
 });
 
