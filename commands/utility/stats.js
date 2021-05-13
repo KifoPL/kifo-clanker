@@ -7,11 +7,13 @@ module.exports = {
 		//This is for timestamps
 		const ms = require(`ms`);
 		const fs = require("fs");
+		//for debugging, uncomment to resolve paths
+		//const path = require("path");
 
 		function place(number) {
-			if (number % 10 == 1) return `st`;
-			if (number % 10 == 2) return "nd";
-			if (number % 10 == 3) return "rd";
+			if (number % 10 == 1 && number % 100 != 11) return `st`;
+			if (number % 10 == 2 && number % 100 != 12) return "nd";
+			if (number % 10 == 3 && number % 100 != 13) return "rd";
 			else return "th";
 		}
 
@@ -31,6 +33,7 @@ module.exports = {
 		});
 		let serverrolecount = 0;
 		await message.guild.roles.cache.each(() => serverrolecount++);
+		let entity;
 
 		//SERVER STATS
 		if (args[0] == undefined) {
@@ -43,8 +46,13 @@ module.exports = {
 			let channelvoicecount = 0;
 			let channeltextcount = 0;
 			let channelcategorycount = 0;
+
+			var fileContent = `User ID\tUser name\tNickname\n`;
+
 			await message.guild.members.cache.each((member) => {
 				if (member.user.bot) botcount++;
+				if (member.premiumSinceTimestamp != undefined) boostcount++;
+				fileContent += `${member.id}\t${member.user.username}\t${member.nickname ?? ""}\n`
 			});
 			await message.guild.members.cache
 				.filter(
@@ -52,9 +60,6 @@ module.exports = {
 						member.presence.status != "offline" && !member.user.bot
 				)
 				.each(() => onlinecount++);
-			await message.guild.members.cache.each((member) => {
-				if (member.premiumSinceTimestamp != undefined) boostcount++;
-			});
 			await message.guild.channels.cache.each(() => channelcount++);
 			await message.guild.channels.cache
 				.filter((channel) => channel.type == "voice")
@@ -65,6 +70,9 @@ module.exports = {
 			await message.guild.channels.cache
 				.filter((channel) => channel.type == "category")
 				.each(() => channelcategorycount++);
+
+			fs.writeFileSync(`./${message.guild.id} members.txt`, fileContent, () => {});
+			//console.log(`${path.resolve(`${message.guild.id}members.txt`)}`);
 
 			let servertime = time.getTime() - message.guild.createdAt.getTime();
 			newEmbed
@@ -148,14 +156,13 @@ module.exports = {
 						value:
 							"❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 					}
-				);
+				)
+				.attachFiles([{attachment: `./${message.guild.id} members.txt`, name: `${message.guild.name} members.txt`}]);
 		} else {
 			//NOT SERVER STATS (user, bot, role, channel)
-			let entity;
+			
 			let whatami = `assign to either "user | bot | role | channel | not found"`;
 
-			//someday fix it, possibly with "findit" npm
-			const folder = "fun";
 			const contents = fs.readFileSync(`././commandList.json`);
 			var jsonCmdList = JSON.parse(contents);
 
@@ -218,6 +225,7 @@ module.exports = {
 				let usertime = time.getTime() - entity.user.createdAt.getTime();
 				let membertime = time.getTime() - entity.joinedAt.getTime();
 				let rolecount = 0;
+				let fileContent = `Role ID\tRole name\n`
 				let statusicon;
 				if (
 					entity.presence.status == "online" ||
@@ -225,7 +233,11 @@ module.exports = {
 				)
 					statusicon = "<:online:823658022974521414>";
 				else statusicon = "<:offline:823658022957613076>";
-				await entity.roles.cache.each((role) => rolecount++);
+				await entity.roles.cache.each((role) => {
+
+					fileContent += `${role.id}\t${role.name}\n`
+					rolecount++
+				});
 
 				const ppfield = await ppcmd.execute(
 					message,
@@ -246,6 +258,9 @@ module.exports = {
 					Discord,
 					true
 				);
+
+				fs.writeFileSync(`./${entity.id} roles.txt`, fileContent, () => {});
+
 				newEmbed
 					.setColor("a039a0")
 					.setTitle(`${entity.displayName} stats:`)
@@ -356,7 +371,8 @@ module.exports = {
 							value:
 								"❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 						}
-					);
+					)
+					.attachFiles([{attachment: `./${entity.id} roles.txt`, name: `${entity.id} roles.txt`}]);
 			}
 			//BOT STATS
 			else if (whatami == "bot") {
@@ -364,13 +380,17 @@ module.exports = {
 				let membertime = time.getTime() - entity.joinedAt.getTime();
 				let rolecount = 0;
 				let statusicon;
+				let fileContent = `Role ID\tRole name\n`
 				if (
 					entity.presence.status == "online" ||
 					entity.presence.status == "idle"
 				)
 					statusicon = "<:online:823658022974521414>";
 				else statusicon = "<:offline:823658022957613076>";
-				await entity.roles.cache.each((role) => rolecount++);
+				await entity.roles.cache.each((role) => {
+					rolecount++
+					fileContent += `${role.id}\t${role.name}\n`
+				});
 				const ppfield = await ppcmd.execute(
 					message,
 					args,
@@ -390,6 +410,8 @@ module.exports = {
 					Discord,
 					true
 				);
+
+				fs.writeFileSync(`./${entity.id} roles.txt`, fileContent, () => {});
 
 				newEmbed
 					.setColor("a039a0")
@@ -487,7 +509,8 @@ module.exports = {
 							value:
 								"❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 						}
-					);
+					)
+					.attachFiles([{attachment: `./${entity.id} roles.txt`, name: `${entity.id} roles.txt`}]);
 			}
 			//ROLE STATS
 			else if (whatami == "role") {
@@ -495,11 +518,17 @@ module.exports = {
 					time.getTime() - entity.createdAt.getTime();
 				let perms = entity.permissions;
 				let membercount = 0;
-				await entity.members.each(() => membercount++);
+				var fileContent = `User ID\tUser name\tNickname\n`;
+				await entity.members.each((member) => {
+					membercount++
+					fileContent += `${member.id}\t${member.user.username}\t${member.nickname ?? ""}\n`;
+				});
 				let strperms = "";
 				await perms.toArray().forEach(function (item, index, array) {
 					strperms += `${item}\n`;
 				});
+
+				fs.writeFileSync(`./${entity.id} members.txt`, fileContent, () => {});
 
 				newEmbed
 					.setColor("a039a0")
@@ -576,7 +605,8 @@ module.exports = {
 							value:
 								"❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 						}
-					);
+					)
+					.attachFiles([{attachment: `./${entity.id} members.txt`, name: `${message.id} members.txt`}]);
 			}
 			//CHANNEL STATS --- NOT YET IMPLEMENTED
 			else if (whatami == "channel") {
@@ -584,7 +614,12 @@ module.exports = {
 				return message.reply("channel stats will be implemented one day.");
 			}
 		}
-		message.channel.send(newEmbed).catch();
+		await message.channel.send(newEmbed).catch(err => {
+			console.error(err);
+		});
 		message.channel.stopTyping(true);
+		fs.unlink(`./${message.guild.id} members.txt`, () => {});
+		fs.unlink(`./${entity.id} roles.txt`, () => {});
+		fs.unlink(`./${entity.id} members.txt`, () => {});
 	},
 };
