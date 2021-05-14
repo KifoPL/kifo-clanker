@@ -50,12 +50,14 @@ module.exports = {
 
 			var fileContent = `User ID\tUser name\tNickname\n`;
 
-			await memberList.sorted((memberA, memberB) => {
-				return (
-					memberB.roles.highest.rawPosition -
-					memberA.roles.highest.rawPosition
-				);
-			}).each((member) => {
+			await memberList
+			// .sorted((memberA, memberB) => {
+			// 	return (
+			// 		memberB.roles.highest.rawPosition -
+			// 		memberA.roles.highest.rawPosition
+			// 	);
+			// })
+			.each((member) => {
 				fileContent += `${member.id}\t${member.user.username}\t${
 					member.nickname ?? ""
 				}\n`;
@@ -137,12 +139,12 @@ module.exports = {
 				var fileContent = `User ID\tUser name\tNickname\n`;
 
 				await message.guild.members.cache
-					.sorted((memberA, memberB) => {
-						return (
-							memberB.roles.highest.rawPosition -
-							memberA.roles.highest.rawPosition
-						);
-					})
+					// .sorted((memberA, memberB) => {
+					// 	return (
+					// 		memberB.roles.highest.rawPosition -
+					// 		memberA.roles.highest.rawPosition
+					// 	);
+					// })
 					.each((member) => {
 						if (member.user.bot) botcount++;
 						if (member.premiumSinceTimestamp != undefined)
@@ -371,9 +373,9 @@ module.exports = {
 						statusicon = "<:online:823658022974521414>";
 					else statusicon = "<:offline:823658022957613076>";
 					await entity.roles.cache
-						.sorted((roleA, roleB) => {
-							return roleB.rawPosition - roleA.rawPosition;
-						})
+						// .sorted((roleA, roleB) => {
+						// 	return roleB.rawPosition - roleA.rawPosition;
+						// })
 						.each((role) => {
 							fileContent += `${role.id}\t${role.name}\n`;
 							rolecount++;
@@ -537,9 +539,9 @@ module.exports = {
 						statusicon = "<:online:823658022974521414>";
 					else statusicon = "<:offline:823658022957613076>";
 					await entity.roles.cache
-						.sorted((roleA, roleB) => {
-							return roleB.rawPosition - roleA.rawPosition;
-						})
+						// .sorted((roleA, roleB) => {
+						// 	return roleB.rawPosition - roleA.rawPosition;
+						// })
 						.each((role) => {
 							rolecount++;
 							fileContent += `${role.id}\t${role.name}\n`;
@@ -683,12 +685,12 @@ module.exports = {
 					let membercount = 0;
 					var fileContent = `User ID\tUser name\tNickname\n`;
 					await entity.members
-						.sorted((memberA, memberB) => {
-							return (
-								memberB.roles.highest.rawPosition -
-								memberA.roles.highest.rawPosition
-							);
-						})
+						// .sorted((memberA, memberB) => {
+						// 	return (
+						// 		memberB.roles.highest.rawPosition -
+						// 		memberA.roles.highest.rawPosition
+						// 	);
+						// })
 						.each((member) => {
 							membercount++;
 							fileContent += `${member.id}\t${
