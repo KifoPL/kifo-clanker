@@ -41,8 +41,8 @@ module.exports = {
 				i++;
 			}
 
-			let memberList = message.guild.members.cache;
-			for (i = 0; i < roleIDs.length; i++) {
+			let memberList = await message.guild.members.cache.filter(member => member.roles.cache.has(roleIDs[0]));
+			for (i = 1; i < roleIDs.length; i++) {
 				memberList = await memberList.filter((member) =>
 					member.roles.cache.has(roleIDs[i])
 				);
