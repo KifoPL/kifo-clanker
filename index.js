@@ -60,12 +60,12 @@ async function hello(message) {
 		);
 		const helloEmbed = new Discord.MessageEmbed()
 			.setAuthor(
-				"Hello there (click for invite link)!",
+				"Hello there (click for bot invite link)!",
 				null,
 				"https://discord.com/api/oauth2/authorize?client_id=795638549730295820&permissions=8&scope=applications.commands%20bot"
 			)
 			.setColor("a039a0")
-			.setTitle("See what's new! (click for server invite)")
+			.setTitle("See what's new! (click for Discord server invite)")
 			.setURL("https://discord.gg/HxUFQCxPFp")
 			.setThumbnail(
 				message.guild.me?.user?.avatarURL({
