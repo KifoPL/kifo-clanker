@@ -66,6 +66,6 @@ module.exports = {
 			}
 		}
 		embedreply.setDescription(reply);
-		message.channel.send(userping, embedreply).catch();
+		message.channel.send(userping, embedreply).catch(() => {});
 	},
 };

@@ -17,7 +17,7 @@ const client = new Discord.Client({
 	partials: [`MESSAGE`, `CHANNEL`, `REACTION`],
 });
 async function loadowner() {
-	clientapp = await client.fetchApplication().catch();
+	clientapp = await client.fetchApplication().catch(() => {});
 	Owner = clientapp.owner;
 	console.log("Bot owner object loaded!");
 }
@@ -47,9 +47,9 @@ client.commands.set(command.name, command);
 //Hello message
 async function hello(message) {
 	//I have to do it here too
-	if (message.content.trim() == prefix.trim()) {
+	if (message.content.toLowerCase().trim() == prefix.toLowerCase().trim()) {
 		if (message.deleted) return;
-		message.channel.startTyping().catch();
+		message.channel.startTyping().catch(() => {});
 		const event = new Date(Date.now());
 		console.log(
 			message.author.tag,
@@ -116,7 +116,7 @@ async function react(message) {
 					function (err, reply) {
 						for (i = 0; i < reply.length; i++) {
 							if (message.deleted) return;
-							message.react(reply[i]).catch();
+							message.react(reply[i]).catch(() => {});
 							var eventRT = new Date(Date.now());
 						}
 						console.log(
@@ -175,8 +175,8 @@ async function superslow(message) {
 														{ long: true }
 													)}.`
 												)
-												.catch();
-											await message.delete().catch();
+												.catch(() => {});
+											await message.delete().catch(() => {});
 											return;
 										} else {
 											//I'm not kidding this msg works, because apparently subtraction forces integer type ¯\_(ツ)_/¯
@@ -204,8 +204,8 @@ async function superslow(message) {
 												"), by typing **" +
 												prefix.trim() +
 												"**.";
-											message.author.send(msg).catch();
-											await message.delete().catch();
+											message.author.send(msg).catch(() => {});
+											await message.delete().catch(() => {});
 											return;
 										}
 									} else {
@@ -217,8 +217,8 @@ async function superslow(message) {
 												.send(
 													`You can already talk in #${message.channel.name}.`
 												)
-												.catch();
-											await message.delete().catch();
+												.catch(() => {});
+											await message.delete().catch(() => {});
 											return;
 										} else
 											db.hset(
@@ -282,53 +282,7 @@ async function commands(message) {
 	db.get("debug", function (err, reply) {
 		debug = reply;
 	});
-
-	if (!client.commands.has(command)) {
-		const embedreply = new Discord.MessageEmbed();
-		embedreply
-			.setColor("a039a0")
-			.setAuthor(
-				"Powered by Kifo Clanker™",
-				null,
-				`https://discord.gg/HxUFQCxPFp`
-			)
-			.setTitle(`Command ${command} not found.`)
-			.addField(
-				`Run ${prefix.trim()} help to get list of available commands.`
-			);
-		return message.channel.send(embedreply);
-	}
-
-	const contents = fs.readFileSync(`./commandList.json`);
-	var jsonCmdList = JSON.parse(contents);
-
-	if (command == "debug" && message.author == Owner) {
-		await sleep(200);
-		debug == "true" ? (debug = "false") : (debug = "true");
-		message.reply("debug mode set to " + debug);
-		db.set("debug", debug);
-		if (debug == "true") {
-			client.user.setStatus("dnd").then(() =>
-				client.user.setActivity({
-					name:
-						"The bot is undergoing maintenance, the commands are disabled for now (passive functions still work).",
-					type: "PLAYING",
-				})
-			);
-		} else {
-			client.user.setStatus("online").then(() =>
-				client.user.setActivity({
-					name: `Type ${prefix}to interact with the bot! (also Kifo Clanker >>>> Giratina)`,
-					type: "PLAYING",
-				})
-			);
-		}
-		return;
-	}
-	if (debug == "true" && message.author != Owner)
-		return message.reply(
-			"the bot is currently undergoing maintenance. Although it still works (reactions, super slow-mode, etc.), you cannot use commands for a while. Please be patient (it usually takes me an hour at most to deal with maintenance)."
-		);
+	
 	if (command == "serverlist" && message.author == Owner) {
 		console.log("run SERVERLIST command");
 		let serversarr = [];
@@ -354,9 +308,30 @@ async function commands(message) {
 				).toUTCString()}`
 			)
 			.setColor("a039a0");
-		message.channel.send(serverembed).catch();
+		message.channel.send(serverembed).catch(() => {});
 		return;
 	}
+
+	if (!client.commands.has(command)) {
+		const embedreply = new Discord.MessageEmbed();
+		embedreply
+			.setColor("a039a0")
+			.setAuthor(
+				"Powered by Kifo Clanker™",
+				null,
+				`https://discord.gg/HxUFQCxPFp`
+			)
+			.setTitle(`Command ${command} not found.`)
+			.addField(
+				`Run ${prefix.trim()} help to get list of available commands.`
+			);
+		return message.channel.send(embedreply);
+	}
+
+	const contents = fs.readFileSync(`./commandList.json`);
+	var jsonCmdList = JSON.parse(contents);
+
+
 	if (command == "help") {
 		const event = new Date(Date.now());
 		console.log(
@@ -710,17 +685,17 @@ async function commands(message) {
 	}
 }
 async function onmessage(message) {
-	react(message).catch();
-	await superslow(message).catch();
+	react(message).catch(() => {});
+	await superslow(message).catch(() => {});
 
 	if (message.deleted) return;
 
 	speakcheck = checks(message);
 
 	if (speakcheck) {
-		hello(message).catch();
+		hello(message).catch(() => {});
 
-		if (!message.content.startsWith(prefix) || message.author.bot) return;
+		if (!message.content.toLowerCase().startsWith(prefix.toLowerCase().trim()) || message.author.bot) return;
 
 		//No role and @here and @everyone pings
 		if (message.mentions.roles.firstKey() != undefined)
@@ -729,7 +704,7 @@ async function onmessage(message) {
 			return message.reply("don't even try pinging...");
 
 		if (
-			message.content.startsWith(prefix) &&
+			message.content.toLowerCase().startsWith(prefix.toLowerCase().trim()) &&
 			message.content.length > prefix.length
 		)
 			commands(message);
@@ -775,11 +750,8 @@ client.once("ready", () => {
 	//DELETING SLASH COMMANDS CODE FOR NOW, I tried using prebuilt API, but it was "too" prebuild and it didn't fit my bot at all. Will have to do stuff manually...
 
 	//This line is executed by default, but I'm just making sure the status is online (other factors could change the status)
-	client.user.setStatus("online");
-	client.user.setActivity({
-		name: `Type "${prefix}" to interact with me! (also Kifo Clanker >>>> Giratina)`,
-		type: "PLAYING",
-	});
+	updatePresence();
+	setInterval(updatePresence, 1000 * 60 * 3);
 
 	//for WoofWoofWolffe feature
 	client.guilds.fetch("698075892974354482").then((guild) => {
@@ -799,6 +771,14 @@ client.once("ready", () => {
 	});
 });
 
+function updatePresence() {
+	client.user.setStatus("online");
+	client.user.setActivity({
+		name: `Type "${prefix}" to interact with me! It's online for ${ms(client.uptime, {long: true})}.`,
+		type: "PLAYING",
+	});
+}
+
 //USED BY REACT COMMAND
 let reactreturn;
 
@@ -813,7 +793,7 @@ client.on("message", (message) => {
 client.on("messageReactionAdd", async (msgReaction) => {
 	let msg = msgReaction.message;
 	if (msg.partial) {
-		await msg.fetch().catch();
+		await msg.fetch().catch(() => {});
 	}
 	if (
 		msg.channel.type == "dm" &&
@@ -821,7 +801,7 @@ client.on("messageReactionAdd", async (msgReaction) => {
 		!msgReaction.me &&
 		msg.embeds[0]?.author?.name == `TODO`
 	) {
-		msg.delete().catch();
+		msg.delete().catch(() => {});
 	} else return;
 });
 

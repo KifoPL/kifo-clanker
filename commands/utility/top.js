@@ -50,10 +50,13 @@ module.exports = {
 			);
 		if (args[4] != undefined)
 			return message.reply(`too many arguments! Use ${this.usage}`);
-		// let ping = false;
-		// if (args[4] != undefined) {
-		//     if (!(message.member.permissions.has("ADMINISTRATOR"))) return message.reply("sorry, only Admins can ping authors."); else if (args[4] == "ping") ping = true; else return message.reply("type **ping** if you want to ping authors. If not, end the command at emote.");
-		// }
+
+		function place(number) {
+			if (number % 10 == 1 && number % 100 != 11) return `st`;
+			if (number % 10 == 2 && number % 100 != 12) return "nd";
+			if (number % 10 == 3 && number % 100 != 13) return "rd";
+			else return "th";
+		}
 
 		let now = Date.now();
 		let whichchannel = message.channel.guild.channels.cache.find(
@@ -152,9 +155,10 @@ module.exports = {
 
 				message.channel.startTyping().catch();
 				newEmbed.setTitle(
-					"**Top " +
+					"**" +
 						ii +
-						"** by **" +
+						place(ii) +
+						"** place by **" +
 						chmessages[i].author.username +
 						"** with **" +
 						chmessages[i].reactions.resolve(key).count +
