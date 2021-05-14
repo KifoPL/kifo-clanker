@@ -774,7 +774,7 @@ client.once("ready", () => {
 function updatePresence() {
 	client.user.setStatus("online");
 	client.user.setActivity({
-		name: `Type "${prefix}" to interact with me! It's online for ${ms(client.uptime, {long: true})}.`,
+		name: `Type "${prefix}" to interact with me! I'm online for ${ms(client.uptime, {long: true})}.`,
 		type: "PLAYING",
 	});
 }
