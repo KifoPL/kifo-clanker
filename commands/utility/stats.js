@@ -48,7 +48,7 @@ module.exports = {
 				);
 			}
 
-			var fileContent = `User ID\tUser name\tNickname\n`;
+			var fileContent = `User ID\tPosition\tUser name\tNickname\n`;
 
 			await memberList
 			// .sorted((memberA, memberB) => {
@@ -58,7 +58,7 @@ module.exports = {
 			// 	);
 			// })
 			.each((member) => {
-				fileContent += `${member.id}\t${member.user.username}\t${
+				fileContent += `${member.id}\t${member.roles.highest.rawPosition}\t${member.user.username}\t${
 					member.nickname ?? ""
 				}\n`;
 			});
@@ -136,7 +136,7 @@ module.exports = {
 				let channelcategorycount = 0;
 				let channelnewscount = 0;
 
-				var fileContent = `User ID\tUser name\tNickname\n`;
+				var fileContent = `User ID\tPosition\tUser name\tNickname\n`;
 
 				await message.guild.members.cache
 					// .sorted((memberA, memberB) => {
@@ -149,7 +149,7 @@ module.exports = {
 						if (member.user.bot) botcount++;
 						if (member.premiumSinceTimestamp != undefined)
 							boostcount++;
-						fileContent += `${member.id}\t${
+						fileContent += `${member.id}\t${member.roles.highest.rawPosition}\t${
 							member.user.username
 						}\t${member.nickname ?? ""}\n`;
 					});
@@ -364,7 +364,7 @@ module.exports = {
 						time.getTime() - entity.user.createdAt.getTime();
 					let membertime = time.getTime() - entity.joinedAt.getTime();
 					let rolecount = 0;
-					let fileContent = `Role ID\tRole name\n`;
+					let fileContent = `Role ID\tPosition\tRole name\n`;
 					let statusicon;
 					if (
 						entity.presence.status == "online" ||
@@ -377,7 +377,7 @@ module.exports = {
 						// 	return roleB.rawPosition - roleA.rawPosition;
 						// })
 						.each((role) => {
-							fileContent += `${role.id}\t${role.name}\n`;
+							fileContent += `${role.id}\t${role.rawPosition}\t${role.name}\n`;
 							rolecount++;
 						});
 
@@ -683,7 +683,7 @@ module.exports = {
 						time.getTime() - entity.createdAt.getTime();
 					let perms = entity.permissions;
 					let membercount = 0;
-					var fileContent = `User ID\tUser name\tNickname\n`;
+					var fileContent = `User ID\tPosition\tUser name\tNickname\n`;
 					await entity.members
 						// .sorted((memberA, memberB) => {
 						// 	return (
@@ -693,7 +693,7 @@ module.exports = {
 						// })
 						.each((member) => {
 							membercount++;
-							fileContent += `${member.id}\t${
+							fileContent += `${member.id}\t${member.roles.highest.rawPosition}\t${
 								member.user.username
 							}\t${member.nickname ?? ""}\n`;
 						});
