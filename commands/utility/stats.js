@@ -43,14 +43,14 @@ module.exports = {
 
 			let memberList = message.guild.members.cache;
 			for (i = 0; i < roleIDs.length; i++) {
-				memberList = memberList.filter((member) =>
+				memberList = await memberList.filter((member) =>
 					member.roles.cache.has(roleIDs[i])
 				);
 			}
 
 			var fileContent = `User ID\tUser name\tNickname\n`;
 
-			memberList.sorted((memberA, memberB) => {
+			await memberList.sorted((memberA, memberB) => {
 				return (
 					memberB.roles.highest.rawPosition -
 					memberA.roles.highest.rawPosition
