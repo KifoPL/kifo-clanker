@@ -46,6 +46,7 @@ module.exports = {
 			let channelvoicecount = 0;
 			let channeltextcount = 0;
 			let channelcategorycount = 0;
+			let channelnewscount = 0;
 
 			var fileContent = `User ID\tUser name\tNickname\n`;
 
@@ -60,7 +61,22 @@ module.exports = {
 						member.presence.status != "offline" && !member.user.bot
 				)
 				.each(() => onlinecount++);
-			await message.guild.channels.cache.each(() => channelcount++);
+
+				//const ChannelCollection = new Discord.Collection();
+			await message.guild.channels.cache.each((channel) => {
+				channelcount++;
+				// if (ChannelCollection.has(channel.type))
+				// {
+				// 	ChannelCollection.set(channel.type, ChannelCollection.get(channel.type) + 1)
+				// }
+				// else
+				// {
+				// 	ChannelCollection.set(channel.type, 1);
+				// }
+			});
+			// ChannelCollection.each((value, key) => {
+			// 	console.log(`${key}: ${value}`)
+			// })
 			await message.guild.channels.cache
 				.filter((channel) => channel.type == "voice")
 				.each(() => channelvoicecount++);
@@ -70,6 +86,9 @@ module.exports = {
 			await message.guild.channels.cache
 				.filter((channel) => channel.type == "category")
 				.each(() => channelcategorycount++);
+			await message.guild.channels.cache
+			.filter((channel) => channel.type == "news")
+			.each(() => channelnewscount++);
 
 			fs.writeFileSync(`./${message.guild.id} members.txt`, fileContent, () => {});
 			//console.log(`${path.resolve(`${message.guild.id}members.txt`)}`);
@@ -148,7 +167,7 @@ module.exports = {
 					},
 					{
 						name: `Channels`,
-						value: `<:voice:823658022684721164> ${channelvoicecount} voice channels, <:textchannel:823658022849085512> ${channeltextcount} text channels, <:category:823658022706217011> ${channelcategorycount} categories, Total: ${channelcount}.`,
+						value: `<:voice:823658022684721164> ${channelvoicecount} voice channel${channelvoicecount != 1 ? "s" : ""}, <:textchannel:823658022849085512> ${channeltextcount} text channel${channeltextcount != 1 ? "s" : ""}, <:categoryNEW:842672130420506625> ${channelcategorycount} categor${channelcategorycount != 1 ? "ies" : "y"}, <:announcement:842672130587754506> ${channelnewscount} news channel${channelnewscount != 1 ? "s" : ""}, Total: ${channelcount}.`,
 					},
 					// {name: `\u200B`, value: `\u200B`},
 					{
@@ -452,7 +471,7 @@ module.exports = {
 							entity.joinedAt.getTime() -
 								entity.user.createdAt.getTime(),
 							{ long: true }
-						)} after bot creation).`
+						)} after server creation).`
 					)
 					.addFields(
 						{
@@ -610,16 +629,123 @@ module.exports = {
 			}
 			//CHANNEL STATS --- NOT YET IMPLEMENTED
 			else if (whatami == "channel") {
+
 				message.channel.stopTyping(true);
 				return message.reply("channel stats will be implemented one day.");
+
+				//TODO FINISH THIS
+				type = entity.type;
+				emote = "";
+				if (type == "text") emote = `<:textchannel:823658022849085512>`;
+				else if (type == "category") emote = `<:categoryNEW:842672130420506625>`;
+				else if (type == "voice") emote = `<:voice:823658022684721164>`;
+				else if (type == "news") emote = `<:announcement:842672130587754506>`;
+				else return message.reply("unsupported channel type! Reach out to KifoPL#3358 to notify him of the error.");
+
+				let channelage = time.getTime() - entity.createdAt.getTime();
+
+				newEmbed
+					.setColor("a039a0")
+					.setTitle(`${entity.name} stats:`)
+					.setDescription(
+						`${emote} ${type == "text" || type == "news" ? entity.topic : ""}`
+					)
+					.setAuthor(
+						"Kifo Clanker™, by KifoPL#3358",
+						message.guild.me?.user?.avatarURL({
+							format: "png",
+							dynamic: true,
+							size: 64,
+						}),
+						"https://github.com/KifoPL/kifo-clanker/"
+					)
+					.setFooter(
+						`Channel created at: ${entity.createdAt.toUTCString()}, ${ms(
+							entity.createdAt.getTime() -
+								entity.guild.createdAt.getTime(),
+							{ long: true }
+						)} after server creation.\nIt is ${ms(channelage, {
+							long: true,
+						})} old.`
+					)
+					.addFields(
+						{
+							name: `Roles`,
+							value: `<:role:823658022948700240> ${
+								rolecount != 1
+									? `${
+											rolecount - 1
+									  } roles, highest role is ${
+											entity.roles?.highest?.name
+									  } (${
+											-entity.roles?.highest.comparePositionTo(
+												message.guild.roles.highest
+											) + 1
+									  }${place(
+											-entity.roles?.highest.comparePositionTo(
+												message.guild.roles.highest
+											) + 1
+									  )} out of ${serverrolecount} server roles), ${
+											entity.roles?.hoist?.name ==
+											undefined
+												? `not hoisted`
+												: `\nhoisted as <:hoist:823907804141322311> ${entity.roles?.hoist?.name}`
+									  }.`
+									: `This bot has no roles yet.`
+							}`,
+						},
+						{
+							name: `Status`,
+							value: `${statusicon} Bot is currently **${entity.presence.status}**.`,
+						},
+						{
+							name: `Interesting stats:`,
+							value: `(They're seriously interesting, though!)`,
+						},
+						{
+							name: `IQ level: ${iqfield.name}`,
+							value: iqfield.value,
+							inline: true,
+						},
+						{
+							name: `PP: ${ppfield.name}`,
+							value: ppfield.value,
+							inline: true,
+						},
+						{
+							name: `Gayness level: ${howgayfield.name}`,
+							value: howgayfield.value,
+							inline: false,
+						},
+						//{name: "Also:", value: `You can check your own stats with "!kifo stats me", or someone else's stats by ${this.usage}`},
+						{
+							name: "More",
+							value:
+								"❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
+						}
+					)
+
+
 			}
 		}
 		await message.channel.send(newEmbed).catch(err => {
 			console.error(err);
 		});
 		message.channel.stopTyping(true);
-		fs.unlink(`./${message.guild.id} members.txt`, () => {});
-		fs.unlink(`./${entity.id} roles.txt`, () => {});
-		fs.unlink(`./${entity.id} members.txt`, () => {});
+		try
+		{
+			fs.unlink(`./${message.guild.id} members.txt`, () => {}).catch(() => {});
+		}
+		catch (err) {}
+		try
+		{
+			fs.unlink(`./${entity.id} members.txt`, () => {}).catch(() => {});
+		}
+		catch (err) {}
+		try
+		{
+			fs.unlink(`./${entity.id} roles.txt`, () => {}).catch(() => {});
+		}
+		catch (err) {}
 	},
 };

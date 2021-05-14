@@ -107,7 +107,8 @@ module.exports = {
 		//key - category name, value - amount of commands
 		FieldArr.push(Field);
 		const FolderCollection = new Discord.Collection();
-
+		
+		var commandCount = 0;
 		commandList.each((cmd) => {
 			if (FolderCollection.has(cmd.folder)) {
 				FolderCollection.set(
@@ -117,10 +118,11 @@ module.exports = {
 			} else {
 				FolderCollection.set(cmd.folder, {folder: cmd.folder, value: 1});
 			}
+			commandCount++;
 		});
 
 		var Field = {};
-		let i = 0;
+		let CategoryCount = 0;
 		FolderCollection.sort((x, y) => x.folder - y.folder).each((cmdObject, categoryName) => {
 			var Field = {};
 			Field.name = `__${categoryName.toUpperCase()}__`;
@@ -135,7 +137,7 @@ module.exports = {
 				cmdListString.slice(0, cmdListString.length - 2) + ".";
 			Field.value = `This category has **${cmdObject.value}** commands: ${cmdListString}`;
 			FieldArr.push(Field);
-			i++;
+			CategoryCount++;
 		});
 		// for (const file of commandList) {
 		// 	const command = require(`./commands/${file}`);
@@ -150,7 +152,7 @@ module.exports = {
 		// }
 		const newEmbed = new Discord.MessageEmbed()
 			.setColor("a039a0")
-			.setTitle("List of " + i + " categories, by KifoPL:")
+			.setTitle(`List of ${commandCount} commands in ${CategoryCount} categories, by KifoPL:`)
 			.setDescription(
 				`Type !kifo help <category> to get detailed list of commands, or !kifo help <command> to get help for that command.`
 			)

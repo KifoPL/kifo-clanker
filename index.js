@@ -282,53 +282,7 @@ async function commands(message) {
 	db.get("debug", function (err, reply) {
 		debug = reply;
 	});
-
-	if (!client.commands.has(command)) {
-		const embedreply = new Discord.MessageEmbed();
-		embedreply
-			.setColor("a039a0")
-			.setAuthor(
-				"Powered by Kifo Clanker™",
-				null,
-				`https://discord.gg/HxUFQCxPFp`
-			)
-			.setTitle(`Command ${command} not found.`)
-			.addField(
-				`Run ${prefix.trim()} help to get list of available commands.`
-			);
-		return message.channel.send(embedreply);
-	}
-
-	const contents = fs.readFileSync(`./commandList.json`);
-	var jsonCmdList = JSON.parse(contents);
-
-	if (command == "debug" && message.author == Owner) {
-		await sleep(200);
-		debug == "true" ? (debug = "false") : (debug = "true");
-		message.reply("debug mode set to " + debug);
-		db.set("debug", debug);
-		if (debug == "true") {
-			client.user.setStatus("dnd").then(() =>
-				client.user.setActivity({
-					name:
-						"The bot is undergoing maintenance, the commands are disabled for now (passive functions still work).",
-					type: "PLAYING",
-				})
-			);
-		} else {
-			client.user.setStatus("online").then(() =>
-				client.user.setActivity({
-					name: `Type ${prefix}to interact with the bot! (also Kifo Clanker >>>> Giratina)`,
-					type: "PLAYING",
-				})
-			);
-		}
-		return;
-	}
-	if (debug == "true" && message.author != Owner)
-		return message.reply(
-			"the bot is currently undergoing maintenance. Although it still works (reactions, super slow-mode, etc.), you cannot use commands for a while. Please be patient (it usually takes me an hour at most to deal with maintenance)."
-		);
+	
 	if (command == "serverlist" && message.author == Owner) {
 		console.log("run SERVERLIST command");
 		let serversarr = [];
@@ -357,6 +311,27 @@ async function commands(message) {
 		message.channel.send(serverembed).catch(() => {});
 		return;
 	}
+
+	if (!client.commands.has(command)) {
+		const embedreply = new Discord.MessageEmbed();
+		embedreply
+			.setColor("a039a0")
+			.setAuthor(
+				"Powered by Kifo Clanker™",
+				null,
+				`https://discord.gg/HxUFQCxPFp`
+			)
+			.setTitle(`Command ${command} not found.`)
+			.addField(
+				`Run ${prefix.trim()} help to get list of available commands.`
+			);
+		return message.channel.send(embedreply);
+	}
+
+	const contents = fs.readFileSync(`./commandList.json`);
+	var jsonCmdList = JSON.parse(contents);
+
+
 	if (command == "help") {
 		const event = new Date(Date.now());
 		console.log(
@@ -775,11 +750,8 @@ client.once("ready", () => {
 	//DELETING SLASH COMMANDS CODE FOR NOW, I tried using prebuilt API, but it was "too" prebuild and it didn't fit my bot at all. Will have to do stuff manually...
 
 	//This line is executed by default, but I'm just making sure the status is online (other factors could change the status)
-	client.user.setStatus("online");
-	client.user.setActivity({
-		name: `Type "${prefix}" to interact with me! (also Kifo Clanker >>>> Giratina)`,
-		type: "PLAYING",
-	});
+	updatePresence();
+	setInterval(updatePresence, 1000 * 60 * 3);
 
 	//for WoofWoofWolffe feature
 	client.guilds.fetch("698075892974354482").then((guild) => {
@@ -798,6 +770,14 @@ client.once("ready", () => {
 		});
 	});
 });
+
+function updatePresence() {
+	client.user.setStatus("online");
+	client.user.setActivity({
+		name: `Type "${prefix}" to interact with me! It's online for ${ms(client.uptime, {long: true})}.`,
+		type: "PLAYING",
+	});
+}
 
 //USED BY REACT COMMAND
 let reactreturn;
