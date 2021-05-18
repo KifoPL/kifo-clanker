@@ -246,7 +246,7 @@ async function superslow(message) {
 function checks(message) {
 	//No bot in #citizens
 
-	if (message.channel.id == "707650931809976391") return false;
+	//if (message.channel.id == "707650931809976391") return false;
 
 	//Only me and @Tester can use Offline test
 	if (
