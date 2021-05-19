@@ -769,6 +769,14 @@ client.once("ready", () => {
 			).uses;
 		});
 	});
+	//for NumeralJoker feature
+	client.guilds.fetch("698075892974354482").then((guild) => {
+		guild.fetchInvites().then((invites) => {
+			NumeralJokerCount = invites.find(
+				(invite) => invite.inviter.id == "285906871393452043"
+			).uses;
+		});
+	});
 });
 
 function updatePresence() {
@@ -844,6 +852,22 @@ client.on("guildMemberAdd", (member) => {
 					)
 					.catch(console.error);
 				HaberInviteCount++;
+			}
+			//NumeralJoker
+			else if (
+				invites.find(
+					(invite) => invite.inviter.id == "285906871393452043"
+				).uses ==
+				NumeralJokerCount + 1
+			) {
+				member.roles
+					.add(
+						member.guild.roles.cache.find(
+							(role) => role.id == "844594877885972480"
+						)
+					)
+					.catch(console.error);
+				NumeralJokerCount++;
 			}
 		})
 		.catch(console.error);
