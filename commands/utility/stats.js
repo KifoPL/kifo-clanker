@@ -84,12 +84,6 @@ module.exports = {
 						value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 					}
 				)
-				.attachFiles([
-					{
-						attachment: `./${args[0]}ETCmembers.txt`,
-						name: `${args[0]}ETCmembers.txt`,
-					},
-				]);
 		}
 		let guildcount = 0;
 
@@ -256,12 +250,6 @@ module.exports = {
 							value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 						}
 					)
-					.attachFiles([
-						{
-							attachment: `./${message.guild.id} members.txt`,
-							name: `${message.guild.name} members.txt`,
-						},
-					]);
 			} else {
 				//NOT SERVER STATS (user, bot, role, channel)
 
@@ -339,6 +327,8 @@ module.exports = {
 					)
 						statusicon = "<:online:823658022974521414>";
 					else statusicon = "<:offline:823658022957613076>";
+
+					await entity.roles.cache.each(() => rolecount++);
 
 					const ppfield = await ppcmd.execute(
 						message,
@@ -470,12 +460,6 @@ module.exports = {
 								value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 							}
 						)
-						.attachFiles([
-							{
-								attachment: `./${entity.id} roles.txt`,
-								name: `${entity.id} roles.txt`,
-							},
-						]);
 				}
 				//BOT STATS
 				else if (whatami == "bot") {
@@ -490,7 +474,7 @@ module.exports = {
 					)
 						statusicon = "<:online:823658022974521414>";
 					else statusicon = "<:offline:823658022957613076>";
-					await entity.roles.cache
+					await entity.roles.cache.each(() => rolecount++);
 						// .sorted((roleA, roleB) => {
 						// 	return roleB.rawPosition - roleA.rawPosition;
 						// })
@@ -613,12 +597,6 @@ module.exports = {
 								value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 							}
 						)
-						.attachFiles([
-							{
-								attachment: `./${entity.id} roles.txt`,
-								name: `${entity.id} roles.txt`,
-							},
-						]);
 				}
 				//ROLE STATS
 				else if (whatami == "role") {
@@ -725,12 +703,6 @@ module.exports = {
 								value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 							}
 						)
-						.attachFiles([
-							{
-								attachment: `./${entity.id} members.txt`,
-								name: `${message.id} members.txt`,
-							},
-						]);
 				}
 				//CHANNEL STATS --- NOT YET IMPLEMENTED
 				else if (whatami == "channel") {
