@@ -1,7 +1,7 @@
 module.exports = {
-	name: "stats",
-	description: `Displays server stats, or user stats if user provided.`,
-	usage: "!kifo stats <opional_user_or_role> <optioanl_role2> <optional_role_n>",
+	name: "list",
+	description: `Lists all users in the server, or users having certain role.\nTo list more than 420 users you need admin perms.`,
+	usage: "!kifo list <opional_user_or_role> <optioanl_role2> <optional_role_n>",
 	adminonly: false,
 	async execute(message, args, Discord) {
 		//This is for timestamps
@@ -47,6 +47,32 @@ module.exports = {
 					member.roles.cache.has(roleIDs[i])
 				);
 			}
+
+			var fileContent = `User ID\tPosition\tUser name\tNickname\n`;
+
+			var Count = 0;
+
+			await memberList
+			// .sorted((memberA, memberB) => {
+			// 	return (
+			// 		memberB.roles.highest.rawPosition -
+			// 		memberA.roles.highest.rawPosition
+			// 	);
+			// })
+			.each((member) => {
+				fileContent += `${member.id}\t${member.roles.highest.rawPosition}\t${member.user.username}\t${
+					member.nickname ?? ""
+				}\n`;
+				Count++;
+			});
+
+			if (Count > 420 && !message.member.permissions.has("ADMINISTRATOR")) return message.reply(`The output has ${Count} members, and only ADMIN can generate file this large.`)
+
+			fs.writeFileSync(
+				`./${args[0]}ETCmembers.txt`,
+				fileContent,
+				() => {}
+			);
 
 			var roleList = "";
 			for (i = 0; i < roleIDs.length; i++) {
@@ -115,6 +141,9 @@ module.exports = {
 				let channelcategorycount = 0;
 				let channelnewscount = 0;
 
+				var fileContent = `User ID\tPosition\tUser name\tNickname\n`;
+				var Count = 0;
+
 				await message.guild.members.cache
 					// .sorted((memberA, memberB) => {
 					// 	return (
@@ -126,6 +155,10 @@ module.exports = {
 						if (member.user.bot) botcount++;
 						if (member.premiumSinceTimestamp != undefined)
 							boostcount++;
+						fileContent += `${member.id}\t${member.roles.highest.rawPosition}\t${
+							member.user.username
+						}\t${member.nickname ?? ""}\n`;
+						Count++;
 					});
 				await message.guild.members.cache
 					.filter(
@@ -134,6 +167,7 @@ module.exports = {
 							!member.user.bot
 					)
 					.each(() => onlinecount++);
+					if (Count > 1000 && !message.member.permissions.has("ADMINISTRATOR")) return message.reply(`The output has ${Count} members, and only ADMIN can generate file this large.`)
 
 				//const ChannelCollection = new Discord.Collection();
 				await message.guild.channels.cache.each((channel) => {
@@ -162,6 +196,12 @@ module.exports = {
 				await message.guild.channels.cache
 					.filter((channel) => channel.type == "news")
 					.each(() => channelnewscount++);
+
+				fs.writeFileSync(
+					`./${message.guild.id} members.txt`,
+					fileContent,
+					() => {}
+				);
 				//console.log(`${path.resolve(`${message.guild.id}members.txt`)}`);
 
 				let servertime =
@@ -332,6 +372,7 @@ module.exports = {
 						time.getTime() - entity.user.createdAt.getTime();
 					let membertime = time.getTime() - entity.joinedAt.getTime();
 					let rolecount = 0;
+					let fileContent = `Role ID\tPosition\tRole name\n`;
 					let statusicon;
 					if (
 						entity.presence.status == "online" ||
@@ -339,6 +380,14 @@ module.exports = {
 					)
 						statusicon = "<:online:823658022974521414>";
 					else statusicon = "<:offline:823658022957613076>";
+					await entity.roles.cache
+						// .sorted((roleA, roleB) => {
+						// 	return roleB.rawPosition - roleA.rawPosition;
+						// })
+						.each((role) => {
+							fileContent += `${role.id}\t${role.rawPosition}\t${role.name}\n`;
+							rolecount++;
+						});
 
 					const ppfield = await ppcmd.execute(
 						message,
@@ -358,6 +407,12 @@ module.exports = {
 						args,
 						Discord,
 						true
+					);
+
+					fs.writeFileSync(
+						`./${entity.id} roles.txt`,
+						fileContent,
+						() => {}
 					);
 
 					newEmbed
@@ -484,6 +539,7 @@ module.exports = {
 					let membertime = time.getTime() - entity.joinedAt.getTime();
 					let rolecount = 0;
 					let statusicon;
+					let fileContent = `Role ID\tRole name\n`;
 					if (
 						entity.presence.status == "online" ||
 						entity.presence.status == "idle"
@@ -494,7 +550,10 @@ module.exports = {
 						// .sorted((roleA, roleB) => {
 						// 	return roleB.rawPosition - roleA.rawPosition;
 						// })
-
+						.each((role) => {
+							rolecount++;
+							fileContent += `${role.id}\t${role.name}\n`;
+						});
 					const ppfield = await ppcmd.execute(
 						message,
 						args,
@@ -513,6 +572,12 @@ module.exports = {
 						args,
 						Discord,
 						true
+					);
+
+					fs.writeFileSync(
+						`./${entity.id} roles.txt`,
+						fileContent,
+						() => {}
 					);
 
 					newEmbed
@@ -626,6 +691,8 @@ module.exports = {
 						time.getTime() - entity.createdAt.getTime();
 					let perms = entity.permissions;
 					let membercount = 0;
+					var fileContent = `User ID\tPosition\tUser name\tNickname\n`;
+					var Count = 0;
 					await entity.members
 						// .sorted((memberA, memberB) => {
 						// 	return (
@@ -638,13 +705,21 @@ module.exports = {
 							fileContent += `${member.id}\t${member.roles.highest.rawPosition}\t${
 								member.user.username
 							}\t${member.nickname ?? ""}\n`;
+							Count++;
 						});
+						if (Count > 1000 && !message.member.permissions.has("ADMINISTRATOR")) return message.reply(`The output has ${Count} members, and only ADMIN can generate file this large.`)
 					let strperms = "";
 					await perms
 						.toArray()
 						.forEach(function (item, index, array) {
 							strperms += `${item}\n`;
 						});
+
+					fs.writeFileSync(
+						`./${entity.id} members.txt`,
+						fileContent,
+						() => {}
+					);
 
 					newEmbed
 						.setColor("a039a0")
@@ -849,5 +924,19 @@ module.exports = {
 			console.error(err);
 		});
 		message.channel.stopTyping(true);
+		try {
+			fs.unlink(`./${message.guild.id} members.txt`, () => {}).catch(
+				() => {}
+			);
+		} catch (err) {}
+		try {
+			fs.unlink(`./${entity.id} members.txt`, () => {}).catch(() => {});
+		} catch (err) {}
+		try {
+			fs.unlink(`./${entity.id} roles.txt`, () => {}).catch(() => {});
+		} catch (err) {}
+		try {
+			fs.unlink(`./${args[0]}ETCmembers.txt`, () => {}).catch(() => {});
+		} catch (err) {}
 	},
 };
