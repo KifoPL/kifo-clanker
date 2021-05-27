@@ -695,7 +695,7 @@ async function onmessage(message) {
 	if (speakcheck) {
 		hello(message).catch(() => {});
 
-		if (!message.content.toLowerCase().startsWith(prefix.toLowerCase().trim()) || message.author.bot) return;
+		if (!message.content.toLowerCase().startsWith(prefix.toLowerCase()) || message.author.bot) return;
 
 		//No role and @here and @everyone pings
 		if (message.mentions.roles.firstKey() != undefined)
