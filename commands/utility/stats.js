@@ -41,7 +41,9 @@ module.exports = {
 				i++;
 			}
 
-			let memberList = await message.guild.members.cache.filter(member => member.roles.cache.has(roleIDs[0]));
+			let memberList = await message.guild.members.cache.filter(
+				(member) => member.roles.cache.has(roleIDs[0])
+			);
 			for (i = 1; i < roleIDs.length; i++) {
 				memberList = await memberList.filter((member) =>
 					member.roles.cache.has(roleIDs[i])
@@ -83,7 +85,7 @@ module.exports = {
 						name: "More",
 						value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 					}
-				)
+				);
 		}
 		let guildcount = 0;
 
@@ -249,7 +251,7 @@ module.exports = {
 							name: "More",
 							value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 						}
-					)
+					);
 			} else {
 				//NOT SERVER STATS (user, bot, role, channel)
 
@@ -459,7 +461,7 @@ module.exports = {
 								name: "More",
 								value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 							}
-						)
+						);
 				}
 				//BOT STATS
 				else if (whatami == "bot") {
@@ -475,9 +477,9 @@ module.exports = {
 						statusicon = "<:online:823658022974521414>";
 					else statusicon = "<:offline:823658022957613076>";
 					await entity.roles.cache.each(() => rolecount++);
-						// .sorted((roleA, roleB) => {
-						// 	return roleB.rawPosition - roleA.rawPosition;
-						// })
+					// .sorted((roleA, roleB) => {
+					// 	return roleB.rawPosition - roleA.rawPosition;
+					// })
 
 					const ppfield = await ppcmd.execute(
 						message,
@@ -596,7 +598,7 @@ module.exports = {
 								name: "More",
 								value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 							}
-						)
+						);
 				}
 				//ROLE STATS
 				else if (whatami == "role") {
@@ -611,12 +613,7 @@ module.exports = {
 						// 		memberA.roles.highest.rawPosition
 						// 	);
 						// })
-						.each((member) => {
-							membercount++;
-							fileContent += `${member.id}\t${member.roles.highest.rawPosition}\t${
-								member.user.username
-							}\t${member.nickname ?? ""}\n`;
-						});
+						.each(() => membercount++);
 					let strperms = "";
 					await perms
 						.toArray()
@@ -702,7 +699,7 @@ module.exports = {
 								name: "More",
 								value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 							}
-						)
+						);
 				}
 				//CHANNEL STATS --- NOT YET IMPLEMENTED
 				else if (whatami == "channel") {
