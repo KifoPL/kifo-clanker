@@ -59,7 +59,7 @@ module.exports = {
 				Count > 1000 &&
 				!message.member.permissions.has("ADMINISTRATOR")
 			) {
-				message.channel.stopTyping(true).catch(() => {});
+				message.channel.stopTyping(true);
 				return message.reply(
 					`The output has ${Count} members, and only ADMIN can generate file this large.`
 				);
@@ -159,7 +159,7 @@ module.exports = {
 					Count > 1000 &&
 					!message.member.permissions.has("ADMINISTRATOR")
 				) {
-					message.channel.stopTyping(true).catch(() => {});
+					message.channel.stopTyping(true);
 					return message.reply(
 						`The output has ${Count} members, and only ADMIN can generate file this large.`
 					);
