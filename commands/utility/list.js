@@ -41,7 +41,9 @@ module.exports = {
 				i++;
 			}
 
-			let memberList = await message.guild.members.cache.filter(member => member.roles.cache.has(roleIDs[0]));
+			let memberList = await message.guild.members.cache.filter(
+				(member) => member.roles.cache.has(roleIDs[0])
+			);
 			for (i = 1; i < roleIDs.length; i++) {
 				memberList = await memberList.filter((member) =>
 					member.roles.cache.has(roleIDs[i])
@@ -53,20 +55,28 @@ module.exports = {
 			var Count = 0;
 
 			await memberList
-			// .sorted((memberA, memberB) => {
-			// 	return (
-			// 		memberB.roles.highest.rawPosition -
-			// 		memberA.roles.highest.rawPosition
-			// 	);
-			// })
-			.each((member) => {
-				fileContent += `${member.id}\t${member.roles.highest.rawPosition}\t${member.user.username}\t${
-					member.nickname ?? ""
-				}\n`;
-				Count++;
-			});
+				// .sorted((memberA, memberB) => {
+				// 	return (
+				// 		memberB.roles.highest.rawPosition -
+				// 		memberA.roles.highest.rawPosition
+				// 	);
+				// })
+				.each((member) => {
+					fileContent += `${member.id}\t${
+						member.roles.highest.rawPosition
+					}\t${member.user.username}\t${member.nickname ?? ""}\n`;
+					Count++;
+				});
 
-			if (Count > 420 && !message.member.permissions.has("ADMINISTRATOR")) return message.reply(`The output has ${Count} members, and only ADMIN can generate file this large.`)
+			if (
+				Count > 1000 &&
+				!message.member.permissions.has("ADMINISTRATOR")
+			) {
+				message.channel.stopTyping(true).catch(() => {});
+				return message.reply(
+					`The output has ${Count} members, and only ADMIN can generate file this large.`
+				);
+			}
 
 			fs.writeFileSync(
 				`./${args[0]}ETCmembers.txt`,
@@ -144,6 +154,17 @@ module.exports = {
 				var fileContent = `User ID\tPosition\tUser name\tNickname\n`;
 				var Count = 0;
 
+				await message.guild.channels.cache.each(() => Count++);
+				if (
+					Count > 1000 &&
+					!message.member.permissions.has("ADMINISTRATOR")
+				) {
+					message.channel.stopTyping(true).catch(() => {});
+					return message.reply(
+						`The output has ${Count} members, and only ADMIN can generate file this large.`
+					);
+				}
+
 				await message.guild.members.cache
 					// .sorted((memberA, memberB) => {
 					// 	return (
@@ -155,10 +176,9 @@ module.exports = {
 						if (member.user.bot) botcount++;
 						if (member.premiumSinceTimestamp != undefined)
 							boostcount++;
-						fileContent += `${member.id}\t${member.roles.highest.rawPosition}\t${
-							member.user.username
-						}\t${member.nickname ?? ""}\n`;
-						Count++;
+						fileContent += `${member.id}\t${
+							member.roles.highest.rawPosition
+						}\t${member.user.username}\t${member.nickname ?? ""}\n`;
 					});
 				await message.guild.members.cache
 					.filter(
@@ -167,7 +187,6 @@ module.exports = {
 							!member.user.bot
 					)
 					.each(() => onlinecount++);
-					if (Count > 1000 && !message.member.permissions.has("ADMINISTRATOR")) return message.reply(`The output has ${Count} members, and only ADMIN can generate file this large.`)
 
 				//const ChannelCollection = new Discord.Collection();
 				await message.guild.channels.cache.each((channel) => {
@@ -702,12 +721,20 @@ module.exports = {
 						// })
 						.each((member) => {
 							membercount++;
-							fileContent += `${member.id}\t${member.roles.highest.rawPosition}\t${
-								member.user.username
-							}\t${member.nickname ?? ""}\n`;
+							fileContent += `${member.id}\t${
+								member.roles.highest.rawPosition
+							}\t${member.user.username}\t${
+								member.nickname ?? ""
+							}\n`;
 							Count++;
 						});
-						if (Count > 1000 && !message.member.permissions.has("ADMINISTRATOR")) return message.reply(`The output has ${Count} members, and only ADMIN can generate file this large.`)
+					if (
+						Count > 1000 &&
+						!message.member.permissions.has("ADMINISTRATOR")
+					)
+						return message.reply(
+							`The output has ${Count} members, and only ADMIN can generate file this large.`
+						);
 					let strperms = "";
 					await perms
 						.toArray()
