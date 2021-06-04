@@ -54,6 +54,17 @@ module.exports = {
 
 			var Count = 0;
 
+			await memberList.each(() => Count++)
+			if (
+				Count > 1000 &&
+				!message.member.permissions.has("ADMINISTRATOR")
+			) {
+				message.channel.stopTyping(true).catch(() => {});
+				return message.reply(
+					`The output has ${Count} members, and only ADMIN can generate file this large.`
+				);
+			}
+
 			await memberList
 				// .sorted((memberA, memberB) => {
 				// 	return (
@@ -65,18 +76,7 @@ module.exports = {
 					fileContent += `${member.id}\t${
 						member.roles.highest.rawPosition
 					}\t${member.user.username}\t${member.nickname ?? ""}\n`;
-					Count++;
 				});
-
-			if (
-				Count > 1000 &&
-				!message.member.permissions.has("ADMINISTRATOR")
-			) {
-				message.channel.stopTyping(true).catch(() => {});
-				return message.reply(
-					`The output has ${Count} members, and only ADMIN can generate file this large.`
-				);
-			}
 
 			fs.writeFileSync(
 				`./${args[0]}ETCmembers.txt`,
@@ -154,7 +154,7 @@ module.exports = {
 				var fileContent = `User ID\tPosition\tUser name\tNickname\n`;
 				var Count = 0;
 
-				await message.guild.channels.cache.each(() => Count++);
+				await message.guild.members.cache.each(() => Count++);
 				if (
 					Count > 1000 &&
 					!message.member.permissions.has("ADMINISTRATOR")
