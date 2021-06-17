@@ -3,6 +3,7 @@ module.exports = {
 	description: `If this bot encountered an error anywhere, please type this command right after. It will ping me (KifoPL#3358).\nWARNING! If you spam this command for no reason, you will get warned on the same premise as spam pinging. Use only when encountering actual errors.`,
 	usage: "kifo error <optional_description>",
 	adminonly: false,
+	perms: ["SEND_MESSAGES"],
 	async execute(message, args, Discord, client) {
 		const clientapp = await client.fetchApplication();
 

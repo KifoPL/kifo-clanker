@@ -3,6 +3,7 @@ module.exports = {
 	description: `Measure your PP length with this totally reliable pp length calculator. Each user has his own constant pp length (like irl), it's not random.`,
 	usage: "!kifo pp <optional_user>",
 	adminonly: false,
+	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord, isStats = false, userID = 0) {
 		let userid = 0;
 		let pplen = 0;

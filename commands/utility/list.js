@@ -3,6 +3,7 @@ module.exports = {
 	description: `Lists all users in the server, or users having certain role.\nTo list more than 420 users you need admin perms.`,
 	usage: "!kifo list <opional_user_or_role> <optioanl_role2> <optional_role_n>",
 	adminonly: false,
+	perms: ["SEND_MESSAGES", "MANAGE_GUILD"],
 	async execute(message, args, Discord) {
 		//This is for timestamps
 		const ms = require(`ms`);
@@ -21,6 +22,12 @@ module.exports = {
 		if (message.guild == null)
 			return message.reply(
 				"you can only run this command on the server."
+			);
+		if (
+			!message.guild.me.permissionsIn(message.channel).has("ATTACH_FILES")
+		)
+			return message.reply(
+				"I do not have `ATTACH_FILES` permissions in this channel."
 			);
 		message.channel.startTyping().catch(() => {});
 		const newEmbed = new Discord.MessageEmbed();
@@ -54,14 +61,14 @@ module.exports = {
 
 			var Count = 0;
 
-			await memberList.each(() => Count++)
+			await memberList.each(() => Count++);
 			if (
 				Count > 1000 &&
-				!message.member.permissions.has("ADMINISTRATOR")
+				!message.member.permissions.has("MANAGE_GUILD")
 			) {
 				message.channel.stopTyping(true);
 				return message.reply(
-					`The output has ${Count} members, and only ADMIN can generate file this large.`
+					`The output has ${Count} records, you need \`MANAGE_GUILD\` to create a file this large.`
 				);
 			}
 
@@ -157,11 +164,11 @@ module.exports = {
 				await message.guild.members.cache.each(() => Count++);
 				if (
 					Count > 1000 &&
-					!message.member.permissions.has("ADMINISTRATOR")
+					!message.member.permissions.has("MANAGE_GUILD")
 				) {
 					message.channel.stopTyping(true);
 					return message.reply(
-						`The output has ${Count} members, and only ADMIN can generate file this large.`
+						`The output has ${Count} records, you need \`MANAGE_GUILD\` to create a file this large.`
 					);
 				}
 
@@ -730,10 +737,10 @@ module.exports = {
 						});
 					if (
 						Count > 1000 &&
-						!message.member.permissions.has("ADMINISTRATOR")
+						!message.member.permissions.has("MANAGE_ROLES")
 					)
 						return message.reply(
-							`The output has ${Count} members, and only ADMIN can generate file this large.`
+							`The output has ${Count} records, you need \`MANAGE_ROLES\` to create a file this large.`
 						);
 					let strperms = "";
 					await perms

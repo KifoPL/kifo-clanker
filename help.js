@@ -4,6 +4,7 @@ module.exports = {
 		"This command lists all categories of commands.\nType !kifo help <command> to see help for a specific command.\nType !kifo help <category> to see list of commands for a specific category.",
 	usage: "!kifo help <optional_command_or_category>",
 	adminonly: false,
+	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord) {
 		const fs = require("fs");
 		const client = message.client;
@@ -37,7 +38,8 @@ module.exports = {
 					.setColor("a039a0")
 					.setTitle(args[0])
 					.setDescription(this.description)
-					.addField("Usage:", this.usage);
+					.addField("Usage:", this.usage)
+					.addField("Required permissions:", this.perms.join(", "));
 				message.channel.send(newEmbed);
 				return;
 			}
@@ -48,7 +50,11 @@ module.exports = {
 					.setColor("a039a0")
 					.setTitle(command.name)
 					.setDescription(command.description)
-					.addField("Usage:", command.usage);
+					.addField("Usage:", command.usage)
+					.addField(
+						"Required permissions:",
+						command.perms.join(", ")
+					);
 				message.channel.send(newEmbed);
 				return;
 			} else {
@@ -107,38 +113,43 @@ module.exports = {
 		//key - category name, value - amount of commands
 		FieldArr.push(Field);
 		const FolderCollection = new Discord.Collection();
-		
+
 		var commandCount = 0;
 		commandList.each((cmd) => {
 			if (FolderCollection.has(cmd.folder)) {
-				FolderCollection.set(
-					cmd.folder,
-					{folder: cmd.folder, value: (FolderCollection.get(cmd.folder).value + 1)}
-				);
+				FolderCollection.set(cmd.folder, {
+					folder: cmd.folder,
+					value: FolderCollection.get(cmd.folder).value + 1,
+				});
 			} else {
-				FolderCollection.set(cmd.folder, {folder: cmd.folder, value: 1});
+				FolderCollection.set(cmd.folder, {
+					folder: cmd.folder,
+					value: 1,
+				});
 			}
 			commandCount++;
 		});
 
 		var Field = {};
 		let CategoryCount = 0;
-		FolderCollection.sort((x, y) => x.folder - y.folder).each((cmdObject, categoryName) => {
-			var Field = {};
-			Field.name = `__${categoryName.toUpperCase()}__`;
-			let cmdListString = "";
-			commandList
-				.filter((cmd) => cmd.folder == categoryName)
-				.each((cmd) => {
-					cmdListString += `**${cmd.command.name}**, `;
-				});
-			cmdListString.trimRight();
-			cmdListString =
-				cmdListString.slice(0, cmdListString.length - 2) + ".";
-			Field.value = `This category has **${cmdObject.value}** commands: ${cmdListString}`;
-			FieldArr.push(Field);
-			CategoryCount++;
-		});
+		FolderCollection.sort((x, y) => x.folder - y.folder).each(
+			(cmdObject, categoryName) => {
+				var Field = {};
+				Field.name = `__${categoryName.toUpperCase()}__`;
+				let cmdListString = "";
+				commandList
+					.filter((cmd) => cmd.folder == categoryName)
+					.each((cmd) => {
+						cmdListString += `**${cmd.command.name}**, `;
+					});
+				cmdListString.trimRight();
+				cmdListString =
+					cmdListString.slice(0, cmdListString.length - 2) + ".";
+				Field.value = `This category has **${cmdObject.value}** commands: ${cmdListString}`;
+				FieldArr.push(Field);
+				CategoryCount++;
+			}
+		);
 		// for (const file of commandList) {
 		// 	const command = require(`./commands/${file}`);
 		// 	//Lists everything for admins and only user accessible commands otherwise.
@@ -152,7 +163,9 @@ module.exports = {
 		// }
 		const newEmbed = new Discord.MessageEmbed()
 			.setColor("a039a0")
-			.setTitle(`List of ${commandCount} commands in ${CategoryCount} categories, by KifoPL:`)
+			.setTitle(
+				`List of ${commandCount} commands in ${CategoryCount} categories, by KifoPL:`
+			)
 			.setDescription(
 				`Type !kifo help <category> to get detailed list of commands, or !kifo help <command> to get help for that command.`
 			)

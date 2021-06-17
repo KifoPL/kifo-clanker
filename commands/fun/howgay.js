@@ -3,6 +3,7 @@ module.exports = {
 	description: `A quick test to find out your gayness level.`,
 	usage: "!kifo howgay <optional_user>",
 	adminonly: false,
+	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord, isStats = false, userID = 0) {
 		let userid = 0;
 		let howgay = 0;

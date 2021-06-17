@@ -62,10 +62,12 @@ async function hello(message) {
 			.setAuthor(
 				"Hello there (click for bot invite link)!",
 				null,
-				"https://discord.com/api/oauth2/authorize?client_id=795638549730295820&permissions=8&scope=applications.commands%20bot"
+				"https://discord.com/api/oauth2/authorize?client_id=795638549730295820&permissions=76824&scope=applications.commands%20bot"
 			)
 			.setColor("a039a0")
-			.setTitle("See what's new! (click for Discord server invite)")
+			.setTitle(
+				"See what's new! (click for invite to my bot-dev Discord Server)"
+			)
 			.setURL("https://discord.gg/HxUFQCxPFp")
 			.setThumbnail(
 				message.guild.me?.user?.avatarURL({
@@ -76,7 +78,7 @@ async function hello(message) {
 			)
 			.addField(
 				`Follow my GitHub repo`,
-				"[LINK](https://github.com/KifoPL/kifo-clanker) - if you find a bug / have a cool idea for a new feature, please [create a ticket](https://github.com/KifoPL/kifo-clanker/issues/new)."
+				"[LINK](https://github.com/KifoPL/kifo-clanker) - if you find a bug / have a cool idea for a new feature, please [create a ticket](https://github.com/KifoPL/kifo-clanker/issues/new/choose)."
 			)
 			.addField(
 				"try !kifo help",
@@ -109,6 +111,24 @@ async function react(message) {
 				} else {
 					if (message.embeds[0] == null) return;
 				}
+				if (
+					!message.guild.me
+						.permissionsIn(message.channel)
+						.has("ADD_REACTIONS")
+				) {
+					const embedreply = new Discord.MessageEmbed();
+					embedreply
+						.setColor("a039a0")
+						.setAuthor(
+							"Powered by Kifo Clanker™",
+							null,
+							`https://discord.gg/HxUFQCxPFp`
+						)
+						.setTitle(
+							"Missing `ADD_REACTIONS` permission. Please turn off `react` module in this channel, or enable `ADD_REACTIONS` for me."
+						);
+					return message.reply(embedreply);
+				}
 				db.lrange(
 					"RT" + message.channel.id,
 					0,
@@ -137,6 +157,43 @@ async function react(message) {
 async function superslow(message) {
 	db.exists("SM" + message.channel.id, function (err, reply) {
 		if (reply === 1) {
+			if (
+				!message.guild.me
+					.permissionsIn(message.channel)
+					.has("MANAGE_CHANNELS")
+			) {
+				const embedreply = new Discord.MessageEmbed();
+				embedreply
+					.setColor("a039a0")
+					.setAuthor(
+						"Powered by Kifo Clanker™",
+						null,
+						`https://discord.gg/HxUFQCxPFp`
+					)
+					.setTitle(
+						"Missing `MANAGE_CHANNELS` permission. Please turn off `superslow` module in this channel, or enable `MANAGE_CHANNELS` for me."
+					);
+				return message.reply(embedreply);
+			}
+			if (
+				!message.guild.me
+					.permissionsIn(message.channel)
+					.has("MANAGE_MESSAGES")
+			) {
+				const embedreply = new Discord.MessageEmbed();
+				embedreply
+					.setColor("a039a0")
+					.setAuthor(
+						"Powered by Kifo Clanker™",
+						null,
+						`https://discord.gg/HxUFQCxPFp`
+					)
+					.setTitle(
+						"Missing `MANAGE_MESSAGES` permission. Please turn off `superslow` module in this channel, or enable `MANAGE_MESSAGES` for me."
+					);
+				return message.reply(embedreply);
+			}
+
 			if (!message.member.permissions.has("ADMINISTRATOR")) {
 				let slowmode;
 				db.hget(
@@ -176,7 +233,9 @@ async function superslow(message) {
 													)}.`
 												)
 												.catch(() => {});
-											await message.delete().catch(() => {});
+											await message
+												.delete()
+												.catch(() => {});
 											return;
 										} else {
 											//I'm not kidding this msg works, because apparently subtraction forces integer type ¯\_(ツ)_/¯
@@ -204,8 +263,12 @@ async function superslow(message) {
 												"), by typing **" +
 												prefix.trim() +
 												"**.";
-											message.author.send(msg).catch(() => {});
-											await message.delete().catch(() => {});
+											message.author
+												.send(msg)
+												.catch(() => {});
+											await message
+												.delete()
+												.catch(() => {});
 											return;
 										}
 									} else {
@@ -218,7 +281,9 @@ async function superslow(message) {
 													`You can already talk in #${message.channel.name}.`
 												)
 												.catch(() => {});
-											await message.delete().catch(() => {});
+											await message
+												.delete()
+												.catch(() => {});
 											return;
 										} else
 											db.hset(
@@ -263,14 +328,17 @@ function checks(message) {
 			return false;
 		}
 
-	//Perms beggar, only enters second "If" if first is true, the most optimized way to beg for perms I came up with
-	if (!message.guild?.me.permissions.has("ADMINISTRATOR"))
-		if (message.content.startsWith(prefix) && !message.author.bot) {
-			message.reply(
-				"until I have time to calculate all permissions for individual commands, this bot requires Admin to work."
-			);
-			return false;
-		}
+	// //Perms beggar, only enters second "If" if first is true, the most optimized way to beg for perms I came up with
+	// if (!message.guild?.me.permissions.has("ADMINISTRATOR"))
+	// 	if (message.content.startsWith(prefix) && !message.author.bot) {
+	// 		message.reply(
+	// 			"until I have time to calculate all permissions for individual commands, this bot requires Admin to work."
+	// 		);
+	// 		return false;
+	// 	}
+
+	if (!message.guild?.me.permissionsIn(message.channel).has("SEND_MESSAGES"))
+		return false;
 
 	return true;
 }
@@ -282,7 +350,7 @@ async function commands(message) {
 	db.get("debug", function (err, reply) {
 		debug = reply;
 	});
-	
+
 	if (command == "serverlist" && message.author == Owner) {
 		console.log("run SERVERLIST command");
 		let serversarr = [];
@@ -323,14 +391,14 @@ async function commands(message) {
 			)
 			.setTitle(`Command ${command} not found.`)
 			.addField(
-				`Run ${prefix.trim()} help to get list of available commands.`
+				`Run ${prefix.trim()} help to get list of available commands.`,
+				`If you have a suggestion for a new command, please reach out to KifoPL#3358 - <@289119054130839552>`
 			);
 		return message.channel.send(embedreply);
 	}
 
 	const contents = fs.readFileSync(`./commandList.json`);
 	var jsonCmdList = JSON.parse(contents);
-
 
 	if (command == "help") {
 		const event = new Date(Date.now());
@@ -375,8 +443,8 @@ async function commands(message) {
 					message.author.tag
 				}`
 			);
-		if (!message.member.permissions.has("ADMINISTRATOR"))
-			return message.reply("This is ADMIN ONLY command.");
+		if (!message.member.permissionsIn(message.channel).has("MANAGE_CHANNELS"))
+			return message.reply("You do not have `MANAGE_CHANNELS` permissions.");
 		if (!args[0]) {
 			db.exists("RT" + message.channel.id, function (err, reply) {
 				if (reply === 1) {
@@ -499,8 +567,8 @@ async function commands(message) {
 			);
 
 		const commandfile = require(`./${jsonCmdList.superslow.path}`);
-		if (!message.member.permissions.has("ADMINISTRATOR"))
-			return message.reply("This is ADMIN ONLY command.");
+		if (!message.member.permissionsIn(message.channel).has("MANAGE_CHANNELS"))
+			return message.reply("You do not have `MANAGE_CHANNELS` permissions.");
 		if (!args[0]) {
 			db.exists("SM" + message.channel.id, function (err, reply) {
 				if (reply === 1) {
@@ -695,7 +763,11 @@ async function onmessage(message) {
 	if (speakcheck) {
 		hello(message).catch(() => {});
 
-		if (!message.content.toLowerCase().startsWith(prefix.toLowerCase()) || message.author.bot) return;
+		if (
+			!message.content.toLowerCase().startsWith(prefix.toLowerCase()) ||
+			message.author.bot
+		)
+			return;
 
 		//No role and @here and @everyone pings
 		if (message.mentions.roles.firstKey() != undefined)
@@ -704,7 +776,9 @@ async function onmessage(message) {
 			return message.reply("don't even try pinging...");
 
 		if (
-			message.content.toLowerCase().startsWith(prefix.toLowerCase().trim()) &&
+			message.content
+				.toLowerCase()
+				.startsWith(prefix.toLowerCase().trim()) &&
 			message.content.length > prefix.length
 		)
 			commands(message);
@@ -782,7 +856,10 @@ client.once("ready", () => {
 function updatePresence() {
 	client.user.setStatus("online");
 	client.user.setActivity({
-		name: `Type "${prefix}" to interact with me! I'm online for ${ms(client.uptime, {long: true})}.`,
+		name: `Type "${prefix}" to interact with me! I'm online for ${ms(
+			client.uptime,
+			{ long: true }
+		)}.`,
 		type: "PLAYING",
 	});
 }
