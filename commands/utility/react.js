@@ -5,6 +5,7 @@ module.exports = {
 	usage:
 		"!kifo react <on/off> <emote1> <optional_emote2> ... <optional_emoten>",
 	adminonly: true,
+	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
 	execute(message, args, Discord) {
 		if (message.guild == null)
 			return message.reply(
@@ -12,6 +13,9 @@ module.exports = {
 			);
 		if (!(args[0].toUpperCase() == "ON" || args[0].toUpperCase() == "OFF"))
 			return message.reply(`Usage: ${this.usage}.`);
+		if (!message.guild.me.permissionsIn(message.channel).has("ADD_REACTIONS"))
+			return message.reply("I need `ADD_REACTIONS` permissions in this channel to work properly.");
+		
 		let option = args[0].toUpperCase();
 		args.shift();
 		let emotes = args;

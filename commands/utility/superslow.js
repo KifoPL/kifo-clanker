@@ -3,18 +3,23 @@ module.exports = {
 	description: `Enable Super slow-mode (longer than 6 hours) for channels where you need it.\n"!kifo superslow list" to list channels, where the command is active.`,
 	usage: `!kifo superslow <time_period> [0 to turn it off]`,
 	adminonly: true,
+	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
 	execute(message, args) {
 		//This is for timestamps
 		const ms = require(`ms`);
 		let shortest = ms("6h");
 		let longest = ms("1y");
-		if (!message.member.permissions.has("ADMINISTRATOR"))
-			return message.reply("This is ADMIN ONLY command.");
 		if (!args[0]) return message.reply(`Usage: ${this.usage}`);
 		if (message.guild == null)
 			return message.reply(
 				"you can only run this command on the server."
 			);
+		if (!message.guild.me.permissionsIn(message.channel).has("MANAGE_CHANNELS"))
+		return message.reply("This command need `MANAGE_CHANNELS` permissions to work properly.");
+
+		if (!message.guild.me.permissionsIn(message.channel).has("MANAGE_MESSAGES"))
+		return message.reply("This command need `MANAGE_MESSAGES` permissions to work properly.");
+			
 		if (isNaN(ms(args[0])))
 			return message.reply(
 				"incorrect time period. Please specify correct time period."

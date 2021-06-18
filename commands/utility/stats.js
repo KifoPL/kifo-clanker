@@ -22,6 +22,12 @@ module.exports = {
 			return message.reply(
 				"you can only run this command on the server."
 			);
+		if (
+			!message.guild.me.permissionsIn(message.channel).has("ATTACH_FILES")
+		)
+			return message.reply(
+				"I do not have `ATTACH_FILES` permissions in this channel."
+			);
 		message.channel.startTyping().catch(() => {});
 		const newEmbed = new Discord.MessageEmbed();
 		let time = new Date(Date.now());
