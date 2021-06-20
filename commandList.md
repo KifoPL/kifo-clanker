@@ -86,6 +86,7 @@ To list more than 420 users you need admin perms.
 Beware! Due to the way Discord API works, if there are more than 100 messages in your time-span, only the last 100 messages will be checked.
 - Usage: !kifo top <x> <time_period> <other_channel> <reaction>
 
+<hr/>
 
-> - Some commands may require additional perms for the bot.
-> - Last update: Sun, 20 Jun 2021 17:47:36 GMT
+> - *Some commands may require additional perms for the bot.*
+> - *Last update: Sun, 20 Jun 2021 17:54:11 GMT*

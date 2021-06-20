@@ -745,8 +745,9 @@ function setCommandList() {
 	let now = new Date(Date.now());
 	cmdListJSON = cmdListJSON.slice(0, cmdListJSON.length - 2);
 	cmdListJSON += `\n}`;
-	cmdListMD += `\n> - Some commands may require additional perms for the bot.`;
-	cmdListMD += `\n> - Last update: ${now.toUTCString()}`;
+	cmdListMD += `<hr/>\n`
+	cmdListMD += `\n> - *Some commands may require additional perms for the bot.*`;
+	cmdListMD += `\n> - *Last update: ${now.toUTCString()}*`;
 
 	fs.writeFile(`commandList.json`, cmdListJSON, () => {
 		return;
