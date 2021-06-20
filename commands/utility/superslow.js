@@ -22,7 +22,7 @@ module.exports = {
 			
 		if (isNaN(ms(args[0])))
 			return message.reply(
-				"incorrect time period. Please specify correct time period."
+				"incorrect time period. Please specify correct time period (Set to `0s` to turn it off)."
 			);
 		if (ms(args[0]) < shortest && ms(args[0]) != 0)
 			return message.reply(
