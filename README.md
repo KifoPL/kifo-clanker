@@ -1,4 +1,4 @@
-# Kifo Clanker™ - When general purpose bots fail, run !kifo
+![Kifo Clanker™ - When general purpose bots fail, run !kifo](https://i.imgur.com/EiM6gFA.png)
 ## Channel contest manager, super slow-mode, detailed stats, and much more!
 
 Kifo Clanker is a Discord Bot that helps you manage contests in channels (top posts with certain reactions), auto reactions, super slow-mode *(Up to 1 year!)*, and many more.
@@ -22,8 +22,10 @@ If you find any bugs (or have an awesome idea), please notify me on Discord: @Ki
 
 ![stats](https://i.imgur.com/qB2r2wZ.jpg)
 
+## [Discord Support Server](https://discord.com/invite/HxUFQCxPFp)
+> *share your ideas, read changelog, test out new features before their release*. 
+
 ## My socials:
-* [Discord Server](https://discord.com/invite/HxUFQCxPFp) - *share your ideas, read changelog, test out new features before their release*.
 * [Reddit](http://reddit.com/u/kifopl)
 * [Youtube](https://www.youtube.com/channel/UC4yZgTHfmVDmKlDIhDwVp3w?sub_confirmation=1)
 * [PayPal](https://paypal.me/Michal3run) - *(electricity and internet bills cost a lot of money, donations motivate me to continue my work developing this bot)*
