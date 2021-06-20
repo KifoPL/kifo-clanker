@@ -1,7 +1,7 @@
 module.exports = {
 	name: "help",
 	description:
-		"This command lists all categories of commands.\nType !kifo help <command> to see help for a specific command.\nType !kifo help <category> to see list of commands for a specific category.",
+		"This command lists all categories of commands.\nType \`!kifo help <command>\` to see help for a specific command.\nType \`!kifo help <category>\` to see list of commands for a specific category.",
 	usage: "!kifo help <optional_command_or_category>",
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
@@ -82,7 +82,7 @@ module.exports = {
 						.setFooter(
 							`Bot is created and developed solely by KifoPL#3358 - <@289119054130839552>. Click on the title to get an invite to bot's Discord server.`
 						)
-						.setURL("https://discord.gg/HxUFQCxPFp")
+						.setURL("https://kifopl.github.io/kifo-clanker/commandList")
 						.addFields(FieldArr);
 
 					return message.channel.send(newEmbed);
@@ -167,9 +167,9 @@ module.exports = {
 				`List of ${commandCount} commands in ${CategoryCount} categories, by KifoPL:`
 			)
 			.setDescription(
-				`Type !kifo help <category> to get detailed list of commands, or !kifo help <command> to get help for that command.`
+				`**Click on the text above** for full and detailed list of commands.\nType \`!kifo help <category>\` to get detailed list of commands within a category, or \`!kifo help <command>\` to get help for that command.`
 			)
-			.setURL("https://discord.gg/HxUFQCxPFp")
+			.setURL("https://kifopl.github.io/kifo-clanker/commandList")
 			.setFooter(
 				`Bot is created and developed solely by KifoPL#3358 - <@289119054130839552>. Click on the title to get an invite to bot's Discord server.`
 			)

@@ -104,4 +104,4 @@ Beware! Due to the way Discord API works, if there are more than 100 messages in
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Sun, 20 Jun 2021 18:42:52 GMT*
+> - *Last update: Sun, 20 Jun 2021 20:07:18 GMT*
