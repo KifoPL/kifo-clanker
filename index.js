@@ -719,26 +719,44 @@ let Owner;
 const guildIdTest = "822800862581751848";
 
 function setCommandList() {
-	let content = "";
-	content += `{\n`;
+	let cmdListJSON = "";	
+	let cmdListMD = `# List of Commands:\n\n`;
+	cmdListJSON += `{\n`;
 	for (const folder of commandFolders) {
+		cmdListMD += `## ${folder.toUpperCase()}\n\n`
 		const commandFiles = fs
 			.readdirSync(`./commands/${folder}`)
 			.filter((file) => file.endsWith(".js"));
 		for (const file of commandFiles) {
-			content += `"${file.slice(0, file.length - 3)}": {\n`;
-			content += `\t"file": "${file}",\n`;
-			content += `\t"path": "commands/${folder}/${file}",\n`;
-			content += `\t"relativepath": "../${folder}/${file}"\n\t},\n`;
+			cmdListJSON += `"${file.slice(0, file.length - 3)}": {\n`;
+			cmdListJSON += `\t"file": "${file}",\n`;
+			cmdListJSON += `\t"path": "commands/${folder}/${file}",\n`;
+			cmdListJSON += `\t"relativepath": "../${folder}/${file}"\n\t},\n`;
+
+			const command = require(`./commands/${folder}/${file}`)
+			cmdListMD += `### ${command.name}\n\n`;
+			cmdListMD += `- ${command.description}\n`;
+			cmdListMD += `- Usage: ${command.usage}\n`;
+			//Uncomment below when 4.0 is live
+			//cmdListMD += `- Required user permissions: ${file.perms.join(", ")}\n`
+			cmdListMD += `\n`;
 		}
 	}
-	content = content.slice(0, content.length - 2);
-	content += `\n}`;
-	fs.writeFile(`commandList.json`, content, (err) => {
-		//console.error(err);
+	let now = new Date(Date.now());
+	cmdListJSON = cmdListJSON.slice(0, cmdListJSON.length - 2);
+	cmdListJSON += `\n}`;
+	cmdListMD += `<hr/>\n`
+	cmdListMD += `\n> - *Some commands may require additional perms for the bot.*`;
+	cmdListMD += `\n> - *Last update: ${now.toUTCString()}*`;
+
+	fs.writeFile(`commandList.json`, cmdListJSON, () => {
 		return;
 	});
+	fs.writeFile(`commandList.md`, cmdListMD, () => {
+		return
+	});
 	console.log(`Created commandList.json file.`);
+	console.log(`Created commandList.md file.`);
 }
 
 client.once("ready", () => {
