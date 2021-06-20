@@ -733,19 +733,29 @@ function setCommandList() {
 			cmdListJSON += `\t"path": "commands/${folder}/${file}",\n`;
 			cmdListJSON += `\t"relativepath": "../${folder}/${file}"\n\t},\n`;
 
-			cmdListMD += `### ${file.slice(0, file.length - 3)}\n\n`;
-			cmdListMD += `- `
-
-
+			const command = require(`./commands/${folder}/${file}`)
+			cmdListMD += `### ${command.name}\n\n`;
+			cmdListMD += `- ${command.description}\n`;
+			cmdListMD += `- Usage: ${command.usage}\n`;
+			//Uncomment below when 4.0 is live
+			//cmdListMD += `- Required user permissions: ${file.perms.join(", ")}\n`
+			cmdListMD += `\n`;
 		}
 	}
+	let now = new Date(Date.now());
 	cmdListJSON = cmdListJSON.slice(0, cmdListJSON.length - 2);
 	cmdListJSON += `\n}`;
-	fs.writeFile(`commandList.json`, cmdListJSON, (err) => {
-		//console.error(err);
+	cmdListMD += `\n> - Some commands may require additional perms for the bot.`;
+	cmdListMD += `\n> - Last update: ${now.toUTCString()}`;
+
+	fs.writeFile(`commandList.json`, cmdListJSON, () => {
 		return;
 	});
+	fs.writeFile(`commandList.md`, cmdListMD, () => {
+		return
+	});
 	console.log(`Created commandList.json file.`);
+	console.log(`Created commandList.md file.`);
 }
 
 client.once("ready", () => {
