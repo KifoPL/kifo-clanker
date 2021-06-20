@@ -810,7 +810,7 @@ function setCommandList() {
 			const command = require(`./commands/${folder}/${file}`)
 			cmdListMD += `### ${command.name}\n\n`;
 			cmdListMD += `- ${command.description}\n`;
-			cmdListMD += `- Usage: ${command.usage}\n`;
+			cmdListMD += `- Usage: \`${command.usage}\`\n`;
 			cmdListMD += `- Required user permissions: ${command.perms.join(", ")}\n`
 			cmdListMD += `\n`;
 		}
