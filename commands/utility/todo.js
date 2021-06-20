@@ -3,6 +3,7 @@ module.exports = {
 	description: "This command allows you to create a simple todo list.",
 	usage: "!kifo todo <description>",
 	adminonly: false,
+	perms: [],
 	execute(message, args, Discord) {
 		if (!args[0]) return message.reply(`usage: ${this.usage}`);
 

@@ -3,6 +3,7 @@ module.exports = {
 	description: `Displays server stats, or user stats if user provided.`,
 	usage: "!kifo stats <opional_user_or_role> <optioanl_role2> <optional_role_n>",
 	adminonly: false,
+	perms: ["SEND_MESSAGES"],
 	async execute(message, args, Discord) {
 		//This is for timestamps
 		const ms = require(`ms`);
