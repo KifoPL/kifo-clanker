@@ -3,6 +3,7 @@ module.exports = {
 	description: `Express your feelings to another discord user with this beautiful poem.`,
 	usage: "!kifo cringe <optional_user>",
 	adminonly: false,
+	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord) {
 		//THIS IS A TEMPLATE
 		const embedreply = new Discord.MessageEmbed();

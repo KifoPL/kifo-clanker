@@ -5,6 +5,7 @@ module.exports = {
 	description: "This is a ping command :)",
 	usage: "!kifo ping",
 	adminonly: false,
+	perms: ["SEND_MESSAGES"],
 	execute(message, args) {
 		const Embed = new Discord.MessageEmbed()
 			.setAuthor(

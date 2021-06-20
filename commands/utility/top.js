@@ -5,14 +5,21 @@ module.exports = {
 	usage: "!kifo top <x> <time_period> <other_channel> <reaction>",
 	//I'm making it admin only because no one else used it anyway.
 	adminonly: true,
+	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
 	async execute(message, args, Discord) {
 		//This is for timestamps
 		const ms = require(`ms`);
-		if (!message.member.permissions.has("ADMINISTRATOR"))
-			return message.reply("This is ADMIN ONLY command.");
 		if (message.guild == null)
 			return message.reply(
 				"you can only run this command on the server."
+			);
+		if (
+			!message.member
+				.permissionsIn(message.channel)
+				.has("MANAGE_CHANNELS")
+		)
+			return message.reply(
+				"You do not have `MANAGE_CHANNELS` permissions."
 			);
 		if (!args[3])
 			return message.reply(`insufficient arguments. Use ${this.usage}`);
@@ -62,18 +69,80 @@ module.exports = {
 		let whichchannel = message.channel.guild.channels.cache.find(
 			(channel) => channel.id == args[2].slice(2, 20)
 		);
+		if (
+			!message.guild.me
+				.permissionsIn(whichchannel)
+				.has("VIEW_CHANNEL")
+		)
+			return message.reply(
+				"I do not have `VIEW_CHANNEL` permissions in " +
+					"<#" +
+					whichchannel.id +
+					">"
+			);
+		if (
+			!message.guild.me
+				.permissionsIn(whichchannel)
+				.has("VIEW_CHANNEL")
+		)
+			return message.reply(
+				"I do not have `READ_MESSAGE_HISTORY` permissions in " +
+					"<#" +
+					whichchannel.id +
+					">"
+			);
+		if (
+			!message.guild.me.permissionsIn(message.channel).has("ATTACH_FILES")
+		)
+			return message.reply(
+				"I do not have `ATTACH_FILES` permissions in this channel."
+			);
+		if (!message.member.permissionsIn(whichchannel).has("MANAGE_CHANNELS"))
+			return message.reply(
+				"You need to have `MANAGE_CHANNELS` permissions in <#" +
+					whichchannel.id +
+					">"
+			);
 		let chmessages = [];
 		let key = args[3].slice(args[3].length - 19, args[3].length - 1);
-		await whichchannel.messages
-			.fetch()
-			.then((messages) =>
-				messages.filter((m) => now - m.createdTimestamp <= ms(args[1]))
-			)
-			.then((messages) =>
-				messages.filter((m) => m.reactions.resolve(key) != undefined)
-			)
-			.then((messages) => (chmessages = messages.array()))
-			.catch((err) => console.log(err));
+
+		let messageCollection = new Discord.Collection();
+		let fetchoptions = { before: null, limit: 100 }
+		let startTime = now - ms(args[1]);
+		let continueloop = true;
+		while (continueloop) {
+			await whichchannel.messages.fetch(fetchoptions, true).then(async (fetchedMessages) => {
+				let sweeps = await fetchedMessages.sweep(msg => msg.createdAt < startTime);
+				if (sweeps > 0) {
+					continueloop = false;
+				}
+				messageCollection = messageCollection.concat(fetchedMessages);
+				if (fetchedMessages.size < 100) continueloop = false;
+				if (continueloop) {
+					let oldestMessage = await fetchedMessages.first();
+					fetchedMessages.each(msg => {
+						if (oldestMessage.createdAt > msg.createdAt) {
+							oldestMessage = msg;
+						}
+					})
+					fetchoptions.before = oldestMessage.id;
+				}
+			})
+		}
+		messageCollection = messageCollection
+		.filter((m) => now - m.createdTimestamp <= ms(args[1]))
+		.filter((m) => m.reactions.resolve(key) != undefined)
+		chmessages = messageCollection.array();
+		// // await whichchannel.messages
+		// // 	.fetch()
+		// // 	.then((messages) =>
+		// // 		messages.filter((m) => now - m.createdTimestamp <= ms(args[1]))
+		// // 	)
+		// // 	.then((messages) =>
+		// // 		messages.filter((m) => m.reactions.resolve(key) != undefined)
+		// // 	)
+		// // 	.then((messages) => (chmessages = messages.array()))
+		// // 	.catch((err) => console.log(err));
 		if (!chmessages[0])
 			return message.reply(
 				"no posts found matching criteria. Maybe try longer time period?"

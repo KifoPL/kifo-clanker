@@ -3,6 +3,7 @@ module.exports = {
 	description: `This is an eloquent way to say "Thank you for this conversation we've had".`,
 	usage: `!kifo stfu <optional_user>`,
 	adminonly: false,
+	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord) {
 		//THIS IS A TEMPLATE
 		const embedreply = new Discord.MessageEmbed();
