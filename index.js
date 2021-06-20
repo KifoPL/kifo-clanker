@@ -719,22 +719,29 @@ let Owner;
 const guildIdTest = "822800862581751848";
 
 function setCommandList() {
-	let content = "";
-	content += `{\n`;
+	let cmdListJSON = "";	
+	let cmdListMD = `# List of Commands:\n\n`;
+	cmdListJSON += `{\n`;
 	for (const folder of commandFolders) {
+		cmdListMD += `## ${folder.toUpperCase()}\n\n`
 		const commandFiles = fs
 			.readdirSync(`./commands/${folder}`)
 			.filter((file) => file.endsWith(".js"));
 		for (const file of commandFiles) {
-			content += `"${file.slice(0, file.length - 3)}": {\n`;
-			content += `\t"file": "${file}",\n`;
-			content += `\t"path": "commands/${folder}/${file}",\n`;
-			content += `\t"relativepath": "../${folder}/${file}"\n\t},\n`;
+			cmdListJSON += `"${file.slice(0, file.length - 3)}": {\n`;
+			cmdListJSON += `\t"file": "${file}",\n`;
+			cmdListJSON += `\t"path": "commands/${folder}/${file}",\n`;
+			cmdListJSON += `\t"relativepath": "../${folder}/${file}"\n\t},\n`;
+
+			cmdListMD += `### ${file.slice(0, file.length - 3)}\n\n`;
+			cmdListMD += `- `
+
+
 		}
 	}
-	content = content.slice(0, content.length - 2);
-	content += `\n}`;
-	fs.writeFile(`commandList.json`, content, (err) => {
+	cmdListJSON = cmdListJSON.slice(0, cmdListJSON.length - 2);
+	cmdListJSON += `\n}`;
+	fs.writeFile(`commandList.json`, cmdListJSON, (err) => {
 		//console.error(err);
 		return;
 	});
