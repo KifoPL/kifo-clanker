@@ -8,6 +8,7 @@ module.exports = {
 		//This is for timestamps
 		const ms = require(`ms`);
 		const fs = require("fs");
+		const kifo = require("kifo");
 		//for debugging, uncomment to resolve paths
 		//const path = require("path");
 
@@ -20,15 +21,15 @@ module.exports = {
 
 		//PRECHECKS
 		if (message.guild == null)
-			return message.reply(
+			return message.reply(kifo.embed(
 				"you can only run this command on the server."
-			);
+			));
 		if (
 			!message.guild.me.permissionsIn(message.channel).has("ATTACH_FILES")
 		)
-			return message.reply(
+			return message.reply(kifo.embed(
 				"I do not have `ATTACH_FILES` permissions in this channel."
-			);
+			));
 		message.channel.startTyping().catch(() => {});
 		const newEmbed = new Discord.MessageEmbed();
 		let time = new Date(Date.now());
@@ -281,9 +282,9 @@ module.exports = {
 							if (!message.guild.roles.resolve(args[0])) {
 								if (!message.guild.channels.resolve(args[0])) {
 									whatami = "not found";
-									return message.reply(
+									return message.reply(kifo.embed(
 										"this ID is neither a role nor a channel, nor a user. Please provide valid ID."
-									);
+									));
 								} else {
 									whatami = "channel";
 									entity = message.guild.channels.resolve(
@@ -316,9 +317,9 @@ module.exports = {
 							whatami = "role";
 						} else {
 							whatami = "not found";
-							return message.reply(
+							return message.reply(kifo.embed(
 								"your message must contain a mention of user, channel, or an ID of user, channel, or role in order to work (remember not to ping role!)."
-							);
+							));
 						}
 					}
 				}
@@ -711,9 +712,9 @@ module.exports = {
 				//CHANNEL STATS --- NOT YET IMPLEMENTED
 				else if (whatami == "channel") {
 					message.channel.stopTyping(true);
-					return message.reply(
+					return message.reply(kifo.embed(
 						"channel stats will be implemented one day."
-					);
+					));
 
 					//TODO FINISH THIS
 					type = entity.type;
@@ -727,9 +728,9 @@ module.exports = {
 					else if (type == "news")
 						emote = `<:announcement:842672130587754506>`;
 					else
-						return message.reply(
+						return message.reply(kifo.embed(
 							"unsupported channel type! Reach out to KifoPL#3358 to notify him of the error."
-						);
+						));
 
 					let channelage =
 						time.getTime() - entity.createdAt.getTime();

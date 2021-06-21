@@ -5,6 +5,7 @@ module.exports = {
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord, isStats = false, userID = 0) {
+		const kifo = require("kifo");
 		let userid = 0;
 		let pplen = 0;
 		let pp = "8";
@@ -20,7 +21,7 @@ module.exports = {
 				) {
 					Troll = true;
 				} else if (!message.guild.members.resolve(args[0]))
-					return message.reply("user not found.");
+					return message.reply(kifo.embed("user not found."));
 				userid = args[0];
 			} else {
 				if (message.mentions.users.firstKey() != undefined) {
@@ -29,7 +30,7 @@ module.exports = {
 							message.mentions.users.firstKey()
 						)
 					)
-						return message.reply("user not found.");
+						return message.reply(kifo.embed("user not found."));
 					if (
 						message.mentions.users.firstKey() ==
 							289119054130839552 ||

@@ -5,7 +5,8 @@ module.exports = {
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord) {
-		if (!args[0]) return message.reply(`Usage: ${this.usage}.`);
+		const kifo = require("kifo");
+		if (!args[0]) return message.reply(kifo.embed()`Usage: ${this.usage}.`);
 
 		const embedreply = new Discord.MessageEmbed();
 		embedreply

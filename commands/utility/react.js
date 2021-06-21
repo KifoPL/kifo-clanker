@@ -7,14 +7,15 @@ module.exports = {
 	adminonly: true,
 	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
 	execute(message, args, Discord) {
+		const kifo = require("kifo");
 		if (message.guild == null)
-			return message.reply(
+			return message.reply(kifo.embed(
 				"you can only run this command on the server."
-			);
+			));
 		if (!(args[0].toUpperCase() == "ON" || args[0].toUpperCase() == "OFF"))
-			return message.reply(`Usage: ${this.usage}.`);
+			return message.reply(kifo.embed(`Usage: ${this.usage}.`));
 		if (!message.guild.me.permissionsIn(message.channel).has("ADD_REACTIONS"))
-			return message.reply("I need `ADD_REACTIONS` permissions in this channel to work properly.");
+			return message.reply(kifo.embed("I need `ADD_REACTIONS` permissions in this channel to work properly."));
 		
 		let option = args[0].toUpperCase();
 		args.shift();

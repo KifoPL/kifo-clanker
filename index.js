@@ -3,6 +3,7 @@ const Discord = require("discord.js");
 require("dotenv")?.config();
 const fs = require("fs");
 const ms = require("ms");
+const kifo = require("kifo");
 const prefix = `${process.env.PREFIX} `;
 
 //TEMPLATE EMBED
@@ -324,7 +325,7 @@ function checks(message) {
 				(role) => role.id == "832194217493135400"
 			) == undefined
 		) {
-			message.reply("Only KifoPL#3358 and testers can use this bot.");
+			message.reply(kifo.embed("Only KifoPL#3358 and testers can use this bot."));
 			return false;
 		}
 
@@ -444,7 +445,7 @@ async function commands(message) {
 				}`
 			);
 		if (!message.member.permissionsIn(message.channel).has("MANAGE_CHANNELS"))
-			return message.reply("You do not have `MANAGE_CHANNELS` permissions.");
+			return message.reply(kifo.embed("You do not have `MANAGE_CHANNELS` permissions."));
 		if (!args[0]) {
 			db.exists("RT" + message.channel.id, function (err, reply) {
 				if (reply === 1) {
@@ -568,7 +569,7 @@ async function commands(message) {
 
 		const commandfile = require(`./${jsonCmdList.superslow.path}`);
 		if (!message.member.permissionsIn(message.channel).has("MANAGE_CHANNELS"))
-			return message.reply("You do not have `MANAGE_CHANNELS` permissions.");
+			return message.reply(kifo.embed("You do not have `MANAGE_CHANNELS` permissions."));
 		if (!args[0]) {
 			db.exists("SM" + message.channel.id, function (err, reply) {
 				if (reply === 1) {
@@ -771,9 +772,9 @@ async function onmessage(message) {
 
 		//No role and @here and @everyone pings
 		if (message.mentions.roles.firstKey() != undefined)
-			return message.reply("no roles in commands!");
+			return message.reply(kifo.embed("no roles in commands!"));
 		if (message.mentions.everyone)
-			return message.reply("don't even try pinging...");
+			return message.reply(kifo.embed("don't even try pinging..."));
 
 		if (
 			message.content

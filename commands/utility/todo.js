@@ -5,7 +5,7 @@ module.exports = {
 	adminonly: false,
 	perms: [],
 	execute(message, args, Discord) {
-		if (!args[0]) return message.reply(`usage: ${this.usage}`);
+		if (!args[0]) return message.reply(kifo.embed(`usage: ${this.usage}`));
 
 		const Embed = new Discord.MessageEmbed();
 		const Now = new Date(Date.now());

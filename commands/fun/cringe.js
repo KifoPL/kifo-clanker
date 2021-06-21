@@ -6,6 +6,7 @@ module.exports = {
 	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord) {
 		//THIS IS A TEMPLATE
+		const kifo = require("kifo");
 		const embedreply = new Discord.MessageEmbed();
 		embedreply
 			.setColor("a039a0")
@@ -47,7 +48,7 @@ module.exports = {
 				userping = `${args[0]}`;
 			} else if (!isNaN(args[0])) {
 				if (!message.guild.members.resolve(args[0]))
-					return message.reply("user not found.");
+					return message.reply(kifo.embed("user not found."));
 				else {
 					if (
 						args[0] == 289119054130839552 ||

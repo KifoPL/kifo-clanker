@@ -9,42 +9,43 @@ module.exports = {
 	async execute(message, args, Discord) {
 		//This is for timestamps
 		const ms = require(`ms`);
+		const kifo = require("kifo");
 		if (message.guild == null)
-			return message.reply(
+			return message.reply(kifo.embed(
 				"you can only run this command on the server."
-			);
+			));
 		if (
 			!message.member
 				.permissionsIn(message.channel)
 				.has("MANAGE_CHANNELS")
 		)
-			return message.reply(
+			return message.reply(kifo.embed(
 				"You do not have `MANAGE_CHANNELS` permissions."
-			);
+			));
 		if (!args[3])
-			return message.reply(`insufficient arguments. Use ${this.usage}`);
-		if (isNaN(args[0])) return message.reply("incorrect amount of posts.");
+			return message.reply(kifo.embed(`insufficient arguments. Use ${this.usage}`));
+		if (isNaN(args[0])) return message.reply(kifo.embed("incorrect amount of posts."));
 		if (args[0] < 1 || args[0] > 100)
-			return message.reply(
+			return message.reply(kifo.embed(
 				"incorrect amount of posts. You must select at least 1, but not more than 100."
-			);
+			));
 		let x = args[0];
 		if (isNaN(ms(args[1])))
-			return message.reply(
+			return message.reply(kifo.embed(
 				"incorrect time period. Please specify correct time period."
-			);
+			));
 		if (ms(args[1]) < ms("10s") || ms(args[1]) > ms("14d"))
-			return message.reply(
+			return message.reply(kifo.embed(
 				"incorrect amount of time. For the command to work, please input period of time that is between 10 seconds and 14 days."
-			);
+			));
 		if (
 			message.guild.channels.cache.find(
 				(channel) => channel.id == args[2].slice(2, 20)
 			) == undefined
 		)
-			return message.reply(
+			return message.reply(kifo.embed(
 				"channel does not exist. Please input correct channel."
-			);
+			));
 		if (
 			message.guild.emojis.cache.find(
 				(emojis) =>
@@ -52,11 +53,11 @@ module.exports = {
 					args[3].slice(args[3].length - 19, args[3].length - 1)
 			) == undefined
 		)
-			return message.reply(
+			return message.reply(kifo.embed(
 				"this reaction does not exist / is not from this server. Please use only emotes from this server."
-			);
+			));
 		if (args[4] != undefined)
-			return message.reply(`too many arguments! Use ${this.usage}`);
+			return message.reply(kifo.embed(`too many arguments! Use ${this.usage}`));
 
 		function place(number) {
 			if (number % 10 == 1 && number % 100 != 11) return `st`;
@@ -74,35 +75,35 @@ module.exports = {
 				.permissionsIn(whichchannel)
 				.has("VIEW_CHANNEL")
 		)
-			return message.reply(
+			return message.reply(kifo.embed(
 				"I do not have `VIEW_CHANNEL` permissions in " +
 					"<#" +
 					whichchannel.id +
 					">"
-			);
+			));
 		if (
 			!message.guild.me
 				.permissionsIn(whichchannel)
 				.has("VIEW_CHANNEL")
 		)
-			return message.reply(
+			return message.reply(kifo.embed(
 				"I do not have `READ_MESSAGE_HISTORY` permissions in " +
 					"<#" +
 					whichchannel.id +
 					">"
-			);
+			));
 		if (
 			!message.guild.me.permissionsIn(message.channel).has("ATTACH_FILES")
 		)
-			return message.reply(
+			return message.reply(kifo.embed(
 				"I do not have `ATTACH_FILES` permissions in this channel."
-			);
+			));
 		if (!message.member.permissionsIn(whichchannel).has("MANAGE_CHANNELS"))
-			return message.reply(
+			return message.reply(kifo.embed(
 				"You need to have `MANAGE_CHANNELS` permissions in <#" +
 					whichchannel.id +
 					">"
-			);
+			));
 		let chmessages = [];
 		let key = args[3].slice(args[3].length - 19, args[3].length - 1);
 
@@ -144,9 +145,9 @@ module.exports = {
 		// // 	.then((messages) => (chmessages = messages.array()))
 		// // 	.catch((err) => console.log(err));
 		if (!chmessages[0])
-			return message.reply(
+			return message.reply(kifo.embed(
 				"no posts found matching criteria. Maybe try longer time period?"
-			);
+			));
 		chmessages.sort((a, b) => {
 			if (
 				b.reactions.cache.find(
