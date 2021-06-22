@@ -963,6 +963,14 @@ client.on("guildMemberAdd", (member) => {
 					)
 					.catch(console.error);
 				NumeralJokerCount++;
+				
+				let msg = `Welcome <@${member.id}>! Fill out this form to gain access to all of **NumeralJoker's <@285906871393452043> edits!!** in <#844667201888714813>\n\
+				[https://forms.google.com/](https://forms.gle/3FkJQxMijEE32Eot9)\n\n\
+				**__Once you are granted access__** you can find them via this link: https://drive.google.com/drive/shared-drives`
+
+				member.user.send(kifo.embed(msg, "Start your journey to find the Trove:")).catch(() => {
+					member.guild.channels.resolve("844667201888714813").send(`<@${member.id}>`, kifo.embed(msg, "Start your journey to find the Trove:"))
+				})
 			}
 		})
 		.catch(console.error);
