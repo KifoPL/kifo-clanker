@@ -86,7 +86,7 @@ const channelPerms = [
 		Id: 14,
 		name: "SEND_TTS_MESSAGES",
 		type: "text",
-		aliases: ["stts", "ttsm", "msgtts", "ttsmsg"],
+		aliases: ["stts", "tts", "ttsm", "msgtts", "ttsmsg"],
 	}),
 	//WARNING Discord v12.0 does not have `Use Slash Commands` perms yet. Update when v13.0 is live
 	//voice perms
@@ -146,12 +146,14 @@ const channelPerms = [
 module.exports = {
 	name: "perms",
 	description:
-		"This powerful command manages permissions for channels and categories.\n- **ADD** - allows a perm (green check), \n- **DENY** - denies a perm (red x),\n- **RM** - removes a perm (grey /).\nExcept for primary usage (that changes perms), you can also do:\n\
-		`!kifo perms` - checks if you have permissions to manage channel, lists aliases and IDs of permissions for easier cmd usage.\n\
-		`!kifo perms <channel_or_category_id>` - lists perms of all roles and members in a `.txt` file\n\
-		`!kifo perms \"here\"/\"list\"` - list perms of all roles and members for this channel in a `.txt` file\n\
-		`!kifo perms <user_or_role_id>` - lists perms for specific user/role",
-	usage: "!kifo perms <add/rm/deny> <perm> <role_or_user_id_1> ... <role_or_user_id_n>",
+		"This powerful command manages permissions for channels and categories.\n- **ADD** - allows a perm (green check), \n- **DENY** - denies a perm (red x),\n- **RM** - removes a perm (grey /).",
+	usage: [
+		"`!kifo perms <add/rm/deny> <perm> <role_or_user_id_1> ... <role_or_user_id_n>` - adds/removes/denies perms for provided users and roles in this channel. <perm> can be either full name, id (number), or alias of a perm.",
+		"`!kifo perms` - checks if you have permissions to manage channel, lists aliases and IDs of permissions for easier cmd usage.",
+		"`!kifo perms <channel_or_category_id>` - lists perms of all roles and members in a `.txt` file",
+		'`!kifo perms "here"/"list"` - list perms of all roles and members for this channel in a `.txt` file',
+		"`!kifo perms <user_or_role_id>` - lists perms for specific user/role",
+	],
 	adminonly: true,
 	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
 	async execute(message, args, Discord) {
@@ -169,11 +171,15 @@ module.exports = {
 		if (!args[0]) {
 			let description = `You ${
 				!hasRequiredPerms ? `DON'T HAVE` : `HAVE`
-			} required perms to use \`perms\` command in #${message.channel.name}.`;
+			} required perms to use \`perms\` command in <#${
+				message.channel.id
+			}>.`;
 			description += `\nThe bot ${
 				!botHasRequiredPerms ? `DOESN'T HAVE` : `HAS`
-			} required perms to execute \`perms\` command in #${message.channel.name}.`;
-			description += `\n**Syntax:** \`${this.usage}\``;
+			} required perms to execute \`perms\` command in <#${
+				message.channel.id
+			}>.`;
+			description += `\n**Syntax:** \`${this.usage.join("\n")}\``;
 			const newEmbed = new Discord.MessageEmbed()
 				.setColor("a039a0")
 				.setTitle(`__List of perms with their aliases:__`)
@@ -204,7 +210,7 @@ module.exports = {
 			});
 
 			message.author.send(newEmbed).catch();
-			message.reply(kifo.embed("Check your DM!"))
+			message.reply(kifo.embed("Check your DM!"));
 		}
 		//!kifo perms <user_or_role_or_channel_id>
 		else {
@@ -232,7 +238,11 @@ module.exports = {
 				let whatami = "";
 				let entity = message.guild.channels.resolve(args[0]);
 				let mention = args[0].match(MessageMentions.CHANNELS_PATTERN);
-				if (args[0].toLowerCase() == "here" || args[0].toLowerCase() == "list") entity = message.channel;
+				if (
+					args[0].toLowerCase() == "here" ||
+					args[0].toLowerCase() == "list"
+				)
+					entity = message.channel;
 				if (entity != null || mention != null) {
 					whatami = "channel";
 					if (entity == null)
@@ -348,7 +358,8 @@ module.exports = {
 				let perm = channelPerms.find(
 					(permOver) =>
 						permOver.aliases.includes(args[1].toLowerCase()) ||
-						permOver.name.toLowerCase() == args[1].toLowerCase() || permOver.Id == args[1]
+						permOver.name.toLowerCase() == args[1].toLowerCase() ||
+						permOver.Id == args[1]
 				);
 				if (perm == undefined) {
 					return message.reply(
@@ -463,8 +474,8 @@ module.exports = {
 					IDArray.forEach((ID) => {
 						//overArr.push({ id: ID, allow: [perm.name] });
 						message.channel.updateOverwrite(ID, {
-							[perm.name]: true
-						})
+							[perm.name]: true,
+						});
 						fileContent += `${
 							message.guild.members.resolve(ID) != null
 								? `member`
@@ -510,8 +521,8 @@ module.exports = {
 					IDArray.forEach((ID) => {
 						//overArr.push({ id: ID, deny: [perm.name] });
 						message.channel.updateOverwrite(ID, {
-							[perm.name]: false
-						})
+							[perm.name]: false,
+						});
 						fileContent += `${
 							message.guild.members.resolve(ID) != null
 								? `member`

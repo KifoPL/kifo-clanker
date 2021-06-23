@@ -74,12 +74,7 @@ To list more than 420 users you need admin perms.
 - **ADD** - allows a perm (green check), 
 - **DENY** - denies a perm (red x),
 - **RM** - removes a perm (grey /).
-Except for primary usage (that changes perms), you can also do:
-		`!kifo perms` - checks if you have permissions to manage channel, lists aliases and IDs of permissions for easier cmd usage.
-		`!kifo perms <channel_or_category_id>` - lists perms of all roles and members in a `.txt` file
-		`!kifo perms "here"/"list"` - list perms of all roles and members for this channel in a `.txt` file
-		`!kifo perms <user_or_role_id>` - lists perms for specific user/role
-- Usage: `!kifo perms <add/rm/deny> <perm> <role_or_user_id_1> ... <role_or_user_id_n>`
+- Usage: ``!kifo perms <add/rm/deny> <perm> <role_or_user_id_1> ... <role_or_user_id_n>` - adds/removes/denies perms for provided users and roles in this channel. <perm> can be either full name, id (number), or alias of a perm.,`!kifo perms` - checks if you have permissions to manage channel, lists aliases and IDs of permissions for easier cmd usage.,`!kifo perms <channel_or_category_id>` - lists perms of all roles and members in a `.txt` file,`!kifo perms "here"/"list"` - list perms of all roles and members for this channel in a `.txt` file,`!kifo perms <user_or_role_id>` - lists perms for specific user/role`
 - Required user permissions: SEND_MESSAGES, MANAGE_CHANNELS
 
 ### react
@@ -118,4 +113,4 @@ Beware! Due to the way Discord API works, if there are more than 100 messages in
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Tue, 22 Jun 2021 17:18:30 GMT*
+> - *Last update: Wed, 23 Jun 2021 09:57:23 GMT*
