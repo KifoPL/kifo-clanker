@@ -1,7 +1,7 @@
 module.exports = {
 	name: "howgay",
 	description: `A quick test to find out your gayness level.`,
-	usage: "!kifo howgay <optional_user>",
+	usage: ["`!kifo howgay <optional_user>` - accurately measures sexual thirst towards the same gender."],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord, isStats = false, userID = 0) {

@@ -1,7 +1,10 @@
 module.exports = {
 	name: "stats",
-	description: `Displays server stats, or user stats if user provided.`,
-	usage: "!kifo stats <opional_user_or_role> <optioanl_role2> <optional_role_n>",
+	description: `Displays stats for given user, bot, role, server, ~~channel~~, ~~message~~ (in development).\nIf the bot doesn't see some channels, stats ~~may~~ will be incorrect.`,
+	usage: ["`!kifo stats` - shows stats of the server",
+	"`!kifo stats <user>` - shows stats of specified user.",
+	"`!kifo stats <role>` - shows stats of specified role.",
+"`!kifo stats me` - shows your stats."],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	async execute(message, args, Discord) {

@@ -796,6 +796,8 @@ const guildIdTest = "822800862581751848";
 function setCommandList() {
 	let cmdListJSON = "";	
 	let cmdListMD = `# List of Commands:\n\n`;
+	const help = require("./help.js")
+	cmdListMD += `### ${help.name}\n\n- ${help.description}\n- Usage:\n- ${help.usage.join("\n- ")}\n`
 	cmdListJSON += `{\n`;
 	for (const folder of commandFolders) {
 		cmdListMD += `## ${folder.toUpperCase()}\n\n`
@@ -811,7 +813,7 @@ function setCommandList() {
 			const command = require(`./commands/${folder}/${file}`)
 			cmdListMD += `### ${command.name}\n\n`;
 			cmdListMD += `- ${command.description}\n`;
-			cmdListMD += `- Usage: \`${command.usage}\`\n`;
+			cmdListMD += `- Usage:\n\t- ${command.usage.join("\n\t- ")}\n`;
 			cmdListMD += `- Required user permissions: ${command.perms.join(", ")}\n`
 			cmdListMD += `\n`;
 		}

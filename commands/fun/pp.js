@@ -1,7 +1,7 @@
 module.exports = {
 	name: "pp",
 	description: `Measure your PP length with this totally reliable pp length calculator. Each user has his own constant pp length (like irl), it's not random.`,
-	usage: "!kifo pp <optional_user>",
+	usage: ["`!kifo pp <optional_user>` - absolutely accurate measurement of pp length."],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord, isStats = false, userID = 0) {

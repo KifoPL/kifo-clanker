@@ -1,7 +1,7 @@
 module.exports = {
 	name: "iq",
 	description: `A very quick and accurate IQ test.`,
-	usage: "!kifo iq <optional_user>",
+	usage: ["`!kifo iq <optional_user>` - A quick and reliable IQ test."],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord, isStats = false, userID = 0) {
