@@ -1,8 +1,13 @@
+const prefix = "!kifo"
 module.exports = {
 	name: "help",
 	description:
-		"This command lists all categories of commands.\nType \`!kifo help <command>\` to see help for a specific command.\nType \`!kifo help <category>\` to see list of commands for a specific category.",
-	usage: "!kifo help <optional_command_or_category>",
+		"This command lists all categories of commands and shows help for every command.",
+	usage: [
+		"`!kifo help` - lists all available commands",
+		"`!kifo help <category>` - lists all commands for a specific category",
+		"`!kifo help <command>` - shows help for specific command",
+	],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord) {
@@ -38,7 +43,7 @@ module.exports = {
 					.setColor("a039a0")
 					.setTitle(args[0])
 					.setDescription(this.description)
-					.addField("Usage:", this.usage)
+					.addField("Usage:", this.usage.join("\n"))
 					.addField("Required permissions:", this.perms.join(", "));
 				message.channel.send(newEmbed);
 				return;
@@ -50,7 +55,7 @@ module.exports = {
 					.setColor("a039a0")
 					.setTitle(command.name)
 					.setDescription(command.description)
-					.addField("Usage:", command.usage)
+					.addField("Usage:", command.usage.join("\n"))
 					.addField(
 						"Required permissions:",
 						command.perms.join(", ")
@@ -66,11 +71,13 @@ module.exports = {
 					commandList
 						.filter((cmd) => cmd.folder == args[0].toLowerCase())
 						.each((cmd) => {
-							var Field = {};
-							Field.name = cmd.command.name;
-							Field.value = `${cmd.folder}: ${cmd.command.description}`;
-							FieldArr.push(Field);
-							i++;
+							if (cmd.command.perms.every(perm => message.member.permissionsIn(message.channel).toArray().includes(perm))) {
+								var Field = {};
+								Field.name = cmd.command.name;
+								Field.value = `${cmd.command.description}`;
+								FieldArr.push(Field);
+								i++;
+							}
 						});
 					var Field = {};
 					Field.name = this.name;
@@ -82,7 +89,9 @@ module.exports = {
 						.setFooter(
 							`Bot is created and developed solely by KifoPL#3358 - <@289119054130839552>. Click on the title to get an invite to bot's Discord server.`
 						)
-						.setURL("https://kifopl.github.io/kifo-clanker/commandList")
+						.setURL(
+							"https://kifopl.github.io/kifo-clanker/commandList"
+						)
 						.addFields(FieldArr);
 
 					return message.channel.send(newEmbed);
@@ -99,8 +108,8 @@ module.exports = {
 						`Command ${this.name} issued by ${message.author.tag}`
 					)
 					.addField(
-						`Command ${command} not found.`,
-						`Run ${prefix.trim()} help to get list of available commands.`
+						`Command ${args[0]} not found.`,
+						`Run \`${prefix.trim()} help\` to get list of available commands.`
 					);
 				return message.channel.send(embedreply);
 			}
@@ -140,7 +149,9 @@ module.exports = {
 				commandList
 					.filter((cmd) => cmd.folder == categoryName)
 					.each((cmd) => {
-						cmdListString += `**${cmd.command.name}**, `;
+						if (cmd.command.perms.every(perm => message.member.permissionsIn(message.channel).toArray().includes(perm))) {
+							cmdListString += `**${cmd.command.name}**, `;
+						}
 					});
 				cmdListString.trimRight();
 				cmdListString =

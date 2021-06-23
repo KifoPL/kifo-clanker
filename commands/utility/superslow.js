@@ -1,7 +1,11 @@
 module.exports = {
 	name: "superslow",
-	description: `Enable Super slow-mode (longer than 6 hours) for channels where you need it.\n"!kifo superslow list" to list channels, where the command is active.`,
-	usage: `!kifo superslow <time_period> [0 to turn it off]`,
+	description: `Enable Super slow-mode (longer than 6 hours) for channels where you need it.`,
+	usage: [
+		"`!kifo superslow <time>` - turns on superslow command in this channel (setting time to 0s will turn off superslow module). ",
+		"`!kifo superslow` checks if there is superslow module online.",
+		"`!kifo superslow list` lists channels in which the command is active.",
+	],
 	adminonly: true,
 	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
 	execute(message, args) {

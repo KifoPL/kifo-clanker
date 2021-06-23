@@ -1,7 +1,12 @@
+const limit = 1000;
 module.exports = {
 	name: "list",
-	description: `Lists all users in the server, or users having certain role.\nTo list more than 420 users you need admin perms.`,
-	usage: "!kifo list <opional_user_or_role> <optioanl_role2> <optional_role_n>",
+	description: `Lists all users in the server, or users having certain role.\nTo list more than ${limit} users you need \`MANAGE_GUILD\` perms.\nIf the bot doesn't see some channels, lists ~~may~~ will be incorrect.`,
+	usage: [
+		"`!kifo list` - lists all users in the server",
+		"`!kifo list <user>` - lists roles of specified user.",
+		"`!kifo list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.",
+	],
 	adminonly: false,
 	perms: ["SEND_MESSAGES", "MANAGE_GUILD"],
 	async execute(message, args, Discord) {
@@ -21,15 +26,17 @@ module.exports = {
 
 		//PRECHECKS
 		if (message.guild == null)
-			return message.reply(kifo.embed(
-				"you can only run this command on the server.")
+			return message.reply(
+				kifo.embed("you can only run this command on the server.")
 			);
 		if (
 			!message.guild.me.permissionsIn(message.channel).has("ATTACH_FILES")
 		)
-			return message.reply(kifo.embed(
-				"I do not have `ATTACH_FILES` permissions in this channel."
-			));
+			return message.reply(
+				kifo.embed(
+					"I do not have `ATTACH_FILES` permissions in this channel."
+				)
+			);
 		message.channel.startTyping().catch(() => {});
 		const newEmbed = new Discord.MessageEmbed();
 		let time = new Date(Date.now());
@@ -44,7 +51,9 @@ module.exports = {
 						(role) => role.id == args[i]
 					) == undefined
 				)
-					return message.reply(kifo.embed(`${args[i]} is not a valid role ID!`));
+					return message.reply(
+						kifo.embed(`${args[i]} is not a valid role ID!`)
+					);
 				roleIDs.push(args[i]);
 				i++;
 			}
@@ -64,13 +73,15 @@ module.exports = {
 
 			await memberList.each(() => Count++);
 			if (
-				Count > 1000 &&
+				Count > limit &&
 				!message.member.permissions.has("MANAGE_GUILD")
 			) {
 				message.channel.stopTyping(true);
-				return message.reply(kifo.embed(
-					`The output has ${Count} records, you need \`MANAGE_GUILD\` to create a file this large.`
-				));
+				return message.reply(
+					kifo.embed(
+						`The output has ${Count} records, you need \`MANAGE_GUILD\` to create a file this large.`
+					)
+				);
 			}
 
 			await memberList
@@ -164,13 +175,15 @@ module.exports = {
 
 				await message.guild.members.cache.each(() => Count++);
 				if (
-					Count > 1000 &&
+					Count > limit &&
 					!message.member.permissions.has("MANAGE_GUILD")
 				) {
 					message.channel.stopTyping(true);
-					return message.reply(kifo.embed(
-						`The output has ${Count} records, you need \`MANAGE_GUILD\` to create a file this large.`
-					));
+					return message.reply(
+						kifo.embed(
+							`The output has ${Count} records, you need \`MANAGE_GUILD\` to create a file this large.`
+						)
+					);
 				}
 
 				await message.guild.members.cache
@@ -351,9 +364,11 @@ module.exports = {
 							if (!message.guild.roles.resolve(args[0])) {
 								if (!message.guild.channels.resolve(args[0])) {
 									whatami = "not found";
-									return message.reply(kifo.embed(
-										"this ID is neither a role nor a channel, nor a user. Please provide valid ID."
-									));
+									return message.reply(
+										kifo.embed(
+											"this ID is neither a role nor a channel, nor a user. Please provide valid ID."
+										)
+									);
 								} else {
 									whatami = "channel";
 									entity = message.guild.channels.resolve(
@@ -386,9 +401,11 @@ module.exports = {
 							whatami = "role";
 						} else {
 							whatami = "not found";
-							return message.reply(kifo.embed(
-								"your message must contain a mention of user, channel, or an ID of user, channel, or role in order to work (remember not to ping role!)."
-							));
+							return message.reply(
+								kifo.embed(
+									"your message must contain a mention of user, channel, or an ID of user, channel, or role in order to work (remember not to ping role!)."
+								)
+							);
 						}
 					}
 				}
@@ -740,9 +757,11 @@ module.exports = {
 						Count > 1000 &&
 						!message.member.permissions.has("MANAGE_ROLES")
 					)
-						return message.reply(kifo.embed(
-							`The output has ${Count} records, you need \`MANAGE_ROLES\` to create a file this large.`
-						));
+						return message.reply(
+							kifo.embed(
+								`The output has ${Count} records, you need \`MANAGE_ROLES\` to create a file this large.`
+							)
+						);
 					let strperms = "";
 					await perms
 						.toArray()
@@ -845,9 +864,9 @@ module.exports = {
 				//CHANNEL STATS --- NOT YET IMPLEMENTED
 				else if (whatami == "channel") {
 					message.channel.stopTyping(true);
-					return message.reply(kifo.embed(
-						"channel stats will be implemented one day."
-					));
+					return message.reply(
+						kifo.embed("channel stats will be implemented one day.")
+					);
 
 					//TODO FINISH THIS
 					type = entity.type;
@@ -861,9 +880,11 @@ module.exports = {
 					else if (type == "news")
 						emote = `<:announcement:842672130587754506>`;
 					else
-						return message.reply(kifo.embed(
-							"unsupported channel type! Reach out to KifoPL#3358 to notify him of the error."
-						));
+						return message.reply(
+							kifo.embed(
+								"unsupported channel type! Reach out to KifoPL#3358 to notify him of the error."
+							)
+						);
 
 					let channelage =
 						time.getTime() - entity.createdAt.getTime();

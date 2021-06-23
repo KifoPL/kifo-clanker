@@ -1,22 +1,34 @@
 module.exports = {
 	name: "react",
 	description:
-		'This command tells the bot to react to all messages in the channel with specific reactions.\n"!kifo react list" to list channels, where the command is active.',
-	usage:
-		"!kifo react <on/off> <emote1> <optional_emote2> ... <optional_emoten>",
+		'This command tells the bot to react to all messages in the channel with specific reactions.',
+	usage: [
+		"`!kifo react on <emote1> <optional_emote2> ... <optional_emoten>` - turns on react command in this channel.",
+		"`!kifo react off` - turns off react command in this channel",
+		"`!kifo react` checks if there is react module online.",
+		"`!kifo react list` lists channels in which the command is active.",
+	],
 	adminonly: true,
 	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
 	execute(message, args, Discord) {
 		const kifo = require("kifo");
 		if (message.guild == null)
-			return message.reply(kifo.embed(
-				"you can only run this command on the server."
-			));
+			return message.reply(
+				kifo.embed("you can only run this command on the server.")
+			);
 		if (!(args[0].toUpperCase() == "ON" || args[0].toUpperCase() == "OFF"))
 			return message.reply(kifo.embed(`Usage: ${this.usage}.`));
-		if (!message.guild.me.permissionsIn(message.channel).has("ADD_REACTIONS"))
-			return message.reply(kifo.embed("I need `ADD_REACTIONS` permissions in this channel to work properly."));
-		
+		if (
+			!message.guild.me
+				.permissionsIn(message.channel)
+				.has("ADD_REACTIONS")
+		)
+			return message.reply(
+				kifo.embed(
+					"I need `ADD_REACTIONS` permissions in this channel to work properly."
+				)
+			);
+
 		let option = args[0].toUpperCase();
 		args.shift();
 		let emotes = args;
