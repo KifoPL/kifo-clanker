@@ -1,8 +1,8 @@
 module.exports = {
 	name: "top",
 	description:
-		"This command lists x messages with most reactions from other channel.\nBeware! Due to the way Discord API works, if there are more than 100 messages in your time-span, only the last 100 messages will be checked.",
-	usage: "!kifo top <x> <time_period> <other_channel> <reaction>",
+		"This command lists x messages with most reactions from other channel.",
+	usage: ["`!kifo top <x> <time_period> <other_channel> <reaction>` - lists top x messages with most reactions from other channel. Sends x embeds (don't set it too large)."],
 	//I'm making it admin only because no one else used it anyway.
 	adminonly: true,
 	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],

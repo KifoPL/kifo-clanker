@@ -1,7 +1,7 @@
 module.exports = {
 	name: "howgay",
 	description: `A quick test to find out your gayness level.`,
-	usage: "!kifo howgay <optional_user>",
+	usage: ["`!kifo howgay <optional_user>` - accurately measures sexual thirst towards the same gender."],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord, isStats = false, userID = 0) {
@@ -40,12 +40,28 @@ module.exports = {
 					userid = message.mentions.users.firstKey();
 				}
 			}
-		} else userid = message.author.id;
+		} else {
+			if (message.mentions.users.firstKey() != undefined) {
+				if (
+					!message.guild.members.resolve(
+						message.mentions.users.firstKey()
+					)
+				)
+					return message.reply(kifo.embed("user not found."));
+				if (
+					message.mentions.users.firstKey() == 289119054130839552 ||
+					message.mentions.users.firstKey() == 795638549730295820
+				)
+					Troll = true;
+				userid = message.mentions.users.firstKey();
+			}
+			userid = message.author.id;
+		}
 		if (userid == 289119054130839552 || args[0] == 795638549730295820)
 			Troll = true;
 		let username = message.guild.members.resolve(userid).displayName;
 		if (!Troll) {
-			howgay = userid % 101;
+			howgay = (userid + message.guild.id) % 101;
 			reply = howgay + "%";
 			if (howgay == 69) comment = "Nice.";
 			else if (howgay == 50)
@@ -77,7 +93,7 @@ module.exports = {
 		}
 		//console.log(userid, howgay, comment);
 
-		const returnField = {name: reply, value: comment};
+		const returnField = { name: reply, value: comment };
 		if (isStats) return returnField;
 		const newEmbed = new Discord.MessageEmbed()
 			.setColor("a039a0")

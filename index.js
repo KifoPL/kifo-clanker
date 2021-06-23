@@ -796,6 +796,8 @@ const guildIdTest = "822800862581751848";
 function setCommandList() {
 	let cmdListJSON = "";	
 	let cmdListMD = `# List of Commands:\n\n`;
+	const help = require("./help.js")
+	cmdListMD += `### ${help.name}\n\n- ${help.description}\n- Usage:\n- ${help.usage.join("\n- ")}\n`
 	cmdListJSON += `{\n`;
 	for (const folder of commandFolders) {
 		cmdListMD += `## ${folder.toUpperCase()}\n\n`
@@ -811,7 +813,7 @@ function setCommandList() {
 			const command = require(`./commands/${folder}/${file}`)
 			cmdListMD += `### ${command.name}\n\n`;
 			cmdListMD += `- ${command.description}\n`;
-			cmdListMD += `- Usage: \`${command.usage}\`\n`;
+			cmdListMD += `- Usage:\n\t- ${command.usage.join("\n\t- ")}\n`;
 			cmdListMD += `- Required user permissions: ${command.perms.join(", ")}\n`
 			cmdListMD += `\n`;
 		}
@@ -963,6 +965,14 @@ client.on("guildMemberAdd", (member) => {
 					)
 					.catch(console.error);
 				NumeralJokerCount++;
+				
+				let msg = `Welcome <@${member.id}>! Fill out this form to gain access to all of **NumeralJoker's <@285906871393452043> edits!!** in <#844667201888714813>\n\
+				[https://forms.google.com/](https://forms.gle/3FkJQxMijEE32Eot9)\n\n\
+				**__Once you are granted access__** you can find them via this link: https://drive.google.com/drive/shared-drives`
+
+				member.user.send(kifo.embed(msg, "Start your journey to find the Trove:")).catch(() => {
+					member.guild.channels.resolve("844667201888714813").send(`<@${member.id}>`, kifo.embed(msg, "Start your journey to find the Trove:"))
+				})
 			}
 		})
 		.catch(console.error);
