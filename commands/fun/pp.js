@@ -61,7 +61,7 @@ module.exports = {
 			Troll = true;
 		let username = message.guild.members.resolve(userid).displayName;
 		if (!Troll) {
-			pplen = userid % 13;
+			pplen = (userid + message.guild.id) % 13;
 			for (i = 0; i < pplen; i++) pp += "=";
 			pp += "D";
 

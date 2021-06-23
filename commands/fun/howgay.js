@@ -61,7 +61,7 @@ module.exports = {
 			Troll = true;
 		let username = message.guild.members.resolve(userid).displayName;
 		if (!Troll) {
-			howgay = userid % 101;
+			howgay = (userid + message.guild.id) % 101;
 			reply = howgay + "%";
 			if (howgay == 69) comment = "Nice.";
 			else if (howgay == 50)

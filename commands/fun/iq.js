@@ -61,7 +61,7 @@ module.exports = {
 			Troll = true;
 		let username = message.guild.members.resolve(userid).displayName;
 		if (!Troll) {
-			iq = (userid % 251) + 50; // 50 <= IQ <= 300
+			iq = ((userid + message.guild.id) % 251) + 50; // 50 <= IQ <= 300
 			reply = iq + " IQ";
 			if (iq == 69) comment = "Nice.";
 			else if (iq < 75) comment = "Back to school, kiddo.";
