@@ -88,6 +88,15 @@ If the bot doesn't see some channels, lists ~~may~~ will be incorrect.
 	- `!kifo list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.
 - Required user permissions: SEND_MESSAGES, MANAGE_GUILD
 
+### perms
+
+- This powerful command manages permissions for channels and categories.
+- **ADD** - allows a perm (green check), 
+- **DENY** - denies a perm (red x),
+- **RM** - removes a perm (grey /).
+- Usage: ``!kifo perms <add/rm/deny> <perm> <role_or_user_id_1> ... <role_or_user_id_n>` - adds/removes/denies perms for provided users and roles in this channel. <perm> can be either full name, id (number), or alias of a perm.,`!kifo perms` - checks if you have permissions to manage channel, lists aliases and IDs of permissions for easier cmd usage.,`!kifo perms <channel_or_category_id>` - lists perms of all roles and members in a `.txt` file,`!kifo perms "here"/"list"` - list perms of all roles and members for this channel in a `.txt` file,`!kifo perms <user_or_role_id>` - lists perms for specific user/role`
+- Required user permissions: SEND_MESSAGES, MANAGE_CHANNELS
+
 ### react
 
 - This command tells the bot to react to all messages in the channel with specific reactions.
