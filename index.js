@@ -88,7 +88,7 @@ async function hello(message) {
 			)
 			.addField(
 				"\u200B",
-				"This bot is developed by [KifoPL](https://github.com/KifoPL).\nDiscord: <@289119054130839552> : @KifoPL#3358\nReddit: [u/kifopl](http://reddit.com/u/kifopl)\n[Paypal](https://paypal.me/Michal3run) (developing bot takes a lot of time, by donating you help me pay my electricity / internet bills!)"
+				"This bot is developed by [KifoPL](https://github.com/KifoPL).\nDiscord: <@289119054130839552> : @KifoPL#3358\nReddit: [u/kifopl](http://reddit.com/u/kifopl)\n[Buy me a beer!](https://www.buymeacoffee.com/kifoPL) (developing bot takes a lot of time, by donating you help me pay my electricity / internet bills!)"
 			);
 		message.channel.send(helloEmbed);
 		message.channel.stopTyping(true);

@@ -103,6 +103,13 @@ If the bot doesn't see some channels, lists ~~may~~ will be incorrect.
 	- `perms <user_or_role_id>` - lists perms for specific user/role
 - Required user permissions: SEND_MESSAGES, MANAGE_CHANNELS
 
+### prefix
+
+- This command informs you in detail how you can change server prefix.
+- Usage:
+	- `prefix` - sends a DM with details on prefix change process.
+- Required user permissions: SEND_MESSAGES
+
 ### react
 
 - This command tells the bot to react to all messages in the channel with specific reactions.
@@ -150,4 +157,4 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Thu, 24 Jun 2021 07:22:50 GMT*
+> - *Last update: Thu, 24 Jun 2021 08:34:32 GMT*
