@@ -3,10 +3,10 @@ module.exports = {
 	description:
 		'This command tells the bot to react to all messages in the channel with specific reactions.',
 	usage: [
-		"`!kifo react on <emote1> <optional_emote2> ... <optional_emoten>` - turns on react command in this channel.",
-		"`!kifo react off` - turns off react command in this channel",
-		"`!kifo react` checks if there is react module online.",
-		"`!kifo react list` lists channels in which the command is active.",
+		"`react on <emote1> <optional_emote2> ... <optional_emoten>` - turns on react command in this channel.",
+		"`react off` - turns off react command in this channel",
+		"`react` checks if there is react module online.",
+		"`react list` lists channels in which the command is active.",
 	],
 	adminonly: true,
 	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
@@ -17,7 +17,7 @@ module.exports = {
 				kifo.embed("you can only run this command on the server.")
 			);
 		if (!(args[0].toUpperCase() == "ON" || args[0].toUpperCase() == "OFF"))
-			return message.reply(kifo.embed(`Usage: ${this.usage}.`));
+			return message.reply(kifo.embed(`Usage: ${this.usage.join("\n")}.`));
 		if (
 			!message.guild.me
 				.permissionsIn(message.channel)
@@ -51,7 +51,7 @@ module.exports = {
 			if (!args[0]) {
 				embedreply
 					.setTitle(`Error:`)
-					.setDescription(`Usage: ${this.usage}.`);
+					.setDescription(`Usage: ${this.usage.join("\n")}.`);
 				return message.reply(embedreply);
 			}
 			if (args[22]) {

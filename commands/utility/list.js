@@ -3,9 +3,9 @@ module.exports = {
 	name: "list",
 	description: `Lists all users in the server, or users having certain role.\nTo list more than ${limit} users you need \`MANAGE_GUILD\` perms.\nIf the bot doesn't see some channels, lists ~~may~~ will be incorrect.`,
 	usage: [
-		"`!kifo list` - lists all users in the server",
-		"`!kifo list <user>` - lists roles of specified user.",
-		"`!kifo list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.",
+		"`list` - lists all users in the server",
+		"`list <user>` - lists roles of specified user.",
+		"`list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.",
 	],
 	adminonly: false,
 	perms: ["SEND_MESSAGES", "MANAGE_GUILD"],
@@ -133,7 +133,7 @@ module.exports = {
 						name: `Role filter:`,
 						value: `${roleList}`,
 					},
-					//{name: "Also:", value: `You can check your own stats with "!kifo stats me", or someone else's stats by ${this.usage}`},
+					//{name: "Also:", value: `You can check your own stats with "stats me", or someone else's stats by ${this.usage}`},
 					{
 						name: "More",
 						value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
@@ -250,7 +250,7 @@ module.exports = {
 					.setColor("a039a0")
 					.setTitle(
 						message.guild.name +
-							` stats: ||also try "!kifo stats me"||`
+							` stats: ||also try "${kifo.prefix(message.guild.id)}stats me"||`
 					)
 					.setThumbnail(
 						message.guild.iconURL({
@@ -563,7 +563,7 @@ module.exports = {
 								value: howgayfield.value,
 								inline: false,
 							},
-							//{name: "Also:", value: `You can check your own stats with "!kifo stats me", or someone else's stats by ${this.usage}`},
+							//{name: "Also:", value: `You can check your own stats with "stats me", or someone else's stats by ${this.usage}`},
 							{
 								name: "More",
 								value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
@@ -716,7 +716,7 @@ module.exports = {
 								value: howgayfield.value,
 								inline: false,
 							},
-							//{name: "Also:", value: `You can check your own stats with "!kifo stats me", or someone else's stats by ${this.usage}`},
+							//{name: "Also:", value: `You can check your own stats with "stats me", or someone else's stats by ${this.usage}`},
 							{
 								name: "More",
 								value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
@@ -848,7 +848,7 @@ module.exports = {
 									strperms.length != 0 ? strperms : "none"
 								}`,
 							},
-							//{name: "Also:", value: `You can check your own stats with "!kifo stats me", or someone else's stats by ${this.usage}`},
+							//{name: "Also:", value: `You can check your own stats with "stats me", or someone else's stats by ${this.usage}`},
 							{
 								name: "More",
 								value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
@@ -966,7 +966,7 @@ module.exports = {
 								value: howgayfield.value,
 								inline: false,
 							},
-							//{name: "Also:", value: `You can check your own stats with "!kifo stats me", or someone else's stats by ${this.usage}`},
+							//{name: "Also:", value: `You can check your own stats with "stats me", or someone else's stats by ${this.usage}`},
 							{
 								name: "More",
 								value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",

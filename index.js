@@ -4,7 +4,7 @@ require("dotenv")?.config();
 const fs = require("fs");
 const ms = require("ms");
 const kifo = require("kifo");
-const prefix = `${process.env.PREFIX} `;
+//const prefix = `${process.env.PREFIX} `;
 
 //TEMPLATE EMBED
 
@@ -47,6 +47,7 @@ client.commands.set(command.name, command);
 
 //Hello message
 async function hello(message) {
+	const prefix = kifo.prefix(message.guild?.id)
 	//I have to do it here too
 	if (message.content.toLowerCase().trim() == prefix.toLowerCase().trim()) {
 		if (message.deleted) return;
@@ -54,7 +55,7 @@ async function hello(message) {
 		const event = new Date(Date.now());
 		console.log(
 			message.author.tag,
-			"issued !kifo (welcome msg) in",
+			"issued (welcome msg) in",
 			message.channel.name,
 			"at",
 			event.toUTCString()
@@ -82,12 +83,12 @@ async function hello(message) {
 				"[LINK](https://github.com/KifoPL/kifo-clanker) - if you find a bug / have a cool idea for a new feature, please [create a ticket](https://github.com/KifoPL/kifo-clanker/issues/new/choose)."
 			)
 			.addField(
-				"try !kifo help",
+				`try ${prefix}help`,
 				"This will list all commands available to you (you can see more commands if you're an Admin)!"
 			)
 			.addField(
 				"\u200B",
-				"This bot is developed by [KifoPL](https://github.com/KifoPL).\nDiscord: <@289119054130839552> : @KifoPL#3358\nReddit: [u/kifopl](http://reddit.com/u/kifopl)\n[Paypal](https://paypal.me/Michal3run) (developing bot takes a lot of time, by donating you help me pay my electricity / internet bills!)"
+				"This bot is developed by [KifoPL](https://github.com/KifoPL).\nDiscord: <@289119054130839552> : @KifoPL#3358\nReddit: [u/kifopl](http://reddit.com/u/kifopl)\n[Buy me a beer!](https://www.buymeacoffee.com/kifoPL) (developing bot takes a lot of time, by donating you help me pay my electricity / internet bills!)"
 			);
 		message.channel.send(helloEmbed);
 		message.channel.stopTyping(true);
@@ -103,6 +104,7 @@ function sleep(ms) {
 
 //IF CORRECT CHANNEL, REACT
 async function react(message) {
+	const prefix = kifo.prefix(message.guild?.id)
 	db.exists("RT" + message.channel.id, function (err, reply) {
 		if (reply === 1) {
 			if (!message.content.startsWith(prefix)) {
@@ -156,6 +158,7 @@ async function react(message) {
 }
 //IF CORRECT CHANNEL, SUPERSLOWMODE
 async function superslow(message) {
+	const prefix = kifo.prefix(message.guild?.id)
 	db.exists("SM" + message.channel.id, function (err, reply) {
 		if (reply === 1) {
 			if (
@@ -316,7 +319,7 @@ function checks(message) {
 
 	//Only me and @Tester can use Offline test
 	if (
-		message.content.startsWith(prefix.trim()) &&
+		message.content.startsWith(kifo.prefix(message.guild?.id).trim()) &&
 		message.guild?.me.id == "796447999747948584"
 	)
 		if (
@@ -345,8 +348,10 @@ function checks(message) {
 }
 async function commands(message) {
 	//If command detected, create args struct
+	const prefix = kifo.prefix(message.guild?.id)
 	const args = message.content.slice(prefix.length).split(/ +/);
 	const command = args.shift().toLowerCase();
+
 	var debug = "false";
 	db.get("debug", function (err, reply) {
 		debug = reply;
@@ -392,7 +397,7 @@ async function commands(message) {
 			)
 			.setTitle(`Command ${command} not found.`)
 			.addField(
-				`Run ${prefix.trim()} help to get list of available commands.`,
+				`Run \`${prefix}help\` to get list of available commands.`,
 				`If you have a suggestion for a new command, please reach out to KifoPL#3358 - <@289119054130839552>`
 			);
 		return message.channel.send(embedreply);
@@ -455,15 +460,15 @@ async function commands(message) {
 						function (err, reply2) {
 							embedreactreply.addField(
 								"Warning:",
-								"React is already ON!"
+								"React is already **ON**!"
 							);
 							return message.reply(embedreactreply);
 						}
 					);
 				} else {
 					embedreactreply.addField(
-						"Warning:",
-						`React is Off. Type ${command2.usage} to set it up.`
+						"React is **Off**.",
+						`Syntax:\n${command2.usage.join("\n")}`
 					);
 					return message.reply(embedreactreply);
 				}
@@ -588,11 +593,10 @@ async function commands(message) {
 					);
 				} else {
 					embedsuperslowreply
-						.setTitle("Result:")
+						.setTitle("Super slow-mode is **NOT** activated.")
 						.setDescription(
-							"Super slow-mode is NOT activated.\nType " +
-								commandfile.usage +
-								" to set it up."
+							"Syntax:\n" +
+								commandfile.usage.join("\n")
 						);
 					return message.reply(embedsuperslowreply);
 				}
@@ -754,6 +758,7 @@ async function commands(message) {
 	}
 }
 async function onmessage(message) {
+	const prefix = kifo.prefix(message.guild?.id)
 	react(message).catch(() => {});
 	await superslow(message).catch(() => {});
 
@@ -795,7 +800,7 @@ const guildIdTest = "822800862581751848";
 
 function setCommandList() {
 	let cmdListJSON = "";	
-	let cmdListMD = `# List of Commands:\n\n`;
+	let cmdListMD = `# List of Commands:\n> Remember to add server prefix before command syntax.\n\n`;
 	const help = require("./help.js")
 	cmdListMD += `### ${help.name}\n\n- ${help.description}\n- Usage:\n- ${help.usage.join("\n- ")}\n`
 	cmdListJSON += `{\n`;
@@ -876,7 +881,7 @@ client.once("ready", () => {
 function updatePresence() {
 	client.user.setStatus("online");
 	client.user.setActivity({
-		name: `Type "${prefix}" to interact with me! I'm online for ${ms(
+		name: `Type "!kifo" to interact with me! I'm online for ${ms(
 			client.uptime,
 			{ long: true }
 		)}.`,

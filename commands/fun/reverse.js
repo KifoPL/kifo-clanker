@@ -1,7 +1,7 @@
 module.exports = {
 	name: "reverse",
 	description: "This command reverses anything you type.",
-	usage: ["`!kifo reverse <text>` - reverses the text."],
+	usage: ["`reverse <text>` - reverses the text."],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord) {

@@ -1,7 +1,7 @@
 module.exports = {
 	name: "todo",
 	description: "This command allows you to create a simple todo notes.",
-	usage: ["`!kifo todo <description>` - sends a DM with description (react with any emote to the message to delete it)."],
+	usage: ["`todo <description>` - sends a DM with description (react with any emote to the message to delete it)."],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord) {

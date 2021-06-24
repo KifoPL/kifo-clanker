@@ -28,7 +28,7 @@ If you find any bugs (or have an awesome idea), please notify me on Discord: @Ki
 ## My socials:
 * [Reddit](http://reddit.com/u/kifopl)
 * [Youtube](https://www.youtube.com/channel/UC4yZgTHfmVDmKlDIhDwVp3w?sub_confirmation=1)
-* [PayPal](https://paypal.me/Michal3run) - *(electricity and internet bills cost a lot of money, donations motivate me to continue my work developing this bot)*
+* [Buy me a beer!](https://www.buymeacoffee.com/kifoPL) - *(electricity and internet bills cost a lot of money, donations motivate me to continue my work developing this bot)*
 
 ## Do you want to be a part of amazing Star Wars community?
 * Join The Galactic Republic [Discord Server](https://discord.gg/Hhp74va)!

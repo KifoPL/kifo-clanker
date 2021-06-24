@@ -148,15 +148,16 @@ module.exports = {
 	description:
 		"This powerful command manages permissions for channels and categories.\n- **ADD** - allows a perm (green check), \n- **DENY** - denies a perm (red x),\n- **RM** - removes a perm (grey /).",
 	usage: [
-		"`!kifo perms <add/rm/deny> <perm> <role_or_user_id_1> ... <role_or_user_id_n>` - adds/removes/denies perms for provided users and roles in this channel. <perm> can be either full name, id (number), or alias of a perm.",
-		"`!kifo perms` - checks if you have permissions to manage channel, lists aliases and IDs of permissions for easier cmd usage.",
-		"`!kifo perms <channel_or_category_id>` - lists perms of all roles and members in a `.txt` file",
-		'`!kifo perms "here"/"list"` - list perms of all roles and members for this channel in a `.txt` file',
-		"`!kifo perms <user_or_role_id>` - lists perms for specific user/role",
+		"`perms <add/rm/deny> <perm> <role_or_user_id_1> ... <role_or_user_id_n>` - adds/removes/denies perms for provided users and roles in this channel. <perm> can be either full name, id (number), or alias of a perm.",
+		"`perms` - checks if you have permissions to manage channel, lists aliases and IDs of permissions for easier cmd usage.",
+		"`perms <channel_or_category_id>` - lists perms of all roles and members in a `.txt` file",
+		'`perms "here"/"list"` - list perms of all roles and members for this channel in a `.txt` file',
+		"`perms <user_or_role_id>` - lists perms for specific user/role",
 	],
 	adminonly: true,
 	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
 	async execute(message, args, Discord) {
+		const prefix = kifo.prefix(message.guild.id)
 		const hasRequiredPerms =
 			message.member
 				.permissionsIn(message.channel)
@@ -167,7 +168,7 @@ module.exports = {
 				.permissionsIn(message.channel)
 				.has("MANAGE_CHANNELS") &&
 			message.guild.me.permissionsIn(message.channel).has("MANAGE_ROLES");
-		//`!kifo perms`
+		//`perms`
 		if (!args[0]) {
 			let description = `You ${
 				!hasRequiredPerms ? `DON'T HAVE` : `HAVE`
@@ -179,7 +180,7 @@ module.exports = {
 			} required perms to execute \`perms\` command in <#${
 				message.channel.id
 			}>.`;
-			description += `\n**Syntax:** \`${this.usage.join("\n")}\``;
+			description += `\n**Syntax:** ${this.usage.join("\n")}`;
 			const newEmbed = new Discord.MessageEmbed()
 				.setColor("a039a0")
 				.setTitle(`__List of perms with their aliases:__`)
@@ -212,7 +213,7 @@ module.exports = {
 			message.author.send(newEmbed).catch();
 			message.reply(kifo.embed("Check your DM!"));
 		}
-		//!kifo perms <user_or_role_or_channel_id>
+		//perms <user_or_role_or_channel_id>
 		else {
 			if (!hasRequiredPerms)
 				return message.reply(
@@ -342,7 +343,7 @@ module.exports = {
 			} else if (!args[2]) {
 				return message.reply(
 					kifo.embed(
-						`Incorrect syntax. Use \`!kifo perms\`, or \`!kifo help perms\` for more details.\nSyntax: ${this.usage}`
+						`Incorrect syntax. Use \`${prefix}perms\`, or \`${prefix}help perms\` for more details.\nSyntax: ${this.usage}`
 					)
 				);
 			} else {
@@ -352,7 +353,7 @@ module.exports = {
 				)
 					return message.reply(
 						kifo.embed(
-							`I don't know what ${args[0]} is supposed to mean. Type \`!kifo perms\` or \`!kifo help perms\` to learn about this command.\nSyntax: \`${this.usage}\``
+							`I don't know what ${args[0]} is supposed to mean. Type \`${prefix}perms\` or \`${prefix}help perms\` to learn about this command.\nSyntax: \`${this.usage}\``
 						)
 					);
 				let perm = channelPerms.find(
@@ -364,7 +365,7 @@ module.exports = {
 				if (perm == undefined) {
 					return message.reply(
 						kifo.embed(
-							`Unrecognized perm alias. Type \`!kifo perms\` to see a list of perms available for this channel.`
+							`Unrecognized perm alias. Type \`${prefix}perms\` to see a list of perms available for this channel.`
 						)
 					);
 				}
