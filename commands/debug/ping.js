@@ -3,7 +3,7 @@ const Discord = require("discord.js");
 module.exports = {
 	name: "ping",
 	description: "This is a ping command :)",
-	usage: ["`!kifo ping` - responds with a pong :)"],
+	usage: ["`ping` - responds with a pong :)"],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	execute(message, args) {

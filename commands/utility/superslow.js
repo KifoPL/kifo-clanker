@@ -2,9 +2,9 @@ module.exports = {
 	name: "superslow",
 	description: `Enable Super slow-mode (longer than 6 hours) for channels where you need it.`,
 	usage: [
-		"`!kifo superslow <time>` - turns on superslow command in this channel (setting time to 0s will turn off superslow module). ",
-		"`!kifo superslow` checks if there is superslow module online.",
-		"`!kifo superslow list` lists channels in which the command is active.",
+		"`superslow <time>` - turns on superslow command in this channel (setting time to 0s will turn off superslow module). ",
+		"`superslow` checks if there is superslow module online.",
+		"`superslow list` lists channels in which the command is active.",
 	],
 	adminonly: true,
 	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
@@ -14,7 +14,7 @@ module.exports = {
 		const kifo = require("kifo");
 		let shortest = ms("6h");
 		let longest = ms("1y");
-		if (!args[0]) return message.reply(`Usage: ${this.usage}`);
+		if (!args[0]) return message.reply(`Usage: ${this.usage.join("\n")}`);
 		if (message.guild == null)
 			return message.reply(kifo.embed(
 				"you can only run this command on the server."
