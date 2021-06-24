@@ -1,7 +1,7 @@
 module.exports = {
 	name: "cringe",
 	description: `Express your feelings to another discord user with this beautiful poem.`,
-	usage: ["`!kifo cringe <optional_user>` - informs user of their cringe level."],
+	usage: ["`cringe <optional_user>` - informs user of their cringe level."],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord) {

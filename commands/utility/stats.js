@@ -1,10 +1,10 @@
 module.exports = {
 	name: "stats",
 	description: `Displays stats for given user, bot, role, server, ~~channel~~, ~~message~~ (in development).\nIf the bot doesn't see some channels, stats ~~may~~ will be incorrect.`,
-	usage: ["`!kifo stats` - shows stats of the server",
-	"`!kifo stats <user>` - shows stats of specified user.",
-	"`!kifo stats <role>` - shows stats of specified role.",
-"`!kifo stats me` - shows your stats."],
+	usage: ["`stats` - shows stats of the server",
+	"`stats <user>` - shows stats of specified user.",
+	"`stats <role>` - shows stats of specified role.",
+"`stats me` - shows your stats."],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	async execute(message, args, Discord) {
@@ -91,7 +91,7 @@ module.exports = {
 						name: `Role filter:`,
 						value: `${roleList}`,
 					},
-					//{name: "Also:", value: `You can check your own stats with "!kifo stats me", or someone else's stats by ${this.usage}`},
+					//{name: "Also:", value: `You can check your own stats with "stats me", or someone else's stats by ${this.usage}`},
 					{
 						name: "More",
 						value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
@@ -177,7 +177,7 @@ module.exports = {
 					.setColor("a039a0")
 					.setTitle(
 						message.guild.name +
-							` stats: ||also try "!kifo stats me"||`
+							` stats: ||also try "${kifo.prefix(message.guild.id)}stats me"||`
 					)
 					.setThumbnail(
 						message.guild.iconURL({
@@ -467,7 +467,7 @@ module.exports = {
 								value: howgayfield.value,
 								inline: false,
 							},
-							//{name: "Also:", value: `You can check your own stats with "!kifo stats me", or someone else's stats by ${this.usage}`},
+							//{name: "Also:", value: `You can check your own stats with "stats me", or someone else's stats by ${this.usage}`},
 							{
 								name: "More",
 								value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
@@ -604,7 +604,7 @@ module.exports = {
 								value: howgayfield.value,
 								inline: false,
 							},
-							//{name: "Also:", value: `You can check your own stats with "!kifo stats me", or someone else's stats by ${this.usage}`},
+							//{name: "Also:", value: `You can check your own stats with "stats me", or someone else's stats by ${this.usage}`},
 							{
 								name: "More",
 								value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
@@ -705,7 +705,7 @@ module.exports = {
 									strperms.length != 0 ? strperms : "none"
 								}`,
 							},
-							//{name: "Also:", value: `You can check your own stats with "!kifo stats me", or someone else's stats by ${this.usage}`},
+							//{name: "Also:", value: `You can check your own stats with "stats me", or someone else's stats by ${this.usage}`},
 							{
 								name: "More",
 								value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
@@ -815,7 +815,7 @@ module.exports = {
 								value: howgayfield.value,
 								inline: false,
 							},
-							//{name: "Also:", value: `You can check your own stats with "!kifo stats me", or someone else's stats by ${this.usage}`},
+							//{name: "Also:", value: `You can check your own stats with "stats me", or someone else's stats by ${this.usage}`},
 							{
 								name: "More",
 								value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",

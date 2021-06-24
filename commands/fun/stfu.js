@@ -1,7 +1,7 @@
 module.exports = {
 	name: "stfu",
 	description: `This is an eloquent way to say "Thank you for this conversation we've had".`,
-	usage: ["`!kifo stfu <optional_user>` - ask someone to lower their voice to the sub-audible level in an elegant manner."],
+	usage: ["`stfu <optional_user>` - ask someone to lower their voice to the sub-audible level in an elegant manner."],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord) {

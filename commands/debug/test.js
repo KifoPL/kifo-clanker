@@ -2,7 +2,7 @@ module.exports = {
 	name: "test",
 	description:
 		"This is just to test the functionality of the bot, as well as perms settings.",
-	usage: ["`!kifo test` - tests if the bot is online and checks for various stuff to find potential issues."],
+	usage: ["`test` - tests if the bot is online and checks for various stuff to find potential issues."],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord) {
