@@ -776,10 +776,10 @@ async function onmessage(message) {
 			return;
 
 		//No role and @here and @everyone pings
-		if (message.mentions.roles.firstKey() != undefined)
-			return message.reply(kifo.embed("no roles in commands!"));
-		if (message.mentions.everyone)
-			return message.reply(kifo.embed("don't even try pinging..."));
+		// if (message.mentions.roles.firstKey() != undefined)
+		// 	return message.reply(kifo.embed("no roles in commands!"));
+		// if (message.mentions.everyone)
+		// 	return message.reply(kifo.embed("don't even try pinging..."));
 
 		if (
 			message.content

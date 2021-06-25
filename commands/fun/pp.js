@@ -39,6 +39,7 @@ module.exports = {
 						Troll = true;
 					userid = message.mentions.users.firstKey();
 				}
+				return message.reply(kifo.embed("Either tag or provide user's ID."))
 			}
 		} else {
 			if (message.mentions.users.firstKey() != undefined) {
