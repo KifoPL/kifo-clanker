@@ -871,6 +871,14 @@ client.once("ready", () => {
 			).uses;
 		});
 	});
+	//for SWInsider feature
+	client.guilds.fetch("698075892974354482").then((guild) => {
+		guild.fetchInvites().then((invites) => {
+			SWInsiderInviteCount = invites.find(
+				(invite) => invite.inviter.id == "813613441448804354"
+			).uses;
+		});
+	});
 });
 
 function updatePresence() {
@@ -910,9 +918,11 @@ client.on("messageReactionAdd", async (msgReaction) => {
 	} else return;
 });
 
-//Code for adding WoofWoof role to members added by WoofWoofWolffe (and for HaberJordan Legion too)
+//Code for adding special roles for ppl invited by partners
 let WoofInviteCount;
 let HaberInviteCount;
+let NumeralJokerCount;
+let SWInsiderInviteCount;
 
 client.on("guildMemberAdd", (member) => {
 	member.guild
@@ -949,6 +959,22 @@ client.on("guildMemberAdd", (member) => {
 					)
 					.catch(console.error);
 				HaberInviteCount++;
+			}
+			//Star Wars Insider Circle
+			else if (
+				invites.find(
+					(invite) => invite.inviter.id == "813613441448804354"
+				).uses ==
+				SWInsiderInviteCount + 1
+			) {
+				member.roles
+					.add(
+						member.guild.roles.cache.find(
+							(role) => role.id == "858056136045756486"
+						)
+					)
+					.catch(console.error);
+				SWInsiderInviteCount++;
 			}
 			//NumeralJoker
 			else if (
