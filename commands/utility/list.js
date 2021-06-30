@@ -9,7 +9,7 @@ module.exports = {
 	],
 	adminonly: false,
 	perms: ["SEND_MESSAGES", "MANAGE_GUILD"],
-	async execute(message, args, Discord) {
+	async execute(message, args, Discord, prefix) {
 		//This is for timestamps
 		const ms = require(`ms`);
 		const fs = require("fs");
@@ -250,7 +250,7 @@ module.exports = {
 					.setColor("a039a0")
 					.setTitle(
 						message.guild.name +
-							` stats: ||also try "${kifo.prefix(message.guild.id)}stats me"||`
+							` stats: ||also try "${prefix}stats me"||`
 					)
 					.setThumbnail(
 						message.guild.iconURL({

@@ -156,8 +156,7 @@ module.exports = {
 	],
 	adminonly: true,
 	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
-	async execute(message, args, Discord) {
-		const prefix = kifo.prefix(message.guild.id)
+	async execute(message, args, Discord, prefix) {
 		const hasRequiredPerms =
 			message.member
 				.permissionsIn(message.channel)

@@ -177,7 +177,7 @@ module.exports = {
 					.setColor("a039a0")
 					.setTitle(
 						message.guild.name +
-							` stats: ||also try "${kifo.prefix(message.guild.id)}stats me"||`
+							` stats: ||also try "${prefix}stats me"||`
 					)
 					.setThumbnail(
 						message.guild.iconURL({
