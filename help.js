@@ -10,10 +10,9 @@ module.exports = {
 	],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
-	execute(message, args, Discord) {
+	execute(message, args, Discord, prefix) {
 		const fs = require("fs");
 		const client = message.client;
-		const prefix = kifo.prefix(message.guild?.id)
 
 		commandList = new Discord.Collection();
 
