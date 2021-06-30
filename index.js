@@ -4,7 +4,7 @@ require("dotenv")?.config();
 const fs = require("fs");
 const ms = require("ms");
 const kifo = require("kifo");
-const main = require(`./index.js`)
+const main = require(`./index.js`);
 //const prefix = `${process.env.PREFIX} `;
 
 //TEMPLATE EMBED
@@ -49,12 +49,12 @@ con.connect(async function (err) {
 		"SELECT Prefix, GuildId FROM prefixes",
 		async function (err, result) {
 			if (err) throw err;
-			result.forEach(row => {
+			result.forEach((row) => {
 				prefixes.set(row.GuildId, row.Prefix);
-			})
+			});
 		}
 	);
-	console.log(`Loaded prefixes!`)
+	console.log(`Loaded prefixes!`);
 });
 
 client.commands = new Discord.Collection();
@@ -446,7 +446,8 @@ async function superslow(message, prefix) {
 												} yet, please wait another ${ms(
 													slowmode -
 														(message.createdTimestamp -
-															result2[0].timestamp),
+															result2[0]
+																.timestamp),
 													{ long: true }
 												)}.`
 											)
@@ -535,8 +536,7 @@ async function superslow(message, prefix) {
 						}
 					);
 				}
-			}
-			else {
+			} else {
 				await hello(message, prefix).catch(() => {});
 			}
 		}
@@ -559,7 +559,7 @@ function checks(message, prefix) {
 				(role) => role.id == "832194217493135400"
 			) == undefined
 		) {
-			console.log(`msg: ${message.content}`)
+			console.log(`msg: ${message.content}`);
 			message.reply(
 				kifo.embed("Only KifoPL#3358 and testers can use this bot.")
 			);
@@ -1183,24 +1183,28 @@ async function commands(message, prefix) {
 			// 		return message.reply(embedsuperslowreply);
 			// 	}
 			// );
-			con.query("DELETE FROM superslowusers WHERE ChannelId = ?", [message.channel.id], function (err) {
-				if (err) throw err;
-				con.query(
-					"DELETE FROM superslow WHERE ChannelId = ?",
-					[message.channel.id],
-					function (err1) {
-						if (err1) throw err1;
-						embedsuperslowreply
-							.setTitle("Result:")
-							.setDescription(
-								"Super slow-mode is successfully disabled."
-							);
-						message.reply(embedsuperslowreply);
-						message.channel.setRateLimitPerUser(0);
-						return;
-					}
-				);
-			})
+			con.query(
+				"DELETE FROM superslowusers WHERE ChannelId = ?",
+				[message.channel.id],
+				function (err) {
+					if (err) throw err;
+					con.query(
+						"DELETE FROM superslow WHERE ChannelId = ?",
+						[message.channel.id],
+						function (err1) {
+							if (err1) throw err1;
+							embedsuperslowreply
+								.setTitle("Result:")
+								.setDescription(
+									"Super slow-mode is successfully disabled."
+								);
+							message.reply(embedsuperslowreply);
+							message.channel.setRateLimitPerUser(0);
+							return;
+						}
+					);
+				}
+			);
 		}
 		return;
 	} else {
@@ -1216,7 +1220,9 @@ async function commands(message, prefix) {
 			"at",
 			event.toUTCString()
 		);
-		debug = client.commands.get(command).execute(message, args, Discord, prefix);
+		debug = client.commands
+			.get(command)
+			.execute(message, args, Discord, prefix);
 		return;
 	}
 }
@@ -1230,7 +1236,6 @@ async function onmessage(message) {
 	speakcheck = checks(message, prefix);
 
 	if (speakcheck) {
-
 		if (
 			!message.content.toLowerCase().startsWith(prefix.toLowerCase()) ||
 			message.author.bot
@@ -1318,30 +1323,43 @@ client.once("ready", () => {
 	updatePresence();
 	setInterval(updatePresence, 1000 * 60 * 3);
 
-	//for WoofWoofWolffe feature
-	client.guilds.fetch("698075892974354482").then((guild) => {
-		guild.fetchInvites().then((invites) => {
-			WoofInviteCount = invites.find(
-				(invite) => invite.inviter.id == "376956266293231628"
-			).uses;
-		});
-	});
-	//for HaberJordan feature
-	client.guilds.fetch("698075892974354482").then((guild) => {
-		guild.fetchInvites().then((invites) => {
-			HaberInviteCount = invites.find(
-				(invite) => invite.inviter.id == "221771499843878912"
-			).uses;
-		});
-	});
-	//for NumeralJoker feature
-	client.guilds.fetch("698075892974354482").then((guild) => {
-		guild.fetchInvites().then((invites) => {
-			NumeralJokerCount = invites.find(
-				(invite) => invite.inviter.id == "285906871393452043"
-			).uses;
-		});
-	});
+	try {
+		//for WoofWoofWolffe feature
+		client.guilds
+			.fetch("698075892974354482")
+			.then((guild) => {
+				guild.fetchInvites().then((invites) => {
+					WoofInviteCount = invites.find(
+						(invite) => invite.inviter.id == "376956266293231628"
+					).uses;
+				});
+			})
+			.catch(() => {});
+		//for HaberJordan feature
+		client.guilds
+			.fetch("698075892974354482")
+			.then((guild) => {
+				guild.fetchInvites().then((invites) => {
+					HaberInviteCount = invites.find(
+						(invite) => invite.inviter.id == "221771499843878912"
+					).uses;
+				});
+			})
+			.catch(() => {});
+		//for NumeralJoker feature
+		client.guilds
+			.fetch("698075892974354482")
+			.then((guild) => {
+				guild.fetchInvites().then((invites) => {
+					NumeralJokerCount = invites.find(
+						(invite) => invite.inviter.id == "285906871393452043"
+					).uses;
+				});
+			})
+			.catch(() => {});
+	} catch (err) {
+		console.log(err);
+	}
 });
 
 function updatePresence() {
@@ -1462,13 +1480,13 @@ client.on("guildMemberAdd", (member) => {
 });
 
 /**
- * 
+ *
  * @param {string} guildID the ID of the guild you want to get prefix for.
  * @returns prefix for the guild (default "!kifo ")
  */
-exports.prefix = async function(guildID) {
+exports.prefix = async function (guildID) {
 	if (prefixes.has(guildID)) return prefixes.get(guildID);
 	return "!kifo ";
-}
+};
 
 client.login(process.env.LOGIN_TOKEN);
