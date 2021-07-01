@@ -54,8 +54,6 @@ module.exports = {
 		const now = new Date(Date.now());
 		const end = new Date(now.getTime() + ms(time));
 		const reaction = args[2] ?? "<a:done:828097348545544202>";
-		// console.log(`reaction ${reaction}`);
-		//console.log(`test ${client.emojis.resolveIdentifier(reaction)}`);
 		if (
 			client.emojis.resolveIdentifier(reaction) == null &&
 			!reaction.match(kifo.emojiRegex())

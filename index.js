@@ -1405,7 +1405,11 @@ function giveawayCheck() {
 		function (err, result) {
 			if (err) throw err;
 			if (result.length > 0) {
-				console.log(`${result.length} giveaway${result.length > 1 ? "s have" : " has" } ended!`);
+				console.log(
+					`${result.length} giveaway${
+						result.length > 1 ? "s have" : " has"
+					} ended!`
+				);
 				result.forEach(async (row) => {
 					let msg = {};
 					await client.guilds
@@ -1415,60 +1419,37 @@ function giveawayCheck() {
 						.then((msgs) => {
 							msg = msgs.get(row.MessageId);
 						});
-					// console.log(
-					// 	`channel: ${client.guilds.resolve(row.GuildId).channels.resolve(
-					// 		row.ChannelId
-					// 	)}, type: ${
-					// 		client.channels.resolve(row.ChannelId).type
-					// 	}`
-					// );
-					//console.log(msg);
-					//console.log(`msgID: ${row.MessageId}`);
 					if (msg.partial) {
 						await msg.fetch().catch((err) => console.log(err));
 					}
-					//console.log(`reaction: ${msg.reactions.resolve(row.Reaction).toString()}`)
 					let temp = {};
-					//console.log("stuff")
-					//console.log(await msg.reactions.resolve(row.Reaction).users.fetch())
 					await msg.reactions
 						.resolve(row.Reaction)
-						.users.fetch().then(col => {
-							temp = col.filter(user => !user.bot).random(row.Winners);
-							//console.log("col");
-							//console.log(col);
+						.users.fetch()
+						.then((col) => {
+							temp = col
+								.filter((user) => !user.bot)
+								.random(row.Winners);
 						})
 						.catch((err) => console.log(err));
-					// .users.cache
-					// .random(row.Winners);
-					//console.log("temp");
-					//console.log(temp);
-					// console.log(msg.reactions.resolve(row.Reaction));
 					let winners = temp.length > 1 ? temp : [temp];
-					let output = ""
-					await winners.forEach(winner => {
+					let output = "";
+					await winners.forEach((winner) => {
 						if (winner != undefined) {
-							output += `\n- <@${winner?.id ?? "if you can read this, notify Kifo"}>`
+							output += `\n- <@${
+								winner?.id ??
+								"if you can read this, notify Kifo"
+							}>`;
 						}
-					})
+					});
 					client.channels
 						.resolve(row.ChannelId)
-						.send(
-							kifo.embed(
-								output,
-								"Giveaway winners:"
-							)
-						)
+						.send(kifo.embed(output, "Giveaway winners:"))
 						.catch(() => {
 							client.guilds
 								.resolve(row.GuildID)
 								.members.resolve(row.UserId)
-								.send(
-									kifo.embed(
-										output,
-										"Giveaway winners:"
-									)
-								)
+								.send(kifo.embed(output, "Giveaway winners:"))
 								.catch(() => {
 									Owner.send(
 										`Can't send giveaway info at Server ${
@@ -1482,10 +1463,7 @@ function giveawayCheck() {
 											client.guilds.resolve(row.GuildID)
 												.ownerID
 										}>`,
-										kifo.embed(
-											output,
-											"Giveaway winners:"
-										)
+										kifo.embed(output, "Giveaway winners:")
 									).catch((err) => console.log(err));
 								});
 						});
