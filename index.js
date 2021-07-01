@@ -1514,29 +1514,3 @@ exports.prefix = async function (guildID) {
 };
 
 client.login(process.env.LOGIN_TOKEN);
-
-
-client.on("guildCreate", async (guild) => {
-	let channel = new Discord.WebhookClient(
-		client.config.webhook.id,
-		client.config.webhook.token
-	);
-	const embed = new Discord.MessageEmbed()
-		.setColor(client.config.embed.color)
-		.setThumbnail(guild.iconURL({ dynamic: true }))
-		.setTitle("New Server!")
-		.addField("Server Name", guild.name, true)
-		.addField("Server ID", guild.id, true)
-		.addField("Owner ID", guild.ownerID, true)
-		.addField("Owner Mention", `<@${guild.ownerID}>`, true)
-		.addField("Member Count", guild.memberCount, true)
-		.setFooter(client.user.username, client.config.embed.thumbnail);
-
-		await guild.channels.cache
-		.first()
-		.createInvite()
-		.then((invite) => embed.addField("Invite link", invite.url, true))
-		.catch(() => embed.addField("Invite link", "Missing permissions"));
-
-	channel.send(embed);
-});
