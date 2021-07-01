@@ -99,7 +99,7 @@ module.exports = {
 		//console.log(userid, howgay, comment);
 
 		const returnField = { name: reply, value: comment };
-		if (isStats === true) return field;
+		if (isStats === true) return returnField;
 		const newEmbed = new Discord.MessageEmbed()
 			.setColor("a039a0")
 			.setTitle(username + "'s gay level is:")

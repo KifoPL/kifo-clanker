@@ -76,7 +76,7 @@ WARNING! If you spam this command for no reason, you will get warned on the same
 	- `stfu <optional_user>` - ask someone to lower their voice to the sub-audible level in an elegant manner.
 - Required user permissions: SEND_MESSAGES
 
-## UTILITY
+## MANAGEMENT
 
 ### list
 
@@ -103,6 +103,19 @@ If the bot doesn't see some channels, lists ~~may~~ will be incorrect.
 	- `perms <user_or_role_id>` - lists perms for specific user/role
 - Required user permissions: SEND_MESSAGES, MANAGE_CHANNELS
 
+### stats
+
+- Displays stats for given user, bot, role, server, ~~channel~~, ~~message~~ (in development).
+If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
+- Usage:
+	- `stats` - shows stats of the server
+	- `stats <user>` - shows stats of specified user.
+	- `stats <role>` - shows stats of specified role.
+	- `stats me` - shows your stats.
+- Required user permissions: SEND_MESSAGES
+
+## UTILITY
+
 ### prefix
 
 - This command informs you in detail how you can change server prefix.
@@ -119,17 +132,6 @@ If the bot doesn't see some channels, lists ~~may~~ will be incorrect.
 	- `react` checks if there is react module online.
 	- `react list` lists channels in which the command is active.
 - Required user permissions: SEND_MESSAGES, MANAGE_CHANNELS
-
-### stats
-
-- Displays stats for given user, bot, role, server, ~~channel~~, ~~message~~ (in development).
-If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
-- Usage:
-	- `stats` - shows stats of the server
-	- `stats <user>` - shows stats of specified user.
-	- `stats <role>` - shows stats of specified role.
-	- `stats me` - shows your stats.
-- Required user permissions: SEND_MESSAGES
 
 ### superslow
 
@@ -157,4 +159,4 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Thu, 01 Jul 2021 08:44:22 GMT*
+> - *Last update: Thu, 01 Jul 2021 08:49:32 GMT*

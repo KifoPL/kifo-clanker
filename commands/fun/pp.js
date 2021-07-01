@@ -75,8 +75,8 @@ module.exports = {
 			pp = "8==============================D";
 			ppvalue = "69 cm";
 		}
-		const field = { name: pp, value: ppvalue };
-		if (isStats === true) return field;
+		const returnField = { name: pp, value: ppvalue };
+		if (isStats === true) return returnField;
 		const newEmbed = new Discord.MessageEmbed()
 			.setColor("a039a0")
 			.setTitle(username + "'s PP:")
