@@ -116,6 +116,15 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 
 ## UTILITY
 
+### giveaway
+
+- This command allows you to set up a timeout, after which random winners who reacted will be selected.
+- Usage:
+	- `giveaway` - Informs you of syntax.
+	- `giveaway <x> <time_period>` - sets up a message with default reaction as <a:done:828097348545544202> that'll choose `x` random users after `time_period`.
+	- `giveaway <x> <time_period> <reaction>` - sets up a message with `reaction`, that'll choose `x` random users after `time_period`.
+- Required user permissions: SEND_MESSAGES, MANAGE_CHANNELS, ADD_REACTIONS
+
 ### prefix
 
 - This command informs you in detail how you can change server prefix.
@@ -159,4 +168,4 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Thu, 01 Jul 2021 08:49:32 GMT*
+> - *Last update: Thu, 01 Jul 2021 19:55:20 GMT*

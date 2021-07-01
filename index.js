@@ -49,9 +49,10 @@ function dbReconnect() {
 		if (err) {
 			console.log(err);
 			Owner?.send(kifo.embed(err, "Error:")).catch(() => {});
-			setTimeout(dbReconnect, 3000)
+			setTimeout(dbReconnect, 3000);
 		}
 		console.log(`Connected to ${process.env.HOST} MySQL DB!`);
+		module.exports = { con };
 
 		//for fetching prefixes from DB
 		con.query(
@@ -67,16 +68,18 @@ function dbReconnect() {
 		console.log(`Loaded prefixes!`);
 	});
 
-	con.on('error', function (err) {
+	con.on("error", function (err) {
 		console.log(err);
 		Owner?.send(kifo.embed(err, "Error:")).catch(() => {});
 		if (err.code === "PROTOCOL_CONNECTION_LOST") {
 			dbReconnect();
 		} else {
-			Owner?.send(kifo.embed(err, "Error BOT IS SHUT DOWN:")).catch(() => {})
+			Owner?.send(kifo.embed(err, "Error BOT IS SHUT DOWN:")).catch(
+				() => {}
+			);
 			throw err;
 		}
-	})
+	});
 }
 
 dbReconnect();
@@ -84,6 +87,8 @@ dbReconnect();
 client.commands = new Discord.Collection();
 
 const commandFolders = fs.readdirSync("./commands");
+console.log("Loading commands...");
+let i = 0;
 for (const folder of commandFolders) {
 	const commandFiles = fs
 		.readdirSync(`./commands/${folder}`)
@@ -91,9 +96,11 @@ for (const folder of commandFolders) {
 	for (const file of commandFiles) {
 		const command = require(`./commands/${folder}/${file}`);
 		client.commands.set(command.name, command);
-		console.log(file);
+		console.log(`"${file.slice(0, -3)}"`);
+		i++;
 	}
 }
+console.log(`Loaded ${i} commands!`);
 command = require(`./help.js`);
 client.commands.set(command.name, command);
 
@@ -1331,8 +1338,8 @@ function setCommandList() {
 	fs.writeFile(`commandList.md`, cmdListMD, () => {
 		return;
 	});
-	console.log(`Created commandList.json file.`);
-	console.log(`Created commandList.md file.`);
+	console.log(`Created commandList.json file!`);
+	console.log(`Created commandList.md file!`);
 }
 
 client.once("ready", () => {
@@ -1340,12 +1347,16 @@ client.once("ready", () => {
 	loadowner();
 	setCommandList();
 	debug = false;
+	module.exports.client = client;
 
 	//DELETING SLASH COMMANDS CODE FOR NOW, I tried using prebuilt API, but it was "too" prebuild and it didn't fit my bot at all. Will have to do stuff manually...
 
 	//This line is executed by default, but I'm just making sure the status is online (other factors could change the status)
 	updatePresence();
 	setInterval(updatePresence, 1000 * 60 * 3);
+	console.log("Presence set!");
+	giveawayCheck();
+	setInterval(giveawayCheck, 1000 * 60);
 
 	try {
 		//for WoofWoofWolffe feature
@@ -1385,6 +1396,89 @@ client.once("ready", () => {
 		console.log(err);
 	}
 });
+
+function giveawayCheck() {
+	let now = new Date(Date.now());
+	con.query(
+		"SELECT Id, MessageId, ChannelId, GuildId, UserId, Winners, EndTime, Reaction FROM giveaway WHERE EndTime <= ?",
+		[now],
+		function (err, result) {
+			if (err) throw err;
+			if (result.length > 0) {
+				console.log(
+					`${result.length} giveaway${
+						result.length > 1 ? "s have" : " has"
+					} ended!`
+				);
+				result.forEach(async (row) => {
+					let msg = {};
+					await client.guilds
+						.resolve(row.GuildId)
+						.channels.resolve(row.ChannelId)
+						.messages.fetch({ cache: true })
+						.then((msgs) => {
+							msg = msgs.get(row.MessageId);
+						});
+					if (msg.partial) {
+						await msg.fetch().catch((err) => console.log(err));
+					}
+					let temp = {};
+					await msg.reactions
+						.resolve(row.Reaction)
+						.users.fetch()
+						.then((col) => {
+							temp = col
+								.filter((user) => !user.bot)
+								.random(row.Winners);
+						})
+						.catch((err) => console.log(err));
+					let winners = temp.length > 1 ? temp : [temp];
+					let output = "";
+					await winners.forEach((winner) => {
+						if (winner != undefined) {
+							output += `\n- <@${
+								winner?.id ??
+								"if you can read this, notify Kifo"
+							}>`;
+						}
+					});
+					client.channels
+						.resolve(row.ChannelId)
+						.send(kifo.embed(output, "Giveaway winners:"))
+						.catch(() => {
+							client.guilds
+								.resolve(row.GuildID)
+								.members.resolve(row.UserId)
+								.send(kifo.embed(output, "Giveaway winners:"))
+								.catch(() => {
+									Owner.send(
+										`Can't send giveaway info at Server ${
+											client.guilds.resolve(row.GuildID)
+												.name
+										}, Channel ${
+											client.channels.resolve(
+												row.ChannelId
+											).name
+										}. Server owner: <@${
+											client.guilds.resolve(row.GuildID)
+												.ownerID
+										}>`,
+										kifo.embed(output, "Giveaway winners:")
+									).catch((err) => console.log(err));
+								});
+						});
+				});
+				con.query(
+					"DELETE FROM giveaway WHERE EndTime <= ?",
+					[now],
+					function (err1) {
+						if (err1) throw err1;
+					}
+				);
+			}
+		}
+	);
+}
 
 function updatePresence() {
 	client.user.setStatus("online");
@@ -1426,6 +1520,7 @@ client.on("messageReactionAdd", async (msgReaction) => {
 //Code for adding WoofWoof role to members added by WoofWoofWolffe (and for HaberJordan Legion too)
 let WoofInviteCount;
 let HaberInviteCount;
+let NumeralJokerCount;
 
 client.on("guildMemberAdd", (member) => {
 	member.guild
@@ -1503,6 +1598,34 @@ client.on("guildMemberAdd", (member) => {
 		.catch(console.error);
 });
 
+client.on("guildCreate", async (guild) => {
+	let date = new Date(Date.now());
+	let channel = client.guilds
+		.resolve("822800862581751848")
+		.channels?.resolve("822800863050858539");
+	const embed = new Discord.MessageEmbed()
+		.setColor("a039a0")
+		.setThumbnail(guild.iconURL({ dynamic: true }))
+		.setTitle("New Server!")
+		.addField("Server Name", guild.name, true)
+		.addField("Server ID", guild.id, true)
+		.addField("Owner Mention", `<@${guild.ownerID}>`, true)
+		.addField("Member Count", guild.memberCount, true)
+		.setFooter("Joined at: " + date.toUTCString());
+
+	await guild.channels.cache
+		.filter((channel) => channel.type === "text")
+		.first()
+		.createInvite()
+		.then((invite) => embed.addField("Invite link", invite.url, true))
+		.catch((err) => {
+			embed.addField("Invite link", "Missing permissions");
+			console.log(err);
+		});
+
+	channel.send(embed).catch((err) => console.log(err));
+});
+
 /**
  *
  * @param {string} guildID the ID of the guild you want to get prefix for.
@@ -1512,5 +1635,6 @@ exports.prefix = async function (guildID) {
 	if (prefixes.has(guildID)) return prefixes.get(guildID);
 	return "!kifo ";
 };
+
 
 client.login(process.env.LOGIN_TOKEN);
