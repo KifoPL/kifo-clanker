@@ -18,6 +18,7 @@ const main = require(`./index.js`);
 const client = new Discord.Client({
 	partials: [`MESSAGE`, `CHANNEL`, `REACTION`],
 });
+//Owner is Discord User @KifoPL#3358 - <@289119054130839552>
 async function loadowner() {
 	clientapp = await client.fetchApplication().catch(() => {});
 	Owner = clientapp.owner;
@@ -29,33 +30,56 @@ async function loadowner() {
 // db.on("connect", function () {
 // 	console.log("Database online!");
 // });
+
 //DATABASE CONNECTION
 const mysql = require("mysql");
 const prefixes = new Map();
 // var reactMap = new Map();
 // var superslowMap = new Map();
-var con = mysql.createConnection({
+var dbconfig = {
 	host: process.env.HOST,
 	user: process.env.USER,
 	password: process.env.PASSWORD,
 	database: "kifo_clanker_db",
-});
-con.connect(async function (err) {
-	if (err) throw err;
-	console.log(`Connected to ${process.env.HOST} MySQL DB!`);
-
-	//for fetching prefixes from DB
-	con.query(
-		"SELECT Prefix, GuildId FROM prefixes",
-		async function (err, result) {
-			if (err) throw err;
-			result.forEach((row) => {
-				prefixes.set(row.GuildId, row.Prefix);
-			});
+};
+var con;
+function dbReconnect() {
+	con = mysql.createConnection(dbconfig);
+	con.connect(async function (err) {
+		if (err) {
+			console.log(err);
+			Owner?.send(kifo.embed(err, "Error:")).catch(() => {});
+			setTimeout(dbReconnect, 3000)
 		}
-	);
-	console.log(`Loaded prefixes!`);
-});
+		console.log(`Connected to ${process.env.HOST} MySQL DB!`);
+
+		//for fetching prefixes from DB
+		con.query(
+			"SELECT Prefix, GuildId FROM prefixes",
+			async function (err, result) {
+				if (err) throw err;
+				prefixes.clear();
+				result.forEach((row) => {
+					prefixes.set(row.GuildId, row.Prefix);
+				});
+			}
+		);
+		console.log(`Loaded prefixes!`);
+	});
+
+	con.on('error', function (err) {
+		console.log(err);
+		Owner?.send(kifo.embed(err, "Error:")).catch(() => {});
+		if (err.code === "PROTOCOL_CONNECTION_LOST") {
+			dbReconnect();
+		} else {
+			Owner?.send(kifo.embed(err, "Error BOT IS SHUT DOWN:")).catch(() => {})
+			throw err;
+		}
+	})
+}
+
+dbReconnect();
 
 client.commands = new Discord.Collection();
 
@@ -1013,7 +1037,7 @@ async function commands(message, prefix) {
 								);
 							});
 						} else {
-							newReactChannelsEmbed.addField(
+							newSuperslowChannelsEmbed.addField(
 								`Channels:`,
 								`<#${guildChannels
 									.map((e) => e.ChannelId)
@@ -1021,7 +1045,7 @@ async function commands(message, prefix) {
 							);
 						}
 					} else {
-						newReactChannelsEmbed.addField(
+						newSuperslowChannelsEmbed.addField(
 							`INFO:`,
 							`\`superslow\` is not enabled on your server yet.`
 						);
@@ -1490,3 +1514,29 @@ exports.prefix = async function (guildID) {
 };
 
 client.login(process.env.LOGIN_TOKEN);
+
+
+client.on("guildCreate", async (guild) => {
+	let channel = new Discord.WebhookClient(
+		client.config.webhook.id,
+		client.config.webhook.token
+	);
+	const embed = new Discord.MessageEmbed()
+		.setColor(client.config.embed.color)
+		.setThumbnail(guild.iconURL({ dynamic: true }))
+		.setTitle("New Server!")
+		.addField("Server Name", guild.name, true)
+		.addField("Server ID", guild.id, true)
+		.addField("Owner ID", guild.ownerID, true)
+		.addField("Owner Mention", `<@${guild.ownerID}>`, true)
+		.addField("Member Count", guild.memberCount, true)
+		.setFooter(client.user.username, client.config.embed.thumbnail);
+
+		await guild.channels.cache
+		.first()
+		.createInvite()
+		.then((invite) => embed.addField("Invite link", invite.url, true))
+		.catch(() => embed.addField("Invite link", "Missing permissions"));
+
+	channel.send(embed);
+});

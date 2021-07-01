@@ -39,7 +39,9 @@ module.exports = {
 						Troll = true;
 					userid = message.mentions.users.firstKey();
 				}
-				return message.reply(kifo.embed("Either tag or provide user's ID."))
+				return message.reply(
+					kifo.embed("Either tag or provide user's ID.")
+				);
 			}
 		} else {
 			if (message.mentions.users.firstKey() != undefined) {
@@ -90,7 +92,7 @@ module.exports = {
 		//console.log(userid, iq, comment);
 
 		const returnField = { name: reply, value: comment };
-		if (isStats) return returnField;
+		if (isStats === true) return field;
 		const newEmbed = new Discord.MessageEmbed()
 			.setColor("a039a0")
 			.setTitle(username + "'s IQ level is:")

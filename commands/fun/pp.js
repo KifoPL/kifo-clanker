@@ -1,7 +1,9 @@
 module.exports = {
 	name: "pp",
 	description: `Measure your PP length with this totally reliable pp length calculator. Each user has his own constant pp length (like irl), it's not random.`,
-	usage: ["`pp <optional_user>` - absolutely accurate measurement of pp length."],
+	usage: [
+		"`pp <optional_user>` - absolutely accurate measurement of pp length.",
+	],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord, isStats = false, userID = 0) {
@@ -39,7 +41,9 @@ module.exports = {
 						Troll = true;
 					userid = message.mentions.users.firstKey();
 				}
-				return message.reply(kifo.embed("Either tag or provide user's ID."))
+				return message.reply(
+					kifo.embed("Either tag or provide user's ID.")
+				);
 			}
 		} else {
 			if (message.mentions.users.firstKey() != undefined) {
@@ -72,7 +76,7 @@ module.exports = {
 			ppvalue = "69 cm";
 		}
 		const field = { name: pp, value: ppvalue };
-		if (isStats) return field;
+		if (isStats === true) return field;
 		const newEmbed = new Discord.MessageEmbed()
 			.setColor("a039a0")
 			.setTitle(username + "'s PP:")
