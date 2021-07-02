@@ -1456,17 +1456,30 @@ function giveawayCheck() {
 						if (winner === null) console.log(winners)
 					});
 					const giveEmbed = new Discord.MessageEmbed()
-					.setTitle("Giveaway results:")
-					.setURL(`https://discord.com/channels/${row.GuildId}/${row.ChannelId}/${row.MessageId}`)
-					.setAuthor(`<:KifoClanker:822925174885449738> Powered by Kifo Clanker™`)
-					.setColor("a039a0")
-					.setDescription(output)
-					.setFooter("Giveaway ended at: " + row.EndTime.toUTCString())
-					.setThumbnail(client.guilds.resolve(row.GuildId)?.iconURL({
-							format: "png",
-							dynamic: true,
-							size: 64,
-						}))
+						.setTitle("Giveaway results:")
+						.setURL(
+							`https://discord.com/channels/${row.GuildId}/${row.ChannelId}/${row.MessageId}`
+						)
+						.setAuthor(
+							`Powered by Kifo Clanker™`,
+							client.user.avatarURL({
+								format: "png",
+								dynamic: true,
+								size: 64,
+							})
+						)
+						.setColor("a039a0")
+						.setDescription(output)
+						.setFooter(
+							"Giveaway ended at: " + row.EndTime.toUTCString()
+						)
+						.setThumbnail(
+							client.guilds.resolve(row.GuildId)?.iconURL({
+								format: "png",
+								dynamic: true,
+								size: 64,
+							})
+						);
 					client.channels
 						.resolve(row.ChannelId)
 						.send(giveEmbed)
