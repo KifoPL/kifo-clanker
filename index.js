@@ -1452,15 +1452,28 @@ function giveawayCheck() {
 								" `not enough reactions to conclude, if that's not the case notify Kifo` <@289119054130839552> "
 							}>`;
 						}
+						if (winner === null) console.log(winners)
 					});
+					const giveEmbed = new Discord.MessageEmbed()
+					.setTitle("Giveaway results:")
+					.setURL(`https://discord.com/channels/${row.GuildId}/${row.ChannelId}/${row.MessageId}`)
+					.setAuthor(`<:KifoClanker:822925174885449738> Powered by Kifo Clanker™`)
+					.setColor("a039a0")
+					.setDescription(output)
+					.setFooter("Giveaway ended at: " + row.EndTime.toUTCString())
+					.setThumbnail(client.guilds.resolve(row.GuildId)?.iconURL({
+							format: "png",
+							dynamic: true,
+							size: 64,
+						}))
 					client.channels
 						.resolve(row.ChannelId)
-						.send(kifo.embed(output, "Giveaway winners:"))
+						.send(giveEmbed)
 						.catch(() => {
 							client.guilds
 								.resolve(row.GuildID)
 								.members.resolve(row.UserId)
-								.send(kifo.embed(output, "Giveaway winners:"))
+								.send(giveEmbed)
 								.catch(() => {
 									Owner.send(
 										`Can't send giveaway info at Server ${
@@ -1474,7 +1487,7 @@ function giveawayCheck() {
 											client.guilds.resolve(row.GuildID)
 												.ownerID
 										}>`,
-										kifo.embed(output, "Giveaway winners:")
+										giveEmbed
 									).catch((err) => console.log(err));
 								});
 						});

@@ -49,6 +49,9 @@ module.exports = {
 			);
 		}
 
+		if (isNaN(args[0])) return message.reply(kifo.embed("Please provide correct amount of winners!"));
+		if (isNaN(ms(args[1]))) return message.reply(kifo.embed("Please provide correct time period!"))
+
 		const time = args[1];
 		const x = args[0];
 		const now = new Date(Date.now());
@@ -64,7 +67,7 @@ module.exports = {
 		message.channel
 			.send(`Ends at: <t:${Math.floor(end.getTime()/1000)}>, <t:${Math.floor(end.getTime()/1000)}:R>`,
 				kifo.embed(
-					`React with ${reaction} to enter! The giveaway ends at ${end.toUTCString()}.`
+					`React with ${reaction} to enter! The ${x} winner${x > 1 ? "s" : ""} will be chosen at ${end.toUTCString()}.`, "GIVEAWAY!"
 				)
 			)
 			.then((message) => {
