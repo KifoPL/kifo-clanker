@@ -1392,6 +1392,17 @@ client.once("ready", () => {
 				});
 			})
 			.catch(() => {});
+		//for SWInsider feature
+		client.guilds
+			.fetch("698075892974354482")
+			.then((guild) => {
+				guild.fetchInvites().then((invites) => {
+					SWInsiderInviteCount = invites.find(
+						(invite) => invite.inviter.id == "813613441448804354"
+					).uses;
+				});
+			})
+			.catch(() => {});
 	} catch (err) {
 		console.log(err);
 	}
@@ -1438,7 +1449,7 @@ function giveawayCheck() {
 						if (winner != undefined) {
 							output += `\n- <@${
 								winner?.id ??
-								"if you can read this, notify Kifo"
+								" `not enough reactions to conclude, if that's not the case notify Kifo` <@289119054130839552> "
 							}>`;
 						}
 					});
@@ -1517,10 +1528,11 @@ client.on("messageReactionAdd", async (msgReaction) => {
 	} else return;
 });
 
-//Code for adding WoofWoof role to members added by WoofWoofWolffe (and for HaberJordan Legion too)
+//Code for adding special roles for ppl invited by partners
 let WoofInviteCount;
 let HaberInviteCount;
 let NumeralJokerCount;
+let SWInsiderInviteCount;
 
 client.on("guildMemberAdd", (member) => {
 	member.guild
@@ -1557,6 +1569,20 @@ client.on("guildMemberAdd", (member) => {
 					)
 					.catch(console.error);
 				HaberInviteCount++;
+			} else if (
+				invites.find(
+					(invite) => invite.inviter.id == "813613441448804354"
+				)?.uses ==
+				SWInsiderInviteCount + 1
+			) {
+				member.roles
+					.add(
+						member.guild.roles.cache.find(
+							(role) => role.id == "858056136045756486"
+						)
+					)
+					.catch(console.error);
+				SWInsiderInviteCount++;
 			}
 			//NumeralJoker
 			else if (
@@ -1609,19 +1635,9 @@ client.on("guildCreate", async (guild) => {
 		.setTitle("New Server!")
 		.addField("Server Name", guild.name, true)
 		.addField("Server ID", guild.id, true)
-		.addField("Owner Mention", `<@${guild.ownerID}>`, true)
+		.addField("Owner", `<@${guild.ownerID}>`, true)
 		.addField("Member Count", guild.memberCount, true)
 		.setFooter("Joined at: " + date.toUTCString());
-
-	await guild.channels.cache
-		.filter((channel) => channel.type === "text")
-		.first()
-		.createInvite()
-		.then((invite) => embed.addField("Invite link", invite.url, true))
-		.catch((err) => {
-			embed.addField("Invite link", "Missing permissions");
-			console.log(err);
-		});
 
 	channel.send(embed).catch((err) => console.log(err));
 });
@@ -1635,6 +1651,5 @@ exports.prefix = async function (guildID) {
 	if (prefixes.has(guildID)) return prefixes.get(guildID);
 	return "!kifo ";
 };
-
 
 client.login(process.env.LOGIN_TOKEN);

@@ -60,7 +60,6 @@ module.exports = {
 		) {
 			return message.reply(kifo.embed("Incorrect reaction!"));
 		}
-		console.log(end.getTime())
 
 		message.channel
 			.send(`Ends at: <t:${Math.floor(end.getTime()/1000)}>, <t:${Math.floor(end.getTime()/1000)}:R>`,
