@@ -1357,6 +1357,8 @@ client.once("ready", () => {
 	console.log("Presence set!");
 	giveawayCheck();
 	setInterval(giveawayCheck, 1000 * 60);
+	removeCheck();
+	setInterval(removeCheck, 1000 * 60);
 
 	try {
 		//for WoofWoofWolffe feature
@@ -1454,7 +1456,7 @@ function giveawayCheck() {
 								" `not enough reactions to conclude, if that's not the case notify Kifo` <@289119054130839552> "
 							}>`;
 						}
-						if (winner === null) console.log(winners)
+						if (winner === null) console.log(winners);
 					});
 					const giveEmbed = new Discord.MessageEmbed()
 						.setTitle("Giveaway results:")
@@ -1488,7 +1490,10 @@ function giveawayCheck() {
 							client.guilds
 								.resolve(row.GuildID)
 								.members.resolve(row.UserId)
-								.send(`${authorM} couldn't send results in <#${row.ChannelId}>!`, giveEmbed)
+								.send(
+									`${authorM} couldn't send results in <#${row.ChannelId}>!`,
+									giveEmbed
+								)
 								.catch(() => {
 									Owner.send(
 										`Can't send giveaway info at Server ${
@@ -1509,6 +1514,93 @@ function giveawayCheck() {
 				});
 				con.query(
 					"DELETE FROM giveaway WHERE EndTime <= ?",
+					[now],
+					function (err1) {
+						if (err1) throw err1;
+					}
+				);
+			}
+		}
+	);
+}
+
+function removeCheck() {
+	let now = new Date(Date.now());
+	con.query(
+		"SELECT Id, UserId, RoleId, PerpetratorId, ChannelId, GuildId, EndTime FROM role_remove WHERE EndTime <= ?",
+		[now],
+		function (err, result) {
+			if (err) throw err;
+			if (result.length > 0) {
+				console.log(
+					`${result.length} remove${
+						result.length > 1 ? "s" : ""
+					} found!`
+				);
+				result.forEach(async (row) => {
+					let member = {};
+					await client.guilds
+						.resolve(row.GuildId)
+						.members.resolve(row.UserId)
+						.fetch()
+						.then((user) => {
+							member = user;
+						});
+					let channel = client.guilds
+						.resolve(row.GuildId)
+						.channels.resolve(row.ChannelId);
+					member.roles
+						.add(row.RoleId)
+						.then(() => {
+							channel
+								.send(
+									`<@!${member.id}>, <@!${row.PerpetratorId}>`,
+									kifo.embed(
+										`Issued by: <@!${row.PerpetratorId}>\nRole added: <@&${row.RoleId}>\nTo: <@!${member.id}>`,
+										`Role remove command (role readded)`
+									)
+								)
+								.catch((err1) => {
+									client.guilds
+										.resolve(row.GuildId)
+										.members.resolve(row.PerpetratorId)
+										.send(
+											kifo.embed(
+												`Issued by: <@!${row.PerpetratorId}>\nRole added: <@&${row.RoleId}>\nTo: <@!${member.id}>`,
+												`Role remove command (role readded)`
+											)
+										)
+										.catch(() => {});
+									console.log(err1);
+								});
+						})
+						.catch((err1) => {
+							channel
+								.send(
+									`<@!${member.id}>, <@!${row.PerpetratorId}>`,
+									kifo.embed(
+										`Issued by: <@!${row.PerpetratorId}>\nRole added: <@&${row.RoleId}>\nTo: <@!${member.id}>`,
+										`UNABLE TO ADD ROLE BACK`
+									)
+								)
+								.catch((err2) => {
+									client.guilds
+										.resolve(row.GuildId)
+										.members.resolve(row.PerpetratorId)
+										.send(
+											kifo.embed(
+												`Issued by: <@!${row.PerpetratorId}>\nRole added: <@&${row.RoleId}>\nTo: <@!${member.id}>`,
+												`UNABLE TO ADD ROLE BACK`
+											)
+										)
+										.catch(() => {});
+									console.log(err2);
+								});
+							console.log(err1);
+						});
+				});
+				con.query(
+					"DELETE FROM role_remove WHERE EndTime <= ?",
 					[now],
 					function (err1) {
 						if (err1) throw err1;
