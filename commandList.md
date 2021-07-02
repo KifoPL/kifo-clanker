@@ -103,6 +103,15 @@ If the bot doesn't see some channels, lists ~~may~~ will be incorrect.
 	- `perms <user_or_role_id>` - lists perms for specific user/role
 - Required user permissions: SEND_MESSAGES, MANAGE_CHANNELS
 
+### remove
+
+- This command allows you to (temporarily) remove user role.
+- Usage:
+	- `remove` - Informs you of syntax.
+	- `remove <user> <role>` - permanently removes role from user.
+	- `remove <user> <role> <time_period>` - removes role from user, and re-adds it after given time period.
+- Required user permissions: SEND_MESSAGES, MANAGE_ROLES
+
 ### stats
 
 - Displays stats for given user, bot, role, server, ~~channel~~, ~~message~~ (in development).
@@ -168,4 +177,4 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Thu, 01 Jul 2021 19:55:20 GMT*
+> - *Last update: Fri, 02 Jul 2021 14:01:02 GMT*
