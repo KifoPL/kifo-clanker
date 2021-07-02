@@ -1446,6 +1446,7 @@ function giveawayCheck() {
 					let winners = temp;
 					winners.shift();
 					let output = "";
+					let authorM = `<@!${row.UserId}>`;
 					await winners.forEach((winner) => {
 						if (winner != undefined) {
 							output += `\n- <@${
@@ -1482,12 +1483,12 @@ function giveawayCheck() {
 						);
 					client.channels
 						.resolve(row.ChannelId)
-						.send(giveEmbed)
+						.send(authorM, giveEmbed)
 						.catch(() => {
 							client.guilds
 								.resolve(row.GuildID)
 								.members.resolve(row.UserId)
-								.send(giveEmbed)
+								.send(`${authorM} couldn't send results in <#${row.ChannelId}>!`, giveEmbed)
 								.catch(() => {
 									Owner.send(
 										`Can't send giveaway info at Server ${
