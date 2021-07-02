@@ -1440,10 +1440,11 @@ function giveawayCheck() {
 						.then((col) => {
 							temp = col
 								.filter((user) => !user.bot)
-								.random(row.Winners);
+								.random(row.Winners + 1);
 						})
 						.catch((err) => console.log(err));
-					let winners = temp.length > 1 ? temp : [temp];
+					let winners = temp;
+					winners.shift();
 					let output = "";
 					await winners.forEach((winner) => {
 						if (winner != undefined) {
