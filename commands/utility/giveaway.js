@@ -49,10 +49,11 @@ module.exports = {
 			);
 		}
 
-		if (isNaN(args[0])) return message.reply(kifo.embed("Please provide correct amount of winners!"));
-		if (args[0] < 1) return message.reply(kifo.embed("Please choose at least one winner!"));
-		if (isNaN(ms(args[1]))) return message.reply(kifo.embed("Please provide correct time period!"))
-		if (ms(args[1]) < 1000 * 60) return message.reply(kifo.embed("Please set the giveaway to at least 1 minute long."))
+		if (isNaN(args[0])) return message.reply(kifo.embed("Please provide correct amount of winners!")).catch(() => {});
+		if (args[0] < 1) return message.reply(kifo.embed("Please choose at least one winner!")).catch(() => {});
+		if (Math.floor(args[0]) != args[0]) return message.reply(kifo.embed("Please choose an integer amount of winners!")).catch(() => {});
+		if (isNaN(ms(args[1]))) return message.reply(kifo.embed("Please provide correct time period!")).catch(() => {});
+		if (ms(args[1]) < 1000 * 60) return message.reply(kifo.embed("Please set the giveaway to at least 1 minute long.")).catch(() => {});
 
 		const time = args[1];
 		const x = args[0];

@@ -1,7 +1,9 @@
 const { MessageMentions } = require("discord.js");
+
 const kifo = require("kifo");
 const fs = require("fs");
-const time = new Date(Date.now());
+const ms = require("ms");
+const now = new Date(Date.now());
 const channelPerms = [
 	//below perms are for text channels
 	(VIEW_CHANNEL = {
@@ -149,6 +151,7 @@ module.exports = {
 		"This powerful command manages permissions for channels and categories.\n- **ADD** - allows a perm (green check), \n- **DENY** - denies a perm (red x),\n- **RM** - removes a perm (grey /).",
 	usage: [
 		"`perms <add/rm/deny> <perm> <role_or_user_id_1> ... <role_or_user_id_n>` - adds/removes/denies perms for provided users and roles in this channel. <perm> can be either full name, id (number), or alias of a perm.",
+		"`perms <add/rm/deny> <perm> <role_or_user_id_1> ... <role_or_user_id_n> <time_period>` - adds/removes/denies perms for provided users and roles in this channel, then reverts the changes after <time_period>. <perm> can be either full name, id (number), or alias of a perm.",
 		"`perms` - checks if you have permissions to manage channel, lists aliases and IDs of permissions for easier cmd usage.",
 		"`perms <channel_or_category_id>` - lists perms of all roles and members in a `.txt` file",
 		'`perms "here"/"list"` - list perms of all roles and members for this channel in a `.txt` file',
@@ -157,6 +160,7 @@ module.exports = {
 	adminonly: true,
 	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
 	async execute(message, args, Discord, prefix) {
+		const { con } = require("../../index.js");
 		const hasRequiredPerms =
 			message.member
 				.permissionsIn(message.channel)
@@ -196,7 +200,7 @@ module.exports = {
 				.setFooter(
 					`Issued by ${message.member.displayName} - ${
 						message.member.id
-					} at ${time.toUTCString()}.`
+					} at ${now.toUTCString()}.`
 				);
 			//write all aliases of all text channel perms.
 			channelPerms.forEach(async (perm) => {
@@ -319,7 +323,7 @@ module.exports = {
 						.setFooter(
 							`Issued by ${message.member.displayName} - ${
 								message.member.id
-							} at ${time.toUTCString()}.`
+							} at ${now.toUTCString()}.`
 						);
 					message.channel.permissionOverwrites
 						.filter((perm) => perm.id == entity.id)
@@ -369,7 +373,45 @@ module.exports = {
 					);
 				}
 
+				let time = args.pop();
+				let end = undefined;
 				let IDInput = args.slice(2);
+
+				if (
+					time.match(MessageMentions.USERS_PATTERN) ||
+					time.match(MessageMentions.ROLES_PATTERN)
+				) {
+					IDInput.push(time);
+					time = undefined;
+				}
+
+				if (
+					message.guild.members.resolve(time) != null ||
+					message.guild.roles.resolve(time) != null
+				) {
+					IDInput.push(time);
+					time = undefined;
+				}
+
+				if (time !== undefined) {
+					if (isNaN(ms(time)))
+						return message
+							.reply(
+								kifo.embed(
+									"Incorrect last argument! The last argument needs to be either `user`, `role` or `time period`."
+								)
+							)
+							.catch(() => {});
+					if (ms(time) < 1000 * 60)
+						return message
+							.reply(
+								kifo.embed("Set the time to at least a minute!")
+							)
+							.catch(() => {});
+					end = new Date(now.getTime() + ms(time));
+				}
+				let stop = false;
+
 				//console.log(`IDINPUT ${IDInput}`);
 				let IDArray = [];
 				IDInput.forEach((ID) => {
@@ -458,103 +500,140 @@ module.exports = {
 						}),
 						"https://github.com/KifoPL/kifo-clanker/"
 					)
+					.setTitle(
+						`${message.member.displayName} ${
+							args[0].toLowerCase() == "add"
+								? "added"
+								: args[0].toLowerCase() == "rm"
+								? "removed"
+								: "denied"
+						} ${perm.name} in ${message.channel.name}.`
+					)
 					.setFooter(
 						`Issued by ${message.member.displayName} - ${
 							message.member.id
-						} at ${time.toUTCString()}.`
+						} at ${now.toUTCString()}.`
 					);
 
 				fileContent += `\nUpdated perms:\n\n`;
 				fileContent += `Type\tID\tName\t+/-\tPerms\n`;
-				if (args[0].toLowerCase() == "add") {
-					newEmbed.setTitle(
-						`${message.member.displayName} added ${perm.name} in ${message.channel.name}.`
-					);
-					//let overArr = [];
-					IDArray.forEach((ID) => {
-						//overArr.push({ id: ID, allow: [perm.name] });
-						message.channel.updateOverwrite(ID, {
-							[perm.name]: true,
-						});
-						fileContent += `${
-							message.guild.members.resolve(ID) != null
-								? `member`
-								: `role`
-						}\t${ID}\t${
-							message.guild.members.resolve(ID) != null
-								? message.guild.members.resolve(ID).displayName
-								: message.guild.roles.resolve(ID).name
-						}\t+\t${perm.name}\n`;
-					});
-					//message.channel.updateOverwrite(overArr);
-				} else if (args[0].toLowerCase() == "rm") {
-					newEmbed.setTitle(
-						`${message.member.displayName} removed ${perm.name} in ${message.channel.name}.`
-					);
-					IDArray.forEach((ID) => {
+
+				IDArray.forEach(async (ID) => {
+					if (stop)
+						return message
+							.reply(
+								kifo.embed(
+									err,
+									`Unable to change permissions for ${ID}!`
+								)
+							)
+							.catch(() => {});
+					let previous = "rm";
+					if (
 						message.channel.permissionOverwrites
-							.filter((permOver1) => permOver1.id == ID)
-							.each((permOver) => {
-								permOver.update({
-									[perm.name]: null,
-								});
-								fileContent += `${
-									permOver.type == "member"
-										? `member`
-										: `role`
-								}\t${permOver.id}\t${
-									permOver.type == "member"
-										? message.guild.members.resolve(
-												permOver.id
-										  ).displayName
-										: message.guild.roles.resolve(
-												permOver.id
-										  ).name
-								}\t/\t${perm.name}\n`;
-							});
-					});
-				} else if (args[0].toLowerCase() == "deny") {
-					newEmbed.setTitle(
-						`${message.member.displayName} denied ${perm.name} in ${message.channel.name}.`
-					);
-					//let overArr = [];
-					IDArray.forEach((ID) => {
-						//overArr.push({ id: ID, deny: [perm.name] });
-						message.channel.updateOverwrite(ID, {
-							[perm.name]: false,
+							.get(ID)
+							?.allow.has(perm.name)
+					) {
+						previous = "add";
+					} else if (
+						message.channel.permissionOverwrites
+							.get(ID)
+							?.deny.has(perm.name)
+					) {
+						previous = "deny";
+					}
+					fileContent += `${
+						message.guild.members.resolve(ID) != null
+							? `member`
+							: `role`
+					}\t${ID}\t${
+						message.guild.members.resolve(ID) != null
+							? message.guild.members.resolve(ID).displayName
+							: message.guild.roles.resolve(ID).name
+					}\t${
+						args[0].toLowerCase() == "add"
+							? "+"
+							: args[0].toLowerCase() == "rm"
+							? "/"
+							: "-"
+					}\t${perm.name}\n`;
+					await message.channel
+						.updateOverwrite(ID, {
+							[perm.name]:
+								args[0].toLowerCase() == "add"
+									? true
+									: args[0].toLowerCase() == "rm"
+									? null
+									: false,
+						})
+						.then(() => {
+							if (time !== undefined) {
+								con.query(
+									"INSERT INTO perms (PerpetratorId , ChannelId , GuildId , PermId , PermFlag , EndTime , Command) VALUES (?, ?, ?, ?, ?, ?, ?)",
+									[
+										message.author.id,
+										message.channel.id,
+										message.guild.id,
+										ID,
+										perm.name,
+										end,
+										previous,
+									],
+									function (err1) {
+										stop = true;
+										if (err1) throw err1;
+									}
+								);
+							}
+						})
+						.catch((err) => {
+							stop = true;
+							return message
+								.reply(
+									kifo.embed(
+										err,
+										`Unable to change permissions for ${ID}!`
+									)
+								)
+								.catch(() => {});
 						});
-						fileContent += `${
-							message.guild.members.resolve(ID) != null
-								? `member`
-								: `role`
-						}\t${ID}\t${
-							message.guild.members.resolve(ID) != null
-								? message.guild.members.resolve(ID).displayName
-								: message.guild.roles.resolve(ID).name
-						}\t-\t${perm.name}\n`;
-					});
-					// message.channel.overwritePermissions(overArr);
+				});
+				if (stop) {
+					return message
+						.reply(
+							kifo.embed(
+								"Unexpected error. Command exited without changing state."
+							)
+						)
+						.catch(() => {});
 				}
 				fs.writeFileSync(
 					`./${message.guild.id}_${message.channel.id} perms.txt`,
 					fileContent,
 					() => {}
 				);
-
 				newEmbed.attachFiles([
 					{
 						attachment: `./${message.guild.id}_${message.channel.id} perms.txt`,
 						name: `${message.guild.id}_${message.channel.id} perms.txt`,
 					},
 				]);
-				////console.log("DID IT WORK?")
-				await message.reply(newEmbed);
+				if (time !== undefined) {
+					await message.reply(
+						`I'll revert the perms at <t:${Math.floor(
+							end.getTime() / 1000
+						)}>, <t:${Math.floor(end.getTime() / 1000)}:R>`,
+						newEmbed
+					);
+				} else await message.reply(newEmbed);
 				try {
 					fs.unlink(
 						`./${message.guild.id}_${message.channel.id} perms.txt`,
 						() => {}
 					).catch(() => {});
 				} catch (err) {}
+
+				////console.log("DID IT WORK?")
 			}
 		}
 	},
@@ -618,7 +697,7 @@ async function channelPermsfunc(
 			.setFooter(
 				`Issued by ${message.member.displayName} - ${
 					message.member.id
-				} at ${time.toUTCString()}.`
+				} at ${now.toUTCString()}.`
 			)
 			.attachFiles([
 				{

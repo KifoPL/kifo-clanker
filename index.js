@@ -1359,6 +1359,8 @@ client.once("ready", () => {
 	setInterval(giveawayCheck, 1000 * 60);
 	removeCheck();
 	setInterval(removeCheck, 1000 * 60);
+	permsCheck();
+	setInterval(permsCheck, 1000 * 60);
 
 	try {
 		//for WoofWoofWolffe feature
@@ -1606,6 +1608,94 @@ function removeCheck() {
 						if (err1) throw err1;
 					}
 				);
+			}
+		}
+	);
+}
+
+function permsCheck() {
+	let now = new Date(Date.now());
+	con.query(
+		"SELECT Id, PerpetratorId, ChannelId, GuildId, PermId, PermFlag, EndTime, Command FROM perms WHERE EndTime <= ?",
+		[now],
+		function (err, result) {
+			if (err) throw err;
+			if (result.length > 0) {
+				let successMap = new Map();
+				console.log(
+					`${result.length} perm${
+						result.length > 1 ? "s" : ""
+					} found!`
+				);
+				let stop = false;
+				result.forEach(async (row) => {
+					if (successMap.has(row.ChannelId)) {
+						successMap.set(
+							row.ChannelId,
+							successMap.get(row.ChannelId) + 1
+						);
+					} else {
+						successMap.set(row.ChannelId, 1);
+					}
+					if (stop) return;
+					let Current = client.guilds
+						.resolve(row.GuildId)
+						?.channels.resolve(row.ChannelId)
+						?.permissionOverwrites.get(row.PermId)
+						?.allow.has(row.PermFlag)
+						? "allow"
+						: client.guilds
+								.resolve(row.GuildId)
+								?.channels.resolve(row.ChannelId)
+								?.permissionOverwrites.get(row.PermId)
+								?.deny.has(row.PermFlag) ? "deny" : "neutral";
+					client.guilds
+						.resolve(row.GuildId)
+						?.channels.resolve(row.ChannelId)
+						?.updateOverwrite(row.PermId, {
+							[row.PermFlag]:
+								row.Command == "add"
+									? true
+									: row.Command == "rm"
+									? null
+									: false,
+						})
+						.then(() => {
+							client.channels.resolve(row.ChannelId)?.send(kifo.embed(`Changed ${row.PermFlag} from ${Current} to ${row.Command} for ${client.guilds.resolve(row.GuildId)?.members.resolve(row.PermId) != null ? "<@!" : "<@&"}${row.PermId}>.`, "Changed back perms")).catch((err) => console.log(err))
+						})
+						.catch((err) => {
+							client.channels
+								.resolve(row.ChannelId)
+								?.send(
+									`<@!${row.PerpetratorId}>`,
+									kifo.embed(
+										err,
+										"Could not revert perms command!"
+									)
+								)
+								.catch(() => {});
+							stop = true;
+						});
+				});
+				if (!stop) {
+					successMap.forEach((value, key) => {
+						client.channels
+							.resolve(key)
+							?.send(
+								kifo.embed(
+									`Succesfully reverted ${value} perms!`
+								)
+							)
+							.catch((err) => console.log(err));
+					});
+					con.query(
+						"DELETE FROM perms WHERE EndTime <= ?",
+						[now],
+						function (err1) {
+							if (err1) throw err1;
+						}
+					);
+				}
 			}
 		}
 	);
