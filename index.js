@@ -148,7 +148,7 @@ async function hello(message, prefix) {
 				"\u200B",
 				"This bot is developed by [KifoPL](https://github.com/KifoPL).\nDiscord: <@289119054130839552> : @KifoPL#3358\nReddit: [u/kifopl](http://reddit.com/u/kifopl)\n[Buy me a beer!](https://www.buymeacoffee.com/kifoPL) (developing bot takes a lot of time, by donating you help me pay my electricity / internet bills!)"
 			);
-		message.channel.send(helloEmbed);
+		message.channel.send(helloEmbed).catch(() => {});
 		message.channel.stopTyping(true);
 		return;
 	}
@@ -664,7 +664,7 @@ async function commands(message, prefix) {
 				`Run \`${prefix}help\` to get list of available commands.`,
 				`If you have a suggestion for a new command, please reach out to KifoPL#3358 - <@289119054130839552>`
 			);
-		return message.channel.send(embedreply);
+		return message.channel.send(embedreply).catch(() => {});
 	}
 
 	const contents = fs.readFileSync(`./commandList.json`);

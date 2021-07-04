@@ -72,16 +72,16 @@ module.exports = {
 					`React with ${reaction} to enter! The ${x} winner${x > 1 ? "s" : ""} will be chosen at ${end.toUTCString()}.`, "GIVEAWAY!"
 				)
 			)
-			.then((message) => {
-				message
+			.then((msg) => {
+				msg
 					.react(reaction)
 					.then((reaction1) => {
 						con.query(
 							"INSERT INTO giveaway (MessageId , ChannelId , GuildId , UserId, Winners , EndTime , Reaction) VALUES (?, ?, ?, ?, ?, ?, ?);",
 							[
-								message.id,
-								message.channel.id,
-								message.guild.id,
+								msg.id,
+								msg.channel.id,
+								msg.guild.id,
 								message.author.id,
 								x,
 								end,
