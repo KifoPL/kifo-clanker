@@ -151,6 +151,7 @@ module.exports = {
 		"This powerful command manages permissions for channels and categories.\n- **ADD** - allows a perm (green check), \n- **DENY** - denies a perm (red x),\n- **RM** - removes a perm (grey /).",
 	usage: [
 		"`perms <add/rm/deny> <perm> <role_or_user_id_1> ... <role_or_user_id_n>` - adds/removes/denies perms for provided users and roles in this channel. <perm> can be either full name, id (number), or alias of a perm.",
+		"`perms <add/rm/deny> <perm> <role_or_user_id_1> ... <role_or_user_id_n> <time_period>` - adds/removes/denies perms for provided users and roles in this channel, then reverts the changes after <time_period>. <perm> can be either full name, id (number), or alias of a perm.",
 		"`perms` - checks if you have permissions to manage channel, lists aliases and IDs of permissions for easier cmd usage.",
 		"`perms <channel_or_category_id>` - lists perms of all roles and members in a `.txt` file",
 		'`perms "here"/"list"` - list perms of all roles and members for this channel in a `.txt` file',
@@ -401,7 +402,12 @@ module.exports = {
 								)
 							)
 							.catch(() => {});
-					if (ms(time) < 1000 * 60) return message.reply(kifo.embed("Set the time to at least a minute!")).catch(() => {})
+					if (ms(time) < 1000 * 60)
+						return message
+							.reply(
+								kifo.embed("Set the time to at least a minute!")
+							)
+							.catch(() => {});
 					end = new Date(now.getTime() + ms(time));
 				}
 				let stop = false;
@@ -513,14 +519,15 @@ module.exports = {
 				fileContent += `Type\tID\tName\t+/-\tPerms\n`;
 
 				IDArray.forEach(async (ID) => {
-					if (stop) return message
-						.reply(
-							kifo.embed(
-								err,
-								`Unable to change permissions for ${ID}!`
+					if (stop)
+						return message
+							.reply(
+								kifo.embed(
+									err,
+									`Unable to change permissions for ${ID}!`
+								)
 							)
-						)
-						.catch(() => {});
+							.catch(() => {});
 					let previous = "rm";
 					if (
 						message.channel.permissionOverwrites
@@ -592,7 +599,13 @@ module.exports = {
 						});
 				});
 				if (stop) {
-					return message.reply(kifo.embed("Unexpected error. Command exited without changing state.")).catch(() => {})
+					return message
+						.reply(
+							kifo.embed(
+								"Unexpected error. Command exited without changing state."
+							)
+						)
+						.catch(() => {});
 				}
 				fs.writeFileSync(
 					`./${message.guild.id}_${message.channel.id} perms.txt`,
