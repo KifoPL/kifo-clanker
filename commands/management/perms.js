@@ -150,12 +150,12 @@ module.exports = {
 	description:
 		"This powerful command manages permissions for channels and categories.\n- **ADD** - allows a perm (green check), \n- **DENY** - denies a perm (red x),\n- **RM** - removes a perm (grey /).",
 	usage: [
-		"`perms <add/rm/deny> <perm> <role_or_user_id_1> ... <role_or_user_id_n>` - adds/removes/denies perms for provided users and roles in this channel. <perm> can be either full name, id (number), or alias of a perm.",
-		"`perms <add/rm/deny> <perm> <role_or_user_id_1> ... <role_or_user_id_n> <time_period>` - adds/removes/denies perms for provided users and roles in this channel, then reverts the changes after <time_period>. <perm> can be either full name, id (number), or alias of a perm.",
 		"`perms` - checks if you have permissions to manage channel, lists aliases and IDs of permissions for easier cmd usage.",
-		"`perms <channel_or_category_id>` - lists perms of all roles and members in a `.txt` file",
 		'`perms "here"/"list"` - list perms of all roles and members for this channel in a `.txt` file',
 		"`perms <user_or_role_id>` - lists perms for specific user/role",
+		"`perms <channel_or_category_id>` - lists perms of all roles and members in a `.txt` file",
+		"`perms <add/rm/deny> <perm> <role_or_user_id_1> ... <role_or_user_id_n>` - adds/removes/denies perms for provided users and roles in this channel. <perm> can be either full name, id (number), or alias of a perm.",
+		"`perms <add/rm/deny> <perm> <role_or_user_id_1> ... <role_or_user_id_n> <time_period>` - adds/removes/denies perms for provided users and roles in this channel, then reverts the changes after <time_period>. <perm> can be either full name, id (number), or alias of a perm.",
 	],
 	adminonly: true,
 	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
@@ -569,9 +569,10 @@ module.exports = {
 						.then(() => {
 							if (time !== undefined) {
 								con.query(
-									"INSERT INTO perms (PerpetratorId , ChannelId , GuildId , PermId , PermFlag , EndTime , Command) VALUES (?, ?, ?, ?, ?, ?, ?)",
+									"INSERT INTO perms (PerpetratorId , MessageId, ChannelId , GuildId , PermId , PermFlag , EndTime , Command) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
 									[
 										message.author.id,
+										message.id,
 										message.channel.id,
 										message.guild.id,
 										ID,

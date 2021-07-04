@@ -1284,8 +1284,10 @@ async function onmessage(message) {
 				.toLowerCase()
 				.startsWith(prefix.toLowerCase().trim()) &&
 			message.content.length > prefix.length
-		)
+		) {
 			commands(message, prefix);
+			message.channel.stopTyping(true);
+		}
 	}
 }
 
@@ -1449,6 +1451,13 @@ function giveawayCheck() {
 						.catch((err) => console.log(err));
 					let winners = temp;
 					winners.shift();
+					//generate a .txt file
+					if (row.Winners > 25) {
+						let filecontent = ``;
+						console.log(
+							"YOU FORGOT TO IMPLEMENT .txt FILE FOR TOO BIG GIVEAWAYS DUMBASS!!!!"
+						);
+					}
 					let output = "";
 					let authorM = `<@!${row.UserId}>`;
 					await winners.forEach((winner) => {
@@ -1616,28 +1625,20 @@ function removeCheck() {
 function permsCheck() {
 	let now = new Date(Date.now());
 	con.query(
-		"SELECT Id, PerpetratorId, ChannelId, GuildId, PermId, PermFlag, EndTime, Command FROM perms WHERE EndTime <= ?",
+		"SELECT Id, PerpetratorId, MessageId, ChannelId, GuildId, PermId, PermFlag, EndTime, Command FROM perms WHERE EndTime <= ?",
 		[now],
 		function (err, result) {
 			if (err) throw err;
 			if (result.length > 0) {
-				let successMap = new Map();
 				console.log(
 					`${result.length} perm${
 						result.length > 1 ? "s" : ""
 					} found!`
 				);
-				let stop = false;
+				let previousMap = new Map();
+				let failureMap = new Map();
 				result.forEach(async (row) => {
-					if (successMap.has(row.ChannelId)) {
-						successMap.set(
-							row.ChannelId,
-							successMap.get(row.ChannelId) + 1
-						);
-					} else {
-						successMap.set(row.ChannelId, 1);
-					}
-					if (stop) return;
+					if (failureMap.has(row.MessageId)) return;
 					let Current = client.guilds
 						.resolve(row.GuildId)
 						?.channels.resolve(row.ChannelId)
@@ -1648,7 +1649,13 @@ function permsCheck() {
 								.resolve(row.GuildId)
 								?.channels.resolve(row.ChannelId)
 								?.permissionOverwrites.get(row.PermId)
-								?.deny.has(row.PermFlag) ? "deny" : "neutral";
+								?.deny.has(row.PermFlag)
+						? "deny"
+						: "neutral";
+					//a map for output message for each message (cmd)
+					if (!previousMap.has(row.MessageId)) {
+						previousMap.set(row.MessageId, Current);
+					}
 					client.guilds
 						.resolve(row.GuildId)
 						?.channels.resolve(row.ChannelId)
@@ -1660,10 +1667,11 @@ function permsCheck() {
 									? null
 									: false,
 						})
-						.then(() => {
-							client.channels.resolve(row.ChannelId)?.send(kifo.embed(`Changed ${row.PermFlag} from ${Current} to ${row.Command} for ${client.guilds.resolve(row.GuildId)?.members.resolve(row.PermId) != null ? "<@!" : "<@&"}${row.PermId}>.`, "Changed back perms")).catch((err) => console.log(err))
-						})
+						// .then(() => {
+						// 	//client.channels.resolve(row.ChannelId)?.send(kifo.embed(`Changed ${row.PermFlag} from ${Current} to ${row.Command} for ${client.guilds.resolve(row.GuildId)?.members.resolve(row.PermId) != null ? "<@!" : "<@&"}${row.PermId}>.`, "Changed back perms")).catch((err) => console.log(err))
+						// })
 						.catch((err) => {
+							failureMap.set(row.MessageId, true);
 							client.channels
 								.resolve(row.ChannelId)
 								?.send(
@@ -1673,29 +1681,53 @@ function permsCheck() {
 										"Could not revert perms command!"
 									)
 								)
-								.catch(() => {});
-							stop = true;
+								.catch((err) => console.log(err));
 						});
 				});
-				if (!stop) {
-					successMap.forEach((value, key) => {
-						client.channels
-							.resolve(key)
-							?.send(
-								kifo.embed(
-									`Succesfully reverted ${value} perms!`
-								)
-							)
-							.catch((err) => console.log(err));
+				previousMap.forEach((value, key) => {
+					//apparently return only stops the CURRENT callback function, each iteration of for each loop is a separate function.
+					if (failureMap.has(key)) return;
+					let Output = result.filter((row) => (row.MessageId == key));
+					let r = Output[0];
+					let Title = `Changed ${r.PermFlag} from ${value} to ${
+						r.Command == "add"
+							? "allow"
+							: r.Command == "rm"
+							? "neutral"
+							: "deny"
+					} for:\n`;
+					let Description = "";
+					Output.forEach((rr) => {
+						Description += `- <@${
+							client.guilds
+								.resolve(rr.GuildId)
+								?.members.resolve(rr.PermId) != null
+								? "!"
+								: "&"
+						}${rr.PermId}>\n`;
 					});
-					con.query(
-						"DELETE FROM perms WHERE EndTime <= ?",
-						[now],
-						function (err1) {
-							if (err1) throw err1;
-						}
-					);
-				}
+					client.channels
+						.resolve(r.ChannelId)
+						?.send(
+							`<@!${r.PerpetratorId}>`,
+							kifo.embed(Description, Title)
+						)
+						.catch((err) => {
+							console.log(err);
+							client.guilds
+								.resolve(r.GuildId)
+								?.members.resolve(r.PerpetratorId)
+								?.send(kifo.embed(Description, Title))
+								.catch((err) => console.log(err));
+						});
+				});
+				con.query(
+					"DELETE FROM perms WHERE EndTime <= ?",
+					[now],
+					function (err1) {
+						if (err1) throw err1;
+					}
+				);
 			}
 		}
 	);
