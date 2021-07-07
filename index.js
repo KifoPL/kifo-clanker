@@ -1452,12 +1452,6 @@ function giveawayCheck() {
 					let winners = temp;
 					winners.shift();
 					//generate a .txt file
-					if (row.Winners > 25) {
-						let filecontent = ``;
-						console.log(
-							"YOU FORGOT TO IMPLEMENT .txt FILE FOR TOO BIG GIVEAWAYS DUMBASS!!!!"
-						);
-					}
 					let output = "";
 					let authorM = `<@!${row.UserId}>`;
 					await winners.forEach((winner) => {
@@ -1469,6 +1463,7 @@ function giveawayCheck() {
 						}
 						if (winner === null) console.log(winners);
 					});
+
 					const giveEmbed = new Discord.MessageEmbed()
 						.setTitle("Giveaway results:")
 						.setURL(
@@ -1483,7 +1478,6 @@ function giveawayCheck() {
 							})
 						)
 						.setColor("a039a0")
-						.setDescription(output)
 						.setFooter(
 							"Giveaway ended at: " + row.EndTime.toUTCString()
 						)
@@ -1494,19 +1488,34 @@ function giveawayCheck() {
 								size: 64,
 							})
 						);
-					client.channels
+					if (row.Winners > 25) {
+						fs.writeFileSync(
+							`./${row.MessageId}.txt`,
+							output,
+							() => {}
+						);
+						giveEmbed
+							.attachFiles([
+								{
+									attachment: `./${row.MessageId}.txt`,
+									name: `${row.MessageId}.txt`,
+								},
+							])
+							.setDescription("Results are in .txt file!");
+					} else giveEmbed.setDescription(output);
+					await client.channels
 						.resolve(row.ChannelId)
 						.send(authorM, giveEmbed)
-						.catch(() => {
-							client.guilds
+						.catch(async () => {
+							await client.guilds
 								.resolve(row.GuildID)
 								.members.resolve(row.UserId)
 								.send(
 									`${authorM} couldn't send results in <#${row.ChannelId}>!`,
 									giveEmbed
 								)
-								.catch(() => {
-									Owner.send(
+								.catch(async () => {
+									await Owner.send(
 										`Can't send giveaway info at Server ${
 											client.guilds.resolve(row.GuildID)
 												.name
@@ -1522,6 +1531,9 @@ function giveawayCheck() {
 									).catch((err) => console.log(err));
 								});
 						});
+					try {
+						fs.unlink(`./${row.MessageId}.txt`, () => {});
+					} catch (err) {}
 				});
 				con.query(
 					"DELETE FROM giveaway WHERE EndTime <= ?",
@@ -1687,7 +1699,7 @@ function permsCheck() {
 				previousMap.forEach((value, key) => {
 					//apparently return only stops the CURRENT callback function, each iteration of for each loop is a separate function.
 					if (failureMap.has(key)) return;
-					let Output = result.filter((row) => (row.MessageId == key));
+					let Output = result.filter((row) => row.MessageId == key);
 					let r = Output[0];
 					let Title = `Changed ${r.PermFlag} from ${value} to ${
 						r.Command == "add"

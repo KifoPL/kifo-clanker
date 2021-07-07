@@ -20,27 +20,15 @@ module.exports = {
 					message.author.tag
 				}`
 			);
-			if (args[0] != null) {
-				if (!isNaN(ms(args[0]))) {
-					let time = ms(args[0])
-					let now = new Date(Date.now());
-					//let end = new Date((now.getTime() + ms(time)));
-					let end = new Date(now.getTime() + time);
-					console.log("now")
-					console.log(now)
-					console.log("time")
-					console.log(time)
-					console.log("end")
-					console.log(end)
-				}
-			}
 		if (message.member.permissions.has("ADMINISTRATOR")) {
 			embedreply.setDescription(
 				`Works fine, Mr. Admin ${message.author}!`
 			);
+			message.channel.stopTyping(true);
 			return message.reply(embedreply);
 		} else {
 			embedreply.setDescription(`It works, regular person.`);
+			message.channel.stopTyping(true);
 			return message.reply(embedreply);
 		}
 	},
