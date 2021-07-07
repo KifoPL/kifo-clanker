@@ -1428,6 +1428,7 @@ function giveawayCheck() {
 					} ended!`
 				);
 				result.forEach(async (row) => {
+					let link = `https://discord.com/channels/${row.GuildId}/${row.ChannelId}/${row.MessageId}`;
 					let msg = {};
 					await client.guilds
 						.resolve(row.GuildId)
@@ -1436,6 +1437,7 @@ function giveawayCheck() {
 						.then((msgs) => {
 							msg = msgs.get(row.MessageId);
 						});
+						if (msg == null) Owner.send(kifo.embed(`WARNING: ${link} giveaway not fetched.`)).catch((err) => console.log(err))
 					if (msg.partial) {
 						await msg.fetch().catch((err) => console.log(err));
 					}
@@ -1467,7 +1469,7 @@ function giveawayCheck() {
 					const giveEmbed = new Discord.MessageEmbed()
 						.setTitle("Giveaway results:")
 						.setURL(
-							`https://discord.com/channels/${row.GuildId}/${row.ChannelId}/${row.MessageId}`
+							
 						)
 						.setAuthor(
 							`Powered by Kifo Clanker™`,
