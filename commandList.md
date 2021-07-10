@@ -87,6 +87,7 @@ If the bot doesn't see some channels, lists ~~may~~ will be incorrect.
 	- `list` - lists all users in the server
 	- `list <user>` - lists roles of specified user.
 	- `list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.
+	- `list <message_id> - pastes raw message content *(with formatting, works with embeds and all types of messages)*.
 - Required user permissions: SEND_MESSAGES, MANAGE_GUILD
 
 ### perms
@@ -121,6 +122,7 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 	- `stats` - shows stats of the server
 	- `stats <user>` - shows stats of specified user.
 	- `stats <role>` - shows stats of specified role.
+	- `stats <message_id>` - shows stats of specified message.
 	- `stats me` - shows your stats.
 - Required user permissions: SEND_MESSAGES
 
@@ -178,4 +180,4 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Sun, 04 Jul 2021 21:35:15 GMT*
+> - *Last update: Sat, 10 Jul 2021 21:44:39 GMT*

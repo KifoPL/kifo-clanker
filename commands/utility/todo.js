@@ -18,7 +18,7 @@ module.exports = {
 					dynamic: true,
 					size: 64,
 				}),
-				"https://github.com/KifoPL/kifo-clanker/"
+				"https://kifopl.github.io/kifo-clanker/"
 			)
 			.setDescription(
 				`React with <a:done:828097348545544202> to mark it as done!`

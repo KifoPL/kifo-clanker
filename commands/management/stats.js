@@ -1,17 +1,21 @@
+const kifo = require("kifo");
 module.exports = {
 	name: "stats",
 	description: `Displays stats for given user, bot, role, server, ~~channel~~, ~~message~~ (in development).\nIf the bot doesn't see some channels, stats ~~may~~ will be incorrect.`,
-	usage: ["`stats` - shows stats of the server",
-	"`stats <user>` - shows stats of specified user.",
-	"`stats <role>` - shows stats of specified role.",
-"`stats me` - shows your stats."],
+	usage: [
+		"`stats` - shows stats of the server",
+		"`stats <user>` - shows stats of specified user.",
+		"`stats <role>` - shows stats of specified role.",
+		"`stats <message_id>` - shows stats of specified message.",
+		"`stats me` - shows your stats.",
+	],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	async execute(message, args, Discord) {
 		//This is for timestamps
 		const ms = require(`ms`);
 		const fs = require("fs");
-		const kifo = require("kifo");
+
 		//for debugging, uncomment to resolve paths
 		//const path = require("path");
 
@@ -24,15 +28,17 @@ module.exports = {
 
 		//PRECHECKS
 		if (message.guild == null)
-			return message.reply(kifo.embed(
-				"you can only run this command on the server."
-			));
+			return message.reply(
+				kifo.embed("you can only run this command on the server.")
+			);
 		if (
 			!message.guild.me.permissionsIn(message.channel).has("ATTACH_FILES")
 		)
-			return message.reply(kifo.embed(
-				"I do not have `ATTACH_FILES` permissions in this channel."
-			));
+			return message.reply(
+				kifo.embed(
+					"I do not have `ATTACH_FILES` permissions in this channel."
+				)
+			);
 		message.channel.startTyping().catch(() => {});
 		const newEmbed = new Discord.MessageEmbed();
 		let time = new Date(Date.now());
@@ -83,7 +89,7 @@ module.exports = {
 						dynamic: true,
 						size: 64,
 					}),
-					"https://github.com/KifoPL/kifo-clanker/"
+					"https://kifopl.github.io/kifo-clanker/"
 				)
 				.setFooter(`State of members as of ${time.toUTCString()}.`)
 				.addFields(
@@ -205,7 +211,7 @@ module.exports = {
 							dynamic: true,
 							size: 64,
 						}),
-						"https://github.com/KifoPL/kifo-clanker/"
+						"https://kifopl.github.io/kifo-clanker/"
 					)
 					.setFooter(
 						`Server created at ${message.guild.createdAt.toUTCString()}, it is ${ms(
@@ -266,7 +272,35 @@ module.exports = {
 			} else {
 				//NOT SERVER STATS (user, bot, role, channel)
 
-				let whatami = `assign to either "user | bot | role | channel | not found"`;
+				let whatami = undefined;
+
+				//my first custom callback function
+				await whatamifunc(message, args, function (result) {
+					whatami = result.whatami;
+					entity = result.entity;
+				});
+
+				if (whatami == "not found") {
+					return message
+						.reply(
+							kifo.embed(
+								"Unknown entity! Command supports `server`, `user`, `channel` and `message`.\n**Note:** Messages are a bit glitchy, so if you're trying to get `message` by its ID, try this command **twice**."
+							)
+						)
+						.catch(() => {});
+				}
+
+				if (whatami == undefined) {
+					console.log("SOMETHING BROKE IN LIST COMMAND");
+					return message
+						.reply(
+							kifo.embed(
+								"Uknown error has occured when trying to execute the command. Please use `error` command to notify bot author.",
+								"Error!"
+							)
+						)
+						.catch(() => {});
+				}
 
 				const contents = fs.readFileSync(`././commandList.json`);
 				var jsonCmdList = JSON.parse(contents);
@@ -275,57 +309,6 @@ module.exports = {
 				const howgaycmd = require(`${jsonCmdList.howgay.relativepath}`);
 				const iqcmd = require(`${jsonCmdList.iq.relativepath}`);
 
-				//WHAT ARE YOU CHECK ? - determines if you wanna check stats of user, bot, role, or channel
-				if (args[0].toUpperCase() == "ME") {
-					entity = message.member;
-					whatami = "user";
-				} else {
-					if (!isNaN(args[0])) {
-						if (!message.guild.members.resolve(args[0])) {
-							if (!message.guild.roles.resolve(args[0])) {
-								if (!message.guild.channels.resolve(args[0])) {
-									whatami = "not found";
-									return message.reply(kifo.embed(
-										"this ID is neither a role nor a channel, nor a user. Please provide valid ID."
-									));
-								} else {
-									whatami = "channel";
-									entity = message.guild.channels.resolve(
-										args[0]
-									);
-								}
-							} else {
-								whatami = "role";
-								entity = message.guild.roles.resolve(args[0]);
-							}
-						} else {
-							whatami = "user";
-							entity = message.guild.members.cache.find(
-								(member) => member.id == args[0]
-							);
-						}
-					} else {
-						if (message.mentions.members.firstKey() != undefined) {
-							entity = message.mentions.members.first();
-							whatami = "user";
-						} else if (
-							message.mentions.channels.firstKey() != undefined
-						) {
-							entity = message.mentions.channels.firstKey();
-							whatami = "channel";
-						} else if (
-							message.mentions.roles.firstKey() != undefined
-						) {
-							entity = message.mentions.roles.firstKey();
-							whatami = "role";
-						} else {
-							whatami = "not found";
-							return message.reply(kifo.embed(
-								"your message must contain a mention of user, channel, or an ID of user, channel, or role in order to work (remember not to ping role!)."
-							));
-						}
-					}
-				}
 				if (whatami == "user" && entity.user.bot) whatami = "bot";
 				//USER STATS
 				if (whatami == "user") {
@@ -387,7 +370,7 @@ module.exports = {
 								dynamic: true,
 								size: 64,
 							}),
-							"https://github.com/KifoPL/kifo-clanker/"
+							"https://kifopl.github.io/kifo-clanker/"
 						)
 						.setFooter(
 							`Account created at: ${entity.user.createdAt.toUTCString()}\nAccount joined server at: ${entity.joinedAt.toUTCString()}, ${ms(
@@ -538,7 +521,7 @@ module.exports = {
 								dynamic: true,
 								size: 64,
 							}),
-							"https://github.com/KifoPL/kifo-clanker/"
+							"https://kifopl.github.io/kifo-clanker/"
 						)
 						.setFooter(
 							`Bot created at: ${entity.user.createdAt.toUTCString()}\nBot joined server at: ${entity.joinedAt.toUTCString()}, ${ms(
@@ -645,7 +628,7 @@ module.exports = {
 								dynamic: true,
 								size: 64,
 							}),
-							"https://github.com/KifoPL/kifo-clanker/"
+							"https://kifopl.github.io/kifo-clanker/"
 						)
 						.setFooter(
 							`Role created at: ${entity.createdAt.toUTCString()} - ${ms(
@@ -715,9 +698,9 @@ module.exports = {
 				//CHANNEL STATS --- NOT YET IMPLEMENTED
 				else if (whatami == "channel") {
 					message.channel.stopTyping(true);
-					return message.reply(kifo.embed(
-						"channel stats will be implemented one day."
-					));
+					return message.reply(
+						kifo.embed("channel stats will be implemented one day.")
+					);
 
 					//TODO FINISH THIS
 					type = entity.type;
@@ -731,9 +714,11 @@ module.exports = {
 					else if (type == "news")
 						emote = `<:announcement:842672130587754506>`;
 					else
-						return message.reply(kifo.embed(
-							"unsupported channel type! Reach out to KifoPL#3358 to notify him of the error."
-						));
+						return message.reply(
+							kifo.embed(
+								"unsupported channel type! Reach out to KifoPL#3358 to notify him of the error."
+							)
+						);
 
 					let channelage =
 						time.getTime() - entity.createdAt.getTime();
@@ -755,7 +740,7 @@ module.exports = {
 								dynamic: true,
 								size: 64,
 							}),
-							"https://github.com/KifoPL/kifo-clanker/"
+							"https://kifopl.github.io/kifo-clanker/"
 						)
 						.setFooter(
 							`Channel created at: ${entity.createdAt.toUTCString()}, ${ms(
@@ -822,6 +807,124 @@ module.exports = {
 							}
 						);
 				}
+				//MESSAGE STATS
+				else if (whatami == "message") {
+					
+					await entity.fetch().then((msg) => (entity = msg));
+					let topReaction = await entity.reactions.cache
+						.sort((a, b) => a.count - b.count)
+						.first();
+					let reaction =
+						topReaction?.emoji.identifier == null
+							? `no reactions`
+							: `${topReaction?.emoji.toString()}`;
+					let activity = entity.activity;
+					if (activity != null)
+						activity = `Type: ${entity.activity.type}, party ID: ${entity.activity.partyID}`;
+					let attachments = [];
+					await entity.attachments.each((am) => {
+						attachments.push(am);
+					});
+					newEmbed
+						.setColor("a039a0")
+						.setTitle(`Message stats (click for original message):`)
+						.setURL(entity.url)
+						.setDescription(
+							`Message sent by <@!${entity.author.id}>.`
+						)
+						.setAuthor(
+							"Kifo Clanker™, by KifoPL#3358",
+							message.guild.me?.user?.avatarURL({
+								format: "png",
+								dynamic: true,
+								size: 64,
+							}),
+							"https://kifopl.github.io/kifo-clanker/"
+						)
+						.setFooter(
+							`Message sent at: ${entity.createdAt.toUTCString()}\n ${ms(
+								entity.createdAt.getTime() -
+									entity.guild.createdAt.getTime(),
+								{ long: true }
+							)} after server creation.`
+						)
+						.addFields(
+							{
+								name: `<:textchannel:823658022849085512> channel:`,
+								value: `<#${entity.channel.id}>`,
+							},
+							{
+								name: `Content length:`,
+								value: `${entity.content.length}`,
+								inline: true,
+							},
+							{
+								name: `Top Reaction:`,
+								value: reaction,
+								inline: true,
+							},
+							{
+								name: `Type:`,
+								value: entity.type,
+								inline: true,
+							},
+							{
+								name: `Flags:`,
+								value: `${
+									entity.flags.toArray.length > 0
+										? entity.flags.toArray.join(", ")
+										: "no flags."
+								}`,
+								inline: true,
+							},
+							{
+								name: `Attachments:`,
+								value: `${
+									attachments.length > 0
+										? attachments
+												.map(
+													(x) =>
+														`[${x.name}](${x.url})`
+												)
+												.join("\n")
+										: "no attachments."
+								}`,
+								inline: false,
+							},
+							{
+								name: `Embeds`,
+								value: `${entity.embeds.length} embeds`,
+								inline: true,
+							},
+							{
+								name: `Last edit:`,
+								value:
+									entity.editedAt?.toUTCString() ??
+									"message isn't edited.",
+								inline: true,
+							},
+							{
+								name: `Is pinned?`,
+								value: entity.pinned,
+								inline: true,
+							},
+							{
+								name: `Is system message (sent by Discord)?`,
+								value: entity.system,
+								inline: true,
+							},
+							{
+								name: `Activity:`,
+								value: `${activity ?? "no activity"}`,
+								inline: true,
+							},
+							//{name: "Also:", value: `You can check your own stats with "stats me", or someone else's stats by ${this.usage}`},
+							{
+								name: "More",
+								value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
+							}
+						)
+				}
 			}
 		}
 
@@ -831,3 +934,98 @@ module.exports = {
 		message.channel.stopTyping(true);
 	},
 };
+
+async function whatamifunc(message, args, callback) {
+	let entity = undefined;
+	let whatami = "not found";
+
+	if (args[0].toUpperCase() == "ME") {
+		entity = message.member;
+		whatami = "user";
+		callback({ entity: entity, whatami: whatami });
+		return;
+	} else {
+		if (!isNaN(args[0])) {
+			if (!message.guild.members.resolve(args[0])) {
+				if (!message.guild.roles.resolve(args[0])) {
+					if (!message.guild.channels.resolve(args[0])) {
+						await message.guild.channels.cache
+							.filter(
+								(ch) => ch.type === "news" || ch.type === "text"
+							)
+							.each(async (ch) => {
+								await ch.messages
+									.fetch(args[0])
+									.then((msg) => {
+										//console.log(msg);
+										entity = msg;
+										whatami = "message";
+										callback({
+											entity: entity,
+											whatami: whatami,
+										});
+										return;
+									})
+									.catch(() => {});
+							});
+						if (entity != undefined) {
+							whatami = "message";
+						} else {
+							whatami = "not found";
+							callback({ entity: entity, whatami: whatami });
+							// return message.reply(
+							// 	kifo.embed(
+							// 		"this ID is neither a role nor a channel, nor a user, nor a message. Please provide valid ID."
+							// 	)
+							// );
+							return;
+						}
+					} else {
+						whatami = "channel";
+						entity = message.guild.channels.resolve(args[0]);
+						callback({ entity: entity, whatami: whatami });
+						return;
+					}
+				} else {
+					whatami = "role";
+					entity = message.guild.roles.resolve(args[0]);
+					callback({ entity: entity, whatami: whatami });
+					return;
+				}
+			} else {
+				whatami = "user";
+				entity = message.guild.members.cache.find(
+					(member) => member.id == args[0]
+				);
+				callback({ entity: entity, whatami: whatami });
+				return;
+			}
+		} else {
+			if (message.mentions.members.firstKey() != undefined) {
+				entity = message.mentions.members.first();
+				whatami = "user";
+				callback({ entity: entity, whatami: whatami });
+				return;
+			} else if (message.mentions.channels.firstKey() != undefined) {
+				entity = message.mentions.channels.firstKey();
+				whatami = "channel";
+				callback({ entity: entity, whatami: whatami });
+				return;
+			} else if (message.mentions.roles.firstKey() != undefined) {
+				entity = message.mentions.roles.firstKey();
+				whatami = "role";
+				callback({ entity: entity, whatami: whatami });
+				return;
+			} else {
+				whatami = "not found";
+				callback({ entity: entity, whatami: whatami });
+				return;
+				// return message.reply(
+				// 	kifo.embed(
+				// 		"your message must contain a mention of user, channel, or an ID of user, channel, or role in order to work (remember not to ping role!)."
+				// 	)
+				// );
+			}
+		}
+	}
+}

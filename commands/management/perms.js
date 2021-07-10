@@ -195,7 +195,7 @@ module.exports = {
 						dynamic: true,
 						size: 64,
 					}),
-					"https://github.com/KifoPL/kifo-clanker/"
+					"https://kifopl.github.io/kifo-clanker/"
 				)
 				.setFooter(
 					`Issued by ${message.member.displayName} - ${
@@ -318,7 +318,7 @@ module.exports = {
 								dynamic: true,
 								size: 64,
 							}),
-							"https://github.com/KifoPL/kifo-clanker/"
+							"https://kifopl.github.io/kifo-clanker/"
 						)
 						.setFooter(
 							`Issued by ${message.member.displayName} - ${
@@ -498,7 +498,7 @@ module.exports = {
 							dynamic: true,
 							size: 64,
 						}),
-						"https://github.com/KifoPL/kifo-clanker/"
+						"https://kifopl.github.io/kifo-clanker/"
 					)
 					.setTitle(
 						`${message.member.displayName} ${
@@ -693,7 +693,7 @@ async function channelPermsfunc(
 					dynamic: true,
 					size: 64,
 				}),
-				"https://github.com/KifoPL/kifo-clanker/"
+				"https://kifopl.github.io/kifo-clanker/"
 			)
 			.setFooter(
 				`Issued by ${message.member.displayName} - ${
