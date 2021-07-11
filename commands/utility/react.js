@@ -60,7 +60,16 @@ module.exports = {
 					.setDescription(`Too many reactions!`);
 				return message.reply(embedreply);
 			}
-			args.slice()
+			args.forEach(arg => {
+						if (
+							client.emojis.resolveIdentifier(arg) == null &&
+							!arg.match(kifo.emojiRegex())
+						) {
+							return message.reply(
+								kifo.embed(`${arg} is an incorrect reaction!`)
+							);
+						}
+			})
 			let params = [option, emotes];
 			embedreply.setDescription("It's ON!");
 			message.reply(embedreply);
