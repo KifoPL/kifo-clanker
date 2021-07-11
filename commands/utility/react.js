@@ -60,6 +60,7 @@ module.exports = {
 					.setDescription(`Too many reactions!`);
 				return message.reply(embedreply);
 			}
+			args.slice()
 			let params = [option, emotes];
 			embedreply.setDescription("It's ON!");
 			message.reply(embedreply);

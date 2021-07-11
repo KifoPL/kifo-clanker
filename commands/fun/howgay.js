@@ -103,7 +103,7 @@ module.exports = {
 		const newEmbed = new Discord.MessageEmbed()
 			.setColor("a039a0")
 			.setTitle(username + "'s gay level is:")
-			.addField(reply, comment);
+			.addField(returnField);
 		message.channel.send(newEmbed).catch();
 	},
 };

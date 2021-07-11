@@ -96,7 +96,7 @@ module.exports = {
 		const newEmbed = new Discord.MessageEmbed()
 			.setColor("a039a0")
 			.setTitle(username + "'s IQ level is:")
-			.addFields({ name: reply, value: comment });
+			.addField(returnField);
 		if (Troll)
 			newEmbed.setImage(
 				`https://media1.tenor.com/images/8ac74d59bf920c9588c8f7f00229cb78/tenor.gif`
