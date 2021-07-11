@@ -445,7 +445,7 @@ module.exports = {
 						let mm = message.guild.members.resolve(ID);
 						if (mm != null) {
 							if (
-								mm.roles.highest.rawPosition >
+								mm.roles.highest.rawPosition >=
 								message.member.roles.highest.rawPosition
 							)
 								return message.reply(
@@ -454,7 +454,7 @@ module.exports = {
 									)
 								);
 							if (
-								mm.roles.highest.rawPosition >
+								mm.roles.highest.rawPosition >=
 								message.guild.me.roles.highest.rawPosition
 							)
 								return message.reply(
@@ -465,7 +465,7 @@ module.exports = {
 						} else {
 							mm = message.guild.roles.resolve(ID);
 							if (
-								mm.highest.rawPosition >
+								mm.rawPosition >=
 								message.member.roles.highest.rawPosition
 							)
 								return message.reply(
@@ -474,7 +474,7 @@ module.exports = {
 									)
 								);
 							if (
-								mm.highest.rawPosition >
+								mm.rawPosition >=
 								message.guild.me.roles.highest.rawPosition
 							)
 								return message.reply(

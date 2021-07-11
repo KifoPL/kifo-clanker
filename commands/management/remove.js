@@ -76,7 +76,7 @@ module.exports = {
 
 		//LOGIC CHECK
 		if (
-			member.roles.highest.rawPosition >
+			member.roles.highest.rawPosition >=
 			message.member.roles.highest.rawPosition
 		) {
 			return message
@@ -84,7 +84,7 @@ module.exports = {
 				.catch(() => {});
 		}
 		if (
-			member.roles.highest.rawPosition >
+			member.roles.highest.rawPosition >=
 			message.guild.me.roles.highest.rawPosition
 		) {
 			return message
