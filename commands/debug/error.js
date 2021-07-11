@@ -21,7 +21,7 @@ module.exports = {
 				}`
 			);
 		let reply =
-			"**" + message.author.username + "** has encountered a problem.";
+			`**<@${message.author.username}>** has encountered a problem in <#${message.channel.id}>, ${message.guild.name} server.`;
 		let kiforeply =
 			reply +
 			` Link: https://discord.com/channels/${message.channel.guild.id}/${message.channel.id}/${message.id}`;

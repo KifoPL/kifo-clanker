@@ -141,12 +141,16 @@ async function hello(message, prefix) {
 				"[LINK](https://github.com/KifoPL/kifo-clanker) - if you find a bug / have a cool idea for a new feature, please [create a ticket](https://github.com/KifoPL/kifo-clanker/issues/new/choose)."
 			)
 			.addField(
-				`try ${prefix}help`,
+				`Check out top.gg page`,
+				"[LINK](https://top.gg/bot/795638549730295820) - feel free to vote up and leave a 5 star review <a:done:828097348545544202>"
+			)
+			.addField(
+				`try "${prefix}help"`,
 				"This will list all commands available to you (you can see more commands if you're an Admin)!"
 			)
 			.addField(
 				"\u200B",
-				"This bot is developed by [KifoPL](https://github.com/KifoPL).\nDiscord: <@289119054130839552> : @KifoPL#3358\nReddit: [u/kifopl](http://reddit.com/u/kifopl)\n[Buy me a beer!](https://www.buymeacoffee.com/kifoPL) (developing bot takes a lot of time, by donating you help me pay my electricity / internet bills!)"
+				"This bot is developed by [KifoPL](https://github.com/KifoPL).\nDiscord: <@289119054130839552> : @KifoPL#3358\nReddit: [u/kifopl](http://reddit.com/u/kifopl)\n[Buy me a beer!](https://www.buymeacoffee.com/kifoPL) (developing bot takes a lot of time, by donating you help me pay for hosting / my electricity / internet bills!)"
 			);
 		message.channel.send(helloEmbed).catch(() => {});
 		message.channel.stopTyping(true);
@@ -1321,9 +1325,9 @@ function setCommandList() {
 			cmdListMD += `### ${command.name}\n\n`;
 			cmdListMD += `- ${command.description}\n`;
 			cmdListMD += `- Usage:\n\t- ${command.usage.join("\n\t- ")}\n`;
-			cmdListMD += `- Required user permissions: ${command.perms.join(
-				", "
-			)}\n`;
+			cmdListMD += `- Required user permissions: \`${command.perms.join(
+				"\`, \`"
+			)}\`\n`;
 			cmdListMD += `\n`;
 		}
 	}

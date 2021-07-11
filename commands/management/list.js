@@ -7,7 +7,7 @@ module.exports = {
 		"`list` - lists all users in the server",
 		"`list <user>` - lists roles of specified user.",
 		"`list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.",
-		"`list <message_id> - pastes raw message content *(with formatting, works with embeds and all types of messages)*.",
+		"`list <message_id>` - pastes raw message content *(with formatting, works with embeds and all types of messages)*.",
 	],
 	adminonly: false,
 	perms: ["SEND_MESSAGES", "MANAGE_GUILD"],
