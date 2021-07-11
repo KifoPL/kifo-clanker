@@ -1,7 +1,7 @@
 const kifo = require("kifo");
 module.exports = {
 	name: "stats",
-	description: `Displays stats for given user, bot, role, server, ~~channel~~, ~~message~~ (in development).\nIf the bot doesn't see some channels, stats ~~may~~ will be incorrect.`,
+	description: `Displays stats for given user, bot, role, server, message, ~~channel~~ (in development).\nIf the bot doesn't see some channels, stats ~~may~~ will be incorrect.`,
 	usage: [
 		"`stats` - shows stats of the server",
 		"`stats <user>` - shows stats of specified user.",
