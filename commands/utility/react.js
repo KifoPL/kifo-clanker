@@ -49,6 +49,7 @@ module.exports = {
 			);
 
 		if (option == "ON") {
+			let stop = false;
 			if (!args[0]) {
 				embedreply
 					.setTitle(`Error:`)
@@ -66,11 +67,13 @@ module.exports = {
 							client.emojis.resolveIdentifier(arg) == null &&
 							!arg.match(kifo.emojiRegex())
 						) {
+							stop = true;
 							return message.reply(
 								kifo.embed(`${arg} is an incorrect reaction!`)
-							);
+							).catch(() => {});
 						}
 			})
+			if (stop) return;
 			let params = [option, emotes];
 			embedreply.setDescription("It's ON!");
 			message.reply(embedreply);
