@@ -812,7 +812,7 @@ module.exports = {
 					
 					await entity.fetch().then((msg) => (entity = msg));
 					let topReaction = await entity.reactions.cache
-						.sort((a, b) => a.count - b.count)
+						.sort((a, b) => b.count - a.count)
 						.first();
 					let reaction =
 						topReaction?.emoji.identifier == null
