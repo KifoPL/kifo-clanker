@@ -1,16 +1,16 @@
-const prefix = "!kifo"
+const kifo = require('kifo');
 module.exports = {
 	name: "help",
 	description:
 		"This command lists all categories of commands and shows help for every command.",
 	usage: [
-		"`!kifo help` - lists all available commands",
-		"`!kifo help <category>` - lists all commands for a specific category",
-		"`!kifo help <command>` - shows help for specific command",
+		"`help` - lists all available commands",
+		"`help <category>` - lists all commands for a specific category",
+		"`help <command>` - shows help for specific command",
 	],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
-	execute(message, args, Discord) {
+	execute(message, args, Discord, prefix) {
 		const fs = require("fs");
 		const client = message.client;
 
@@ -35,9 +35,9 @@ module.exports = {
 			}
 		}
 
-		//!kifo help <arg>
+		//help <arg>
 		if (args[0]) {
-			//!kifo help help
+			//help help
 			if (args[0] == "help") {
 				const newEmbed = new Discord.MessageEmbed()
 					.setColor("a039a0")
@@ -48,7 +48,7 @@ module.exports = {
 				message.channel.send(newEmbed);
 				return;
 			}
-			//!kifo help <command>
+			//help <command>
 			if (commandList.has(args[0])) {
 				const command = commandList.get(args[0]).command;
 				const newEmbed = new Discord.MessageEmbed()
@@ -63,7 +63,7 @@ module.exports = {
 				message.channel.send(newEmbed);
 				return;
 			} else {
-				//!kifo help <category>
+				//help <category>
 				if (commandFolders.includes(args[0].toLowerCase())) {
 					var Field = { name: "name", value: "description" };
 					var FieldArr = [];
@@ -114,7 +114,7 @@ module.exports = {
 				return message.channel.send(embedreply);
 			}
 		}
-		//!kifo help
+		//help
 		var Field = { name: "name", value: "description" };
 		var FieldArr = [];
 		Field.name = this.name;
@@ -178,7 +178,7 @@ module.exports = {
 				`List of ${commandCount} commands in ${CategoryCount} categories, by KifoPL:`
 			)
 			.setDescription(
-				`**Click on the text above** for full and detailed list of commands.\nType \`!kifo help <category>\` to get detailed list of commands within a category, or \`!kifo help <command>\` to get help for that command.`
+				`**Click on the text above** for full and detailed list of commands.\nType \`${prefix}help <category>\` to get detailed list of commands within a category, or \`${prefix}help <command>\` to get help for that command.`
 			)
 			.setURL("https://kifopl.github.io/kifo-clanker/commandList")
 			.setFooter(

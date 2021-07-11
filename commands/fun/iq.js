@@ -1,7 +1,7 @@
 module.exports = {
 	name: "iq",
 	description: `A very quick and accurate IQ test.`,
-	usage: ["`!kifo iq <optional_user>` - A quick and reliable IQ test."],
+	usage: ["`iq <optional_user>` - A quick and reliable IQ test."],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord, isStats = false, userID = 0) {
@@ -39,6 +39,9 @@ module.exports = {
 						Troll = true;
 					userid = message.mentions.users.firstKey();
 				}
+				return message.reply(
+					kifo.embed("Either tag or provide user's ID.")
+				);
 			}
 		} else {
 			if (message.mentions.users.firstKey() != undefined) {
@@ -61,7 +64,7 @@ module.exports = {
 			Troll = true;
 		let username = message.guild.members.resolve(userid).displayName;
 		if (!Troll) {
-			iq = (userid % 251) + 50; // 50 <= IQ <= 300
+			iq = ((userid + message.guild.id) % 251) + 50; // 50 <= IQ <= 300
 			reply = iq + " IQ";
 			if (iq == 69) comment = "Nice.";
 			else if (iq < 75) comment = "Back to school, kiddo.";
@@ -89,7 +92,7 @@ module.exports = {
 		//console.log(userid, iq, comment);
 
 		const returnField = { name: reply, value: comment };
-		if (isStats) return returnField;
+		if (isStats === true) return returnField;
 		const newEmbed = new Discord.MessageEmbed()
 			.setColor("a039a0")
 			.setTitle(username + "'s IQ level is:")

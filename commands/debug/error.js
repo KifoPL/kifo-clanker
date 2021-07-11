@@ -1,7 +1,7 @@
 module.exports = {
 	name: "error",
 	description: `If this bot encountered an error anywhere, please type this command right after. It will ping me (KifoPL#3358).\nWARNING! If you spam this command for no reason, you will get warned on the same premise as spam pinging. Use only when encountering actual errors.`,
-	usage: ["`!kifo error <optional_description>` - pings <@289119054130839552> with optionally provided description."],
+	usage: ["`error <optional_description>` - pings <@289119054130839552> with optionally provided description."],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	async execute(message, args, Discord, client) {
@@ -21,7 +21,7 @@ module.exports = {
 				}`
 			);
 		let reply =
-			"**" + message.author.username + "** has encountered a problem.";
+			`**<@${message.author.username}>** has encountered a problem in <#${message.channel.id}>, ${message.guild.name} server.`;
 		let kiforeply =
 			reply +
 			` Link: https://discord.com/channels/${message.channel.guild.id}/${message.channel.id}/${message.id}`;

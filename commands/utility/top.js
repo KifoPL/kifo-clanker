@@ -2,7 +2,7 @@ module.exports = {
 	name: "top",
 	description:
 		"This command lists x messages with most reactions from other channel.",
-	usage: ["`!kifo top <x> <time_period> <other_channel> <reaction>` - lists top x messages with most reactions from other channel. Sends x embeds (don't set it too large)."],
+	usage: ["`top <x> <time_period> <other_channel> <reaction>` - lists top x messages with most reactions from other channel. Sends x embeds (don't set it too large)."],
 	//I'm making it admin only because no one else used it anyway.
 	adminonly: true,
 	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
@@ -201,13 +201,13 @@ module.exports = {
 					})
 				);
 				newEmbed.setAuthor(
-					"Powered by !kifo top",
+					"Powered by top",
 					message.guild.me?.user?.avatarURL({
 						format: "png",
 						dynamic: true,
 						size: 32,
 					}),
-					"https://github.com/KifoPL/kifo-clanker/wiki"
+					"https://kifopl.github.io/kifo-clanker/wiki"
 				);
 
 				//if two posts have the same amount of upvotes, they're equal place
@@ -240,7 +240,7 @@ module.exports = {
 				);
 
 				if (chmessages[i].content.length > 0) {
-					newEmbed.setDescription(chmessages[i].content);
+					newEmbed.setDescription(chmessages[i].content.length > 420 ? `${chmessages[i].content.slice(0,420)}...` : chmessages[i].content);
 				}
 
 				if (

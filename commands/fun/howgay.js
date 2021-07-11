@@ -1,7 +1,9 @@
 module.exports = {
 	name: "howgay",
 	description: `A quick test to find out your gayness level.`,
-	usage: ["`!kifo howgay <optional_user>` - accurately measures sexual thirst towards the same gender."],
+	usage: [
+		"`howgay <optional_user>` - accurately measures sexual thirst towards the same gender.",
+	],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord, isStats = false, userID = 0) {
@@ -39,6 +41,9 @@ module.exports = {
 						Troll = true;
 					userid = message.mentions.users.firstKey();
 				}
+				return message.reply(
+					kifo.embed("Either tag or provide user's ID.")
+				);
 			}
 		} else {
 			if (message.mentions.users.firstKey() != undefined) {
@@ -61,7 +66,7 @@ module.exports = {
 			Troll = true;
 		let username = message.guild.members.resolve(userid).displayName;
 		if (!Troll) {
-			howgay = userid % 101;
+			howgay = (userid + message.guild.id) % 101;
 			reply = howgay + "%";
 			if (howgay == 69) comment = "Nice.";
 			else if (howgay == 50)
@@ -94,7 +99,7 @@ module.exports = {
 		//console.log(userid, howgay, comment);
 
 		const returnField = { name: reply, value: comment };
-		if (isStats) return returnField;
+		if (isStats === true) return returnField;
 		const newEmbed = new Discord.MessageEmbed()
 			.setColor("a039a0")
 			.setTitle(username + "'s gay level is:")

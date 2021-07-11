@@ -1,10 +1,11 @@
 module.exports = {
 	name: "todo",
 	description: "This command allows you to create a simple todo notes.",
-	usage: ["`!kifo todo <description>` - sends a DM with description (react with any emote to the message to delete it)."],
+	usage: ["`todo <description>` - sends a DM with description (react with any emote to the message to delete it)."],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord) {
+		const kifo = require("kifo");
 		if (!args[0]) return message.reply(kifo.embed(`usage: ${this.usage}`));
 
 		const Embed = new Discord.MessageEmbed();
@@ -18,7 +19,7 @@ module.exports = {
 					dynamic: true,
 					size: 64,
 				}),
-				"https://github.com/KifoPL/kifo-clanker/"
+				"https://kifopl.github.io/kifo-clanker/"
 			)
 			.setDescription(
 				`React with <a:done:828097348545544202> to mark it as done!`

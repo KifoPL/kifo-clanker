@@ -2,11 +2,12 @@ module.exports = {
 	name: "test",
 	description:
 		"This is just to test the functionality of the bot, as well as perms settings.",
-	usage: ["`!kifo test` - tests if the bot is online and checks for various stuff to find potential issues."],
+	usage: ["`test` - tests if the bot is online and checks for various stuff to find potential issues."],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord) {
 		const embedreply = new Discord.MessageEmbed();
+		const ms = require("ms")
 		embedreply
 			.setColor("a039a0")
 			.setAuthor(
@@ -23,9 +24,11 @@ module.exports = {
 			embedreply.setDescription(
 				`Works fine, Mr. Admin ${message.author}!`
 			);
+			message.channel.stopTyping(true);
 			return message.reply(embedreply);
 		} else {
 			embedreply.setDescription(`It works, regular person.`);
+			message.channel.stopTyping(true);
 			return message.reply(embedreply);
 		}
 	},
