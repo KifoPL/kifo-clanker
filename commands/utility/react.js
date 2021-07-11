@@ -12,6 +12,7 @@ module.exports = {
 	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
 	execute(message, args, Discord) {
 		const kifo = require("kifo");
+		const client = require("../../index.js").client;
 		if (message.guild == null)
 			return message.reply(
 				kifo.embed("you can only run this command on the server.")
