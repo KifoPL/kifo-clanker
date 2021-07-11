@@ -240,7 +240,7 @@ module.exports = {
 				);
 
 				if (chmessages[i].content.length > 0) {
-					newEmbed.setDescription(chmessages[i].content);
+					newEmbed.setDescription(chmessages[i].content.length > 420 ? `${chmessages[i].content.slice(0,420)}...` : chmessages[i].content);
 				}
 
 				if (

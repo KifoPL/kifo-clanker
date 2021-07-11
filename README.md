@@ -6,15 +6,14 @@
 
 # Kifo Clanker: top-quality unorthodox Discord commands
 
-### **This bot contains:**
+## **This bot contains:**
 - Channel contest manager,
 - Perms manager,
 - Temporary role remover,
 - Detailed stats,
 - *...and much more!*
 
-
-> It doesn't feature general commands, like mute, ban, etc. - it's not a general purpose bot, it's *special forces* bot. 
+> It doesn't feature general commands, like mute, ban, etc. - it's not a general-purpose bot, it's *special forces* bot. 
 
 **!** This bot is in continuous development, so some features may be missing, not working, etc...
 
