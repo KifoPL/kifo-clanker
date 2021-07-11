@@ -38,7 +38,7 @@ module.exports = {
 					)
 						Troll = true;
 					userid = message.mentions.users.firstKey();
-				}
+				} else
 				return message.reply(
 					kifo.embed("Either tag or provide user's ID.")
 				);
