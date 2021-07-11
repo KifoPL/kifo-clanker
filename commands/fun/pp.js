@@ -70,7 +70,7 @@ module.exports = {
 			for (i = 0; i < pplen; i++) pp += "=";
 			pp += "D";
 
-			ppvalue = ((userid % 13) + 2) * 2 + " cm";
+			ppvalue = (((userid + message.guild.id) % 13) + 2) * 2 + " cm";
 		} else {
 			pp = "8==============================D";
 			ppvalue = "69 cm";
