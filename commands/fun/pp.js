@@ -46,20 +46,6 @@ module.exports = {
 					);
 			}
 		} else {
-			if (message.mentions.users.firstKey() != undefined) {
-				if (
-					!message.guild.members.resolve(
-						message.mentions.users.firstKey()
-					)
-				)
-					return message.reply(kifo.embed("user not found."));
-				if (
-					message.mentions.users.firstKey() == 289119054130839552 ||
-					message.mentions.users.firstKey() == 795638549730295820
-				)
-					Troll = true;
-				userid = message.mentions.users.firstKey();
-			}
 			userid = message.author.id;
 		}
 		if (userid == 289119054130839552 || args[0] == 795638549730295820)
