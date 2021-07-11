@@ -161,6 +161,11 @@ module.exports = {
 	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
 	async execute(message, args, Discord, prefix) {
 		const { con } = require("../../index.js");
+		//precheck
+		if (!message.guild == null)
+			return message
+				.reply(kifo.embed(`you can only run this command in a server!`))
+				.catch(() => {});
 		const hasRequiredPerms =
 			message.member
 				.permissionsIn(message.channel)
@@ -195,7 +200,7 @@ module.exports = {
 						dynamic: true,
 						size: 64,
 					}),
-					"https://github.com/KifoPL/kifo-clanker/"
+					"https://kifopl.github.io/kifo-clanker/"
 				)
 				.setFooter(
 					`Issued by ${message.member.displayName} - ${
@@ -318,7 +323,7 @@ module.exports = {
 								dynamic: true,
 								size: 64,
 							}),
-							"https://github.com/KifoPL/kifo-clanker/"
+							"https://kifopl.github.io/kifo-clanker/"
 						)
 						.setFooter(
 							`Issued by ${message.member.displayName} - ${
@@ -436,6 +441,48 @@ module.exports = {
 								`There is no role/member with \`${ID}\` ID.`
 							)
 						);
+					} else {
+						let mm = message.guild.members.resolve(ID);
+						if (mm != null) {
+							if (
+								mm.roles.highest.rawPosition >
+								message.member.roles.highest.rawPosition
+							)
+								return message.reply(
+									kifo.embed(
+										`You can't edit <@!${mm.id}>'s perms!`
+									)
+								);
+							if (
+								mm.roles.highest.rawPosition >
+								message.guild.me.roles.highest.rawPosition
+							)
+								return message.reply(
+									kifo.embed(
+										`I can't edit <@!${mm.id}>'s perms!`
+									)
+								);
+						} else {
+							mm = message.guild.roles.resolve(ID);
+							if (
+								mm.highest.rawPosition >
+								message.member.roles.highest.rawPosition
+							)
+								return message.reply(
+									kifo.embed(
+										`You can't edit <@&${mm.id}>'s perms!`
+									)
+								);
+							if (
+								mm.highest.rawPosition >
+								message.guild.me.roles.highest.rawPosition
+							)
+								return message.reply(
+									kifo.embed(
+										`I can't edit <@&${mm.id}>'s perms!`
+									)
+								);
+						}
 					}
 				});
 				// let PermsCollection =
@@ -498,7 +545,7 @@ module.exports = {
 							dynamic: true,
 							size: 64,
 						}),
-						"https://github.com/KifoPL/kifo-clanker/"
+						"https://kifopl.github.io/kifo-clanker/"
 					)
 					.setTitle(
 						`${message.member.displayName} ${
@@ -693,7 +740,7 @@ async function channelPermsfunc(
 					dynamic: true,
 					size: 64,
 				}),
-				"https://github.com/KifoPL/kifo-clanker/"
+				"https://kifopl.github.io/kifo-clanker/"
 			)
 			.setFooter(
 				`Issued by ${message.member.displayName} - ${

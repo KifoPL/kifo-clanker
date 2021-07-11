@@ -141,12 +141,16 @@ async function hello(message, prefix) {
 				"[LINK](https://github.com/KifoPL/kifo-clanker) - if you find a bug / have a cool idea for a new feature, please [create a ticket](https://github.com/KifoPL/kifo-clanker/issues/new/choose)."
 			)
 			.addField(
-				`try ${prefix}help`,
+				`Check out top.gg page`,
+				"[LINK](https://top.gg/bot/795638549730295820) - feel free to vote up and leave a 5 star review <a:done:828097348545544202>"
+			)
+			.addField(
+				`try "${prefix}help"`,
 				"This will list all commands available to you (you can see more commands if you're an Admin)!"
 			)
 			.addField(
 				"\u200B",
-				"This bot is developed by [KifoPL](https://github.com/KifoPL).\nDiscord: <@289119054130839552> : @KifoPL#3358\nReddit: [u/kifopl](http://reddit.com/u/kifopl)\n[Buy me a beer!](https://www.buymeacoffee.com/kifoPL) (developing bot takes a lot of time, by donating you help me pay my electricity / internet bills!)"
+				"This bot is developed by [KifoPL](https://github.com/KifoPL).\nDiscord: <@289119054130839552> : @KifoPL#3358\nReddit: [u/kifopl](http://reddit.com/u/kifopl)\n[Buy me a beer!](https://www.buymeacoffee.com/kifoPL) (developing bot takes a lot of time, by donating you help me pay for hosting / my electricity / internet bills!)"
 			);
 		message.channel.send(helloEmbed).catch(() => {});
 		message.channel.stopTyping(true);
@@ -623,22 +627,27 @@ async function commands(message, prefix) {
 
 	if (command == "serverlist" && message.author == Owner) {
 		console.log("run SERVERLIST command");
+		let channel = client.guilds
+			.resolve("822800862581751848")
+			.channels?.resolve("863769411700785152");
 		let serversarr = [];
 		let serverembed = new Discord.MessageEmbed();
-		await message.client.guilds.cache.each((guild) => {
-			serversarr.push({
-				name: guild.name,
-				value: `<:owner:823658022785908737> ${guild.owner.user.tag}, ${
-					guild.memberCount
-				} members. ${
-					guild.available
-						? "<:online:823658022974521414>"
-						: "<:offline:823658022957613076> OUTAGE!"
-				}`,
+		await message.client.guilds.cache
+			.sort((a, b) => b.memberCount - a.memberCount)
+			.each((guild) => {
+				serversarr.push({
+					name: `${guild.id}\t${guild.name}\t`,
+					value: `<:owner:823658022785908737> <@${guild.ownerID}>, ${
+						guild.memberCount
+					} members. ${
+						guild.available
+							? "<:online:823658022974521414>"
+							: "<:offline:823658022957613076> OUTAGE!"
+					}`,
+				});
 			});
-		});
 		serverembed
-			.addFields(serversarr)
+			.addFields(serversarr.slice(0, 10))
 			.setTitle("Server list:")
 			.setFooter(
 				`I am in ${serversarr.length} servers as of ${new Date(
@@ -646,7 +655,22 @@ async function commands(message, prefix) {
 				).toUTCString()}`
 			)
 			.setColor("a039a0");
-		message.channel.send(serverembed).catch(() => {});
+		if (serversarr.length > 10) {
+			fs.writeFileSync(
+				`./serverlist.txt`,
+				serversarr.map((x) => `${x.name}\n${x.value}`).join(`\n\n`),
+				() => {}
+			);
+			await serverembed.attachFiles(`./serverlist.txt`, `serverlist.txt`);
+		}
+		channel
+			.send(serverembed)
+			.then(() => {
+				try {
+					fs.unlink(`./serverlist.txt`, () => {});
+				} catch {}
+			})
+			.catch(() => {});
 		return;
 	}
 
@@ -1321,9 +1345,9 @@ function setCommandList() {
 			cmdListMD += `### ${command.name}\n\n`;
 			cmdListMD += `- ${command.description}\n`;
 			cmdListMD += `- Usage:\n\t- ${command.usage.join("\n\t- ")}\n`;
-			cmdListMD += `- Required user permissions: ${command.perms.join(
-				", "
-			)}\n`;
+			cmdListMD += `- Required user permissions: \`${command.perms.join(
+				"`, `"
+			)}\`\n`;
 			cmdListMD += `\n`;
 		}
 	}
@@ -1369,44 +1393,60 @@ client.once("ready", () => {
 		client.guilds
 			.fetch("698075892974354482")
 			.then((guild) => {
-				guild.fetchInvites().then((invites) => {
-					WoofInviteCount = invites.find(
-						(invite) => invite.inviter.id == "376956266293231628"
-					).uses;
-				});
+				guild
+					.fetchInvites()
+					.then((invites) => {
+						WoofInviteCount = invites.find(
+							(invite) =>
+								invite.inviter.id == "376956266293231628"
+						).uses;
+					})
+					.catch(() => {});
 			})
 			.catch(() => {});
 		//for HaberJordan feature
 		client.guilds
 			.fetch("698075892974354482")
 			.then((guild) => {
-				guild.fetchInvites().then((invites) => {
-					HaberInviteCount = invites.find(
-						(invite) => invite.inviter.id == "221771499843878912"
-					).uses;
-				});
+				guild
+					.fetchInvites()
+					.then((invites) => {
+						HaberInviteCount = invites.find(
+							(invite) =>
+								invite.inviter.id == "221771499843878912"
+						).uses;
+					})
+					.catch(() => {});
 			})
 			.catch(() => {});
 		//for NumeralJoker feature
 		client.guilds
 			.fetch("698075892974354482")
 			.then((guild) => {
-				guild.fetchInvites().then((invites) => {
-					NumeralJokerCount = invites.find(
-						(invite) => invite.inviter.id == "285906871393452043"
-					).uses;
-				});
+				guild
+					.fetchInvites()
+					.then((invites) => {
+						NumeralJokerCount = invites.find(
+							(invite) =>
+								invite.inviter.id == "285906871393452043"
+						).uses;
+					})
+					.catch(() => {});
 			})
 			.catch(() => {});
 		//for SWInsider feature
 		client.guilds
 			.fetch("698075892974354482")
 			.then((guild) => {
-				guild.fetchInvites().then((invites) => {
-					SWInsiderInviteCount = invites.find(
-						(invite) => invite.inviter.id == "813613441448804354"
-					).uses;
-				});
+				guild
+					.fetchInvites()
+					.then((invites) => {
+						SWInsiderInviteCount = invites.find(
+							(invite) =>
+								invite.inviter.id == "813613441448804354"
+						).uses;
+					})
+					.catch(() => {});
 			})
 			.catch(() => {});
 	} catch (err) {
@@ -1437,7 +1477,10 @@ function giveawayCheck() {
 						.then((msgs) => {
 							msg = msgs.get(row.MessageId);
 						});
-						if (msg == null) Owner.send(kifo.embed(`WARNING: ${link} giveaway not fetched.`)).catch((err) => console.log(err))
+					if (msg == null)
+						Owner.send(
+							kifo.embed(`WARNING: ${link} giveaway not fetched.`)
+						).catch((err) => console.log(err));
 					if (msg.partial) {
 						await msg.fetch().catch((err) => console.log(err));
 					}
@@ -1468,9 +1511,7 @@ function giveawayCheck() {
 
 					const giveEmbed = new Discord.MessageEmbed()
 						.setTitle("Giveaway results:")
-						.setURL(
-							
-						)
+						.setURL()
 						.setAuthor(
 							`Powered by Kifo Clanker™`,
 							client.user.avatarURL({
@@ -1791,100 +1832,104 @@ let NumeralJokerCount;
 let SWInsiderInviteCount;
 
 client.on("guildMemberAdd", (member) => {
-	member.guild
-		.fetchInvites()
-		.then((invites) => {
-			//WoofWoof
-			if (
-				invites.find(
-					(invite) => invite.inviter.id == "376956266293231628"
-				)?.uses ==
-				WoofInviteCount + 1
-			) {
-				member.roles
-					.add(
-						member.guild.roles.cache.find(
-							(role) => role.id == "746558695139180625"
+	if (member.guild.id == "698075892974354482")
+		member.guild
+			.fetchInvites()
+			.then((invites) => {
+				//WoofWoof
+				if (
+					invites.find(
+						(invite) => invite.inviter.id == "376956266293231628"
+					)?.uses ==
+					WoofInviteCount + 1
+				) {
+					member.roles
+						.add(
+							member.guild.roles.cache.find(
+								(role) => role.id == "746558695139180625"
+							)
 						)
-					)
-					.catch(console.error);
-				WoofInviteCount++;
-			}
-			//HaberJordan
-			else if (
-				invites.find(
-					(invite) => invite.inviter.id == "221771499843878912"
-				)?.uses ==
-				HaberInviteCount + 1
-			) {
-				member.roles
-					.add(
-						member.guild.roles.cache.find(
-							(role) => role.id == "744082967307092039"
+						.catch(console.error);
+					WoofInviteCount++;
+				}
+				//HaberJordan
+				else if (
+					invites.find(
+						(invite) => invite.inviter.id == "221771499843878912"
+					)?.uses ==
+					HaberInviteCount + 1
+				) {
+					member.roles
+						.add(
+							member.guild.roles.cache.find(
+								(role) => role.id == "744082967307092039"
+							)
 						)
-					)
-					.catch(console.error);
-				HaberInviteCount++;
-			} else if (
-				invites.find(
-					(invite) => invite.inviter.id == "813613441448804354"
-				)?.uses ==
-				SWInsiderInviteCount + 1
-			) {
-				member.roles
-					.add(
-						member.guild.roles.cache.find(
-							(role) => role.id == "858056136045756486"
+						.catch(console.error);
+					HaberInviteCount++;
+				} else if (
+					invites.find(
+						(invite) => invite.inviter.id == "813613441448804354"
+					)?.uses ==
+					SWInsiderInviteCount + 1
+				) {
+					member.roles
+						.add(
+							member.guild.roles.cache.find(
+								(role) => role.id == "858056136045756486"
+							)
 						)
-					)
-					.catch(console.error);
-				SWInsiderInviteCount++;
-			}
-			//NumeralJoker
-			else if (
-				invites.find(
-					(invite) => invite.inviter.id == "285906871393452043"
-				)?.uses ==
-				NumeralJokerCount + 1
-			) {
-				member.roles
-					.add(
-						member.guild.roles.cache.find(
-							(role) => role.id == "844594877885972480"
+						.catch(console.error);
+					SWInsiderInviteCount++;
+				}
+				//NumeralJoker
+				else if (
+					invites.find(
+						(invite) => invite.inviter.id == "285906871393452043"
+					)?.uses ==
+					NumeralJokerCount + 1
+				) {
+					member.roles
+						.add(
+							member.guild.roles.cache.find(
+								(role) => role.id == "844594877885972480"
+							)
 						)
-					)
-					.catch(console.error);
-				NumeralJokerCount++;
+						.catch(console.error);
+					NumeralJokerCount++;
 
-				let msg = `Welcome <@${member.id}>! Fill out this form to gain access to all of **NumeralJoker's <@285906871393452043> edits!!** in <#844667201888714813>\n\
+					let msg = `Welcome <@${member.id}>! Fill out this form to gain access to all of **NumeralJoker's <@285906871393452043> edits!!** in <#844667201888714813>\n\
 				[https://forms.google.com/](https://forms.gle/3FkJQxMijEE32Eot9)\n\n\
 				**__Once you are granted access__** you can find them via this link: https://drive.google.com/drive/shared-drives`;
 
-				member.user
-					.send(
-						kifo.embed(msg, "Start your journey to find the Trove:")
-					)
-					.catch(() => {
-						member.guild.channels
-							.resolve("844667201888714813")
-							.send(
-								`<@${member.id}>`,
-								kifo.embed(
-									msg,
-									"Start your journey to find the Trove:"
-								)
-							);
-					});
-			}
-		})
-		.catch(console.error);
+					member.user
+						.send(
+							kifo.embed(
+								msg,
+								"Start your journey to find the Trove:"
+							)
+						)
+						.catch(() => {
+							member.guild.channels
+								.resolve("844667201888714813")
+								.send(
+									`<@${member.id}>`,
+									kifo.embed(
+										msg,
+										"Start your journey to find the Trove:"
+									)
+								);
+						});
+				}
+			})
+			.catch(console.error);
 });
 
 client.on("guildCreate", async (guild) => {
 	let date = new Date(Date.now());
 	let channel = client.guilds
 		.resolve("822800862581751848")
-		.channels?.resolve("822800863050858539");
+		.channels?.resolve("863769411700785152");
 	const embed = new Discord.MessageEmbed()
 		.setColor("a039a0")
 		.setThumbnail(guild.iconURL({ dynamic: true }))

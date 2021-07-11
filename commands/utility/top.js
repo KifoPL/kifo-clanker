@@ -207,7 +207,7 @@ module.exports = {
 						dynamic: true,
 						size: 32,
 					}),
-					"https://github.com/KifoPL/kifo-clanker/wiki"
+					"https://kifopl.github.io/kifo-clanker/wiki"
 				);
 
 				//if two posts have the same amount of upvotes, they're equal place
@@ -240,7 +240,7 @@ module.exports = {
 				);
 
 				if (chmessages[i].content.length > 0) {
-					newEmbed.setDescription(chmessages[i].content);
+					newEmbed.setDescription(chmessages[i].content.length > 420 ? `${chmessages[i].content.slice(0,420)}...` : chmessages[i].content);
 				}
 
 				if (

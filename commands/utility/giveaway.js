@@ -15,6 +15,12 @@ module.exports = {
 		const client = require("../../index.js").client;
 		const { con } = require("../../index.js");
 
+		//precheck
+		if (!message.guild == null)
+			return message
+				.reply(kifo.embed(`you can only run this command in a server!`))
+				.catch(() => {});
+
 		//perms check
 		if (
 			!message.guild?.me
@@ -49,11 +55,32 @@ module.exports = {
 			);
 		}
 
-		if (isNaN(args[0])) return message.reply(kifo.embed("Please provide correct amount of winners!")).catch(() => {});
-		if (args[0] < 1) return message.reply(kifo.embed("Please choose at least one winner!")).catch(() => {});
-		if (Math.floor(args[0]) != args[0]) return message.reply(kifo.embed("Please choose an integer amount of winners!")).catch(() => {});
-		if (isNaN(ms(args[1]))) return message.reply(kifo.embed("Please provide correct time period!")).catch(() => {});
-		if (ms(args[1]) < 1000 * 60) return message.reply(kifo.embed("Please set the giveaway to at least 1 minute long.")).catch(() => {});
+		if (isNaN(args[0]))
+			return message
+				.reply(kifo.embed("Please provide correct amount of winners!"))
+				.catch(() => {});
+		if (args[0] < 1)
+			return message
+				.reply(kifo.embed("Please choose at least one winner!"))
+				.catch(() => {});
+		if (Math.floor(args[0]) != args[0])
+			return message
+				.reply(
+					kifo.embed("Please choose an integer amount of winners!")
+				)
+				.catch(() => {});
+		if (isNaN(ms(args[1])))
+			return message
+				.reply(kifo.embed("Please provide correct time period!"))
+				.catch(() => {});
+		if (ms(args[1]) < 1000 * 60)
+			return message
+				.reply(
+					kifo.embed(
+						"Please set the giveaway to at least 1 minute long."
+					)
+				)
+				.catch(() => {});
 
 		const time = args[1];
 		const x = args[0];
@@ -68,14 +95,19 @@ module.exports = {
 		}
 
 		message.channel
-			.send(`Ends at: <t:${Math.floor(end.getTime()/1000)}>, <t:${Math.floor(end.getTime()/1000)}:R>`,
+			.send(
+				`Ends at: <t:${Math.floor(
+					end.getTime() / 1000
+				)}>, <t:${Math.floor(end.getTime() / 1000)}:R>`,
 				kifo.embed(
-					`React with ${reaction} to enter! The ${x} winner${x > 1 ? "s" : ""} will be chosen at ${end.toUTCString()}.`, "GIVEAWAY!"
+					`React with ${reaction} to enter! The ${x} winner${
+						x > 1 ? "s" : ""
+					} will be chosen at ${end.toUTCString()}.`,
+					"GIVEAWAY!"
 				)
 			)
 			.then((msg) => {
-				msg
-					.react(reaction)
+				msg.react(reaction)
 					.then((reaction1) => {
 						con.query(
 							"INSERT INTO giveaway (MessageId , ChannelId , GuildId , UserId, Winners , EndTime , Reaction) VALUES (?, ?, ?, ?, ?, ?, ?);",

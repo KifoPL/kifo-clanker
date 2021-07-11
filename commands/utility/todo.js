@@ -5,6 +5,7 @@ module.exports = {
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	execute(message, args, Discord) {
+		const kifo = require("kifo");
 		if (!args[0]) return message.reply(kifo.embed(`usage: ${this.usage}`));
 
 		const Embed = new Discord.MessageEmbed();
@@ -18,7 +19,7 @@ module.exports = {
 					dynamic: true,
 					size: 64,
 				}),
-				"https://github.com/KifoPL/kifo-clanker/"
+				"https://kifopl.github.io/kifo-clanker/"
 			)
 			.setDescription(
 				`React with <a:done:828097348545544202> to mark it as done!`

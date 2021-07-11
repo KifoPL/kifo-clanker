@@ -1,18 +1,29 @@
 ![Kifo Clanker™ - When general purpose bots fail, run !kifo](https://i.imgur.com/EiM6gFA.png)
-## Channel contest manager, super slow-mode, detailed stats, and much more!
 
-Kifo Clanker is a Discord Bot that helps you manage contests in channels (top posts with certain reactions), auto reactions, super slow-mode *(Up to 1 year!)*, and many more.
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/kifopl/kifo-clanker?label=latest)
+![GitHub](https://img.shields.io/github/license/kifopl/kifo-clanker)
+[![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/kifopl/kifo-clanker)
 
-> This bot doesn't feature general commands, like mute, ban, etc. - it's not a general purpose bot, it's *special forces* bot. 
+# Kifo Clanker: top-quality unorthodox Discord commands
 
-This bot is in continuous development, so some features may be missing, not working, etc...
-If you find any bugs (or have an awesome idea), please notify me on Discord: @KifoPL#3358 `<@289119054130839552>`, or submit a [ticket](https://github.com/KifoPL/kifo-clanker/issues/new/choose).
+## **This bot contains:**
+- Channel contest manager,
+- Perms manager,
+- Temporary role remover,
+- Detailed stats,
+- *...and much more!*
+
+> It doesn't feature general commands, like mute, ban, etc. - it's not a general-purpose bot, it's *special forces* bot. 
+
+**!** This bot is in continuous development, so some features may be missing, not working, etc...
+
+**!** If you find any bugs (or have an awesome idea), please notify me on Discord: @KifoPL#3358 `<@289119054130839552>`, or submit a [ticket](https://github.com/KifoPL/kifo-clanker/issues/new/choose).
 
 ## [List of Commands](/commandList.md)
 
-> The list is always up-to-date with main branch.
+> The list is always up-to-date with latest release.
 
-## Showcase:
+# Showcase:
 
 ![top](https://i.imgur.com/EO1mKBX.jpg)
 
@@ -22,13 +33,26 @@ If you find any bugs (or have an awesome idea), please notify me on Discord: @Ki
 
 ![stats](https://i.imgur.com/qB2r2wZ.jpg)
 
+# Useful links:
+
 ## [Discord Support Server](https://discord.com/invite/HxUFQCxPFp)
-> *share your ideas, read changelog, test out new features before their release*. 
+> *Share your ideas, read changelog, test out new features before their release*. 
+
+## [Top.gg Bot Website](https://top.gg/bot/795638549730295820)
+> *Feel free to leave a vote and 5-star review!*
+
+## [Donate for custom bot prefix](https://www.buymeacoffee.com/kifoPL)
+> *VPS, electricity and internet cost a lot of money, donations motivate me to continue my work developing this bot, plus you get a custom prefix for your server in return.*
+
+# Self-promotion:
 
 ## My socials:
 * [Reddit](http://reddit.com/u/kifopl)
 * [Youtube](https://www.youtube.com/channel/UC4yZgTHfmVDmKlDIhDwVp3w?sub_confirmation=1)
-* [Buy me a beer!](https://www.buymeacoffee.com/kifoPL) - *(electricity and internet bills cost a lot of money, donations motivate me to continue my work developing this bot)*
+
+![GitHub Repo stars](https://img.shields.io/github/stars/kifopl/kifo-clanker?style=social)
+![GitHub forks](https://img.shields.io/github/forks/kifopl/kifo-clanker?style=social)
+![Reddit User Karma](https://img.shields.io/reddit/user-karma/combined/kifopl?style=social)
 
 ## Do you want to be a part of amazing Star Wars community?
 * Join The Galactic Republic [Discord Server](https://discord.gg/Hhp74va)!
@@ -36,6 +60,11 @@ If you find any bugs (or have an awesome idea), please notify me on Discord: @Ki
 * Check out our [subreddit](https://www.reddit.com/r/republicdiscord/).
 * [Wiki](https://tgr-discord-server.fandom.com/wiki/TGR_Discord_Server_Wiki) of our own RP server canon.
 
-*The code is on GNU AGPL v3.0 license.*
+## Various repo stats:
+![Lines of code](https://img.shields.io/tokei/lines/github/kifopl/kifo-clanker)
+![GitHub repo size](https://img.shields.io/github/repo-size/kifopl/kifo-clanker)
+![GitHub issues](https://img.shields.io/github/issues/kifopl/kifo-clanker?label=in-dev%20features)
+![GitHub commits since latest release (by SemVer)](https://img.shields.io/github/commits-since/kifopl/kifo-clanker/latest)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/kifopl/kifo-clanker)
 
 ~ by [KifoPL](https://github.com/KifoPL)

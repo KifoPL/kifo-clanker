@@ -14,6 +14,12 @@ module.exports = {
 		const client = require("../../index.js").client;
 		const { con } = require("../../index.js");
 
+		//precheck
+		if (!message.guild == null)
+			return message.reply(
+				kifo.embed(`you can only run this command in a server!`)
+			).catch(() => {});
+
 		//perms check
 		if (
 			!message.guild?.me
@@ -47,11 +53,11 @@ module.exports = {
 				)
 				.catch(() => {});
 		}
+		
+		let time = args[2];
 
 		let member = {};
 		let role = {};
-
-		let time = args[2];
 
 		//ARGS CHECK
 		if (message.guild.members.resolve(args[0]) == null)
@@ -91,10 +97,11 @@ module.exports = {
 				.catch(() => {});
 
 		const now = new Date(Date.now());
-		
 
 		if (args[3] != null) {
-			return message.reply(kifo.embed("Too many arguments!")).catch(() => {})
+			return message
+				.reply(kifo.embed("Too many arguments!"))
+				.catch(() => {});
 		}
 
 		if (args[2] != null) {
@@ -138,7 +145,7 @@ module.exports = {
 							message.author.id,
 							message.channel.id,
 							message.guild.id,
-							end
+							end,
 						],
 						function (err) {
 							if (err) throw err;
