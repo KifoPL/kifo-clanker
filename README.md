@@ -1,4 +1,5 @@
-![Kifo Clanker™ - When general purpose bots fail, run !kifo](https://i.imgur.com/EiM6gFA.png)
+![Kifo Clanker™ - When general purpose bots 
+fail, run !kifo](https://i.imgur.com/hWkoxmm.jpg)
 
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/kifopl/kifo-clanker?label=latest)
 ![GitHub](https://img.shields.io/github/license/kifopl/kifo-clanker)
