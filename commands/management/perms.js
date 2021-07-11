@@ -432,6 +432,7 @@ module.exports = {
 					}
 				});
 				IDArray.forEach((ID) => {
+					if (stop) return;
 					if (
 						message.guild.members.resolve(ID) == null &&
 						message.guild.roles.resolve(ID) == null
@@ -447,44 +448,53 @@ module.exports = {
 							if (
 								mm.roles.highest.rawPosition >=
 								message.member.roles.highest.rawPosition
-							)
+							) {
+								stop = true;
 								return message.reply(
 									kifo.embed(
 										`You can't edit <@!${mm.id}>'s perms!`
 									)
 								);
+							}
 							if (
 								mm.roles.highest.rawPosition >=
 								message.guild.me.roles.highest.rawPosition
-							)
+							) {
+								stop = true;
 								return message.reply(
 									kifo.embed(
 										`I can't edit <@!${mm.id}>'s perms!`
 									)
 								);
+							}
 						} else {
 							mm = message.guild.roles.resolve(ID);
 							if (
 								mm.rawPosition >=
 								message.member.roles.highest.rawPosition
-							)
+							) {
+								stop = true;
 								return message.reply(
 									kifo.embed(
 										`You can't edit <@&${mm.id}>'s perms!`
 									)
 								);
+							}
 							if (
 								mm.rawPosition >=
 								message.guild.me.roles.highest.rawPosition
-							)
+							) {
+								stop = true;
 								return message.reply(
 									kifo.embed(
 										`I can't edit <@&${mm.id}>'s perms!`
 									)
 								);
+							}
 						}
 					}
 				});
+				if (stop) return;
 				// let PermsCollection =
 				// 	message.channel.permissionOverwrites.filter((permOver) =>
 				// 		IDArray.includes(permOver.id)

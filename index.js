@@ -122,7 +122,7 @@ async function hello(message, prefix) {
 			.setAuthor(
 				"Hello there (click for bot invite link)!",
 				null,
-				"https://discord.com/api/oauth2/authorize?client_id=795638549730295820&permissions=76824&scope=applications.commands%20bot"
+				"https://discord.com/oauth2/authorize?client_id=795638549730295820&permissions=2416299088&scope=bot"
 			)
 			.setColor("a039a0")
 			.setTitle(

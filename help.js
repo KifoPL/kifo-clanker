@@ -87,7 +87,7 @@ module.exports = {
 						.setColor("a039a0")
 						.setTitle("List of " + i + " commands, by KifoPL:")
 						.setFooter(
-							`Bot is created and developed solely by KifoPL#3358 - <@289119054130839552>. Click on the title to get an invite to bot's Discord server.`
+							`Bot is created and developed solely by KifoPL#3358 - <@289119054130839552>. Click on the title to get full list of commands.`
 						)
 						.setURL(
 							"https://kifopl.github.io/kifo-clanker/commandList"
@@ -182,7 +182,7 @@ module.exports = {
 			)
 			.setURL("https://kifopl.github.io/kifo-clanker/commandList")
 			.setFooter(
-				`Bot is created and developed solely by KifoPL#3358 - <@289119054130839552>. Click on the title to get an invite to bot's Discord server.`
+				`Bot is created and developed solely by KifoPL#3358 - <@289119054130839552>. Click on the title to see full list of commands.`
 			)
 			.addFields(FieldArr);
 
