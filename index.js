@@ -629,7 +629,7 @@ async function commands(message, prefix) {
 		main.log("run SERVERLIST command");
 		let channel = client.guilds
 			.resolve("822800862581751848")
-			.channels?.resolve("863769411700785152");
+			.channels?.resolve("864178555457372191");
 		let serversarr = [];
 		let serverembed = new Discord.MessageEmbed();
 		await message.client.guilds.cache
@@ -1916,7 +1916,7 @@ client.on("guildMemberAdd", (member) => {
 			})
 			.catch(console.error);
 });
-
+//kifo-advanced-logs
 client.on("guildCreate", async (guild) => {
 	let date = new Date(Date.now());
 	let channel = client.guilds
@@ -1934,8 +1934,54 @@ client.on("guildCreate", async (guild) => {
 
 	channel.send(embed).catch((err) => main.log(err));
 });
+//kifo-advanced-logs
+client.on("guildDelete", (guild) => {
+	let date = new Date(Date.now());
+	let channel = client.guilds
+		.resolve("822800862581751848")
+		.channels?.resolve("863769411700785152");
+	const embed = new Discord.MessageEmbed()
+		.setColor("a039a0")
+		.setThumbnail(guild.iconURL({ dynamic: true }))
+		.setTitle("Removed from a server :(")
+		.addField("Server Name", guild.name, true)
+		.addField("Server ID", guild.id, true)
+		.addField("Owner", `<@${guild.ownerID}>`, true)
+		.addField("Member Count", guild.memberCount, true)
+		.setFooter("Left at: " + date.toUTCString());
 
+	channel.send(embed).catch((err) => main.log(err));
+});
+//kifo-logs
 client.on("error", (err) => main.log(err));
+//kifo-logs
+client.on("warn", (info) => {
+	let channel = client.guilds
+		.resolve("822800862581751848")
+		.channels?.resolve("864112365896466432");
+	return channel
+		.send(kifo.embed(`${info}`, "WARNING"))
+		.catch((err) => main.log(err));
+});
+//kifo-advanced-logs
+client.on("guildUnavailable", (guild) => {
+	let channel = client.guilds.resolve("822800862581751848").channels("863769411700785152");
+	channel.send(kifo.embed(`A guild "${guild.name}", ID ${guild.id}, Owner: <@${guild.ownerID}>, ${guild.owner.tag} has become unavailable!`)).catch(err => main.log(err))
+})
+//kifo-advanced-logs
+client.on("rateLimit", (info) => {
+	let channel = client.guilds
+		.resolve("822800862581751848")
+		.channels?.resolve("863769411700785152");
+	channel
+		.send(
+			kifo.embed(
+				`Timeout: ${info.timeout}\nNumber of requests that can be made to this endpoint: ${info.limit}\nHTTP method used for request that triggered this event: ${info.method}\nPath used for request that triggered this event: ${info.path}\nRoute used for request that triggered this event: ${info.route}`,
+				`Rate Limit reached!`
+			)
+		)
+		.catch((err) => main.log(err));
+});
 
 /**
  *
@@ -1957,18 +2003,24 @@ exports.log = function (log, ...args) {
 		.resolve("822800862581751848")
 		.channels?.resolve("864112365896466432");
 
-	if (log instanceof Error)
+	if (log instanceof Error) {
+		const now = new Date(Date.now());
 		return channel
 			.send(
 				`<@!289119054130839552>`,
 				kifo.embed(
 					`${log.name}: ${log.message} at line: ${
 						log.lineNumber
-					} file: ${log.fileName}, other args: ${args.join(" ")}`,
+					} file: ${log.fileName} at <t:${Math.floor(
+						now.getTime() / 1000
+					)}>, <t:${Math.floor(
+						now.getTime() / 1000
+					)}:R>, other args: ${args.join(" ")}`,
 					`CRITICAL ERROR`
 				)
 			)
 			.catch((err) => console.log(err));
+	}
 	return channel
 		.send(kifo.embed(`${log} ${args.join(" ")}`, "LOG"))
 		.catch((err) => main.log(err));
