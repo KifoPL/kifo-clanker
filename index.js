@@ -1968,20 +1968,20 @@ client.on("guildUnavailable", (guild) => {
 	let channel = client.guilds.resolve("822800862581751848").channels("863769411700785152");
 	channel.send(kifo.embed(`A guild "${guild.name}", ID ${guild.id}, Owner: <@${guild.ownerID}>, ${guild.owner.tag} has become unavailable!`)).catch(err => main.log(err))
 })
-//kifo-advanced-logs
-client.on("rateLimit", (info) => {
-	let channel = client.guilds
-		.resolve("822800862581751848")
-		.channels?.resolve("863769411700785152");
-	channel
-		.send(
-			kifo.embed(
-				`Timeout: ${info.timeout}\nNumber of requests that can be made to this endpoint: ${info.limit}\nHTTP method used for request that triggered this event: ${info.method}\nPath used for request that triggered this event: ${info.path}\nRoute used for request that triggered this event: ${info.route}`,
-				`Rate Limit reached!`
-			)
-		)
-		.catch((err) => main.log(err));
-});
+// //kifo-advanced-logs ratelimit event (too spammy)
+// client.on("rateLimit", (info) => {
+// 	let channel = client.guilds
+// 		.resolve("822800862581751848")
+// 		.channels?.resolve("863769411700785152");
+// 	channel
+// 		.send(
+// 			kifo.embed(
+// 				`Timeout: ${info.timeout}\nNumber of requests that can be made to this endpoint: ${info.limit}\nHTTP method used for request that triggered this event: ${info.method}\nPath used for request that triggered this event: ${info.path}\nRoute used for request that triggered this event: ${info.route}`,
+// 				`Rate Limit reached!`
+// 			)
+// 		)
+// 		.catch((err) => main.log(err));
+// });
 
 /**
  *
