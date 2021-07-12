@@ -12,7 +12,7 @@ module.exports = {
 	],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
-	async execute(message, args, Discord) {
+	async execute(message, args, Discord, prefix) {
 		//This is for timestamps
 		const ms = require(`ms`);
 		const fs = require("fs");
