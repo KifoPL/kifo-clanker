@@ -116,7 +116,7 @@ If the bot doesn't see some channels, lists ~~may~~ will be incorrect.
 
 ### stats
 
-- Displays stats for given user, bot, role, server, ~~channel~~, ~~message~~ (in development).
+- Displays stats for given user, bot, role, server, message, ~~channel~~ (in development).
 If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 - Usage:
 	- `stats` - shows stats of the server
@@ -180,4 +180,4 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Sun, 11 Jul 2021 14:05:11 GMT*
+> - *Last update: Mon, 12 Jul 2021 12:24:28 GMT*

@@ -1,4 +1,5 @@
 const kifo = require("kifo");
+const main = require(`../../index.js`);
 module.exports = {
 	name: "stats",
 	description: `Displays stats for given user, bot, role, server, message, ~~channel~~ (in development).\nIf the bot doesn't see some channels, stats ~~may~~ will be incorrect.`,
@@ -291,7 +292,7 @@ module.exports = {
 				}
 
 				if (whatami == undefined) {
-					console.log("SOMETHING BROKE IN LIST COMMAND");
+					main.log("SOMETHING BROKE IN LIST COMMAND");
 					return message
 						.reply(
 							kifo.embed(

@@ -1,5 +1,6 @@
 const limit = 1000;
 const kifo = require("kifo");
+const main = require(`../../index.js`)
 module.exports = {
 	name: "list",
 	description: `Lists all users in the server, or users having certain role.\nTo list more than ${limit} users you need \`MANAGE_GUILD\` perms.\nIf the bot doesn't see some channels, lists ~~may~~ will be incorrect.`,
@@ -366,7 +367,7 @@ module.exports = {
 				}
 
 				if (whatami == undefined) {
-					console.log("SOMETHING BROKE IN LIST COMMAND");
+					main.log("SOMETHING BROKE IN LIST COMMAND");
 					return message
 						.reply(
 							kifo.embed(

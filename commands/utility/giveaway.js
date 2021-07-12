@@ -1,3 +1,4 @@
+const main = require(`../../index.js`);
 module.exports = {
 	name: "giveaway",
 	description:
@@ -125,7 +126,7 @@ module.exports = {
 							}
 						);
 					})
-					.catch((err) => console.log(err));
+					.catch((err) => main.log(err));
 			});
 	},
 };

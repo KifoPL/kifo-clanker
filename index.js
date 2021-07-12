@@ -47,7 +47,7 @@ function dbReconnect() {
 	con = mysql.createConnection(dbconfig);
 	con.connect(async function (err) {
 		if (err) {
-			console.log(err);
+			main.log(err);
 			Owner?.send(kifo.embed(err, "Error:")).catch(() => {});
 			setTimeout(dbReconnect, 3000);
 		}
@@ -69,7 +69,7 @@ function dbReconnect() {
 	});
 
 	con.on("error", function (err) {
-		console.log(err);
+		main.log(err);
 		Owner?.send(kifo.embed(err, "Error:")).catch(() => {});
 		if (err.code === "PROTOCOL_CONNECTION_LOST") {
 			dbReconnect();
@@ -111,7 +111,7 @@ async function hello(message, prefix) {
 		if (message.deleted) return;
 		message.channel.startTyping().catch(() => {});
 		const event = new Date(Date.now());
-		console.log(
+		main.log(
 			message.author.tag,
 			"issued (welcome msg) in",
 			message.channel.name,
@@ -203,7 +203,7 @@ async function react(message, prefix) {
 	// 						message.react(reply[i]).catch(() => {});
 	// 						var eventRT = new Date(Date.now());
 	// 					}
-	// 					console.log(
+	// 					main.log(
 	// 						"Reacted in " +
 	// 							message.guild.name +
 	// 							", " +
@@ -245,7 +245,7 @@ async function react(message, prefix) {
 						if (message.deleted) return;
 						message.react(row.emote).catch(() => {});
 					});
-					console.log(
+					main.log(
 						"Reacted in " +
 							message.guild.name +
 							", " +
@@ -464,7 +464,7 @@ async function superslow(message, prefix) {
 						[message.author.id, message.channel.id],
 						async function (err, result2) {
 							if (err) throw err;
-							// console.log(`${slowmode}, ${result2}`);
+							// main.log(`${slowmode}, ${result2}`);
 							if (result2.length > 0) {
 								//if he can't send message yet
 								if (
@@ -594,7 +594,7 @@ function checks(message, prefix) {
 				(role) => role.id == "832194217493135400"
 			) == undefined
 		) {
-			console.log(`msg: ${message.content}`);
+			main.log(`msg: ${message.content}`);
 			message.reply(
 				kifo.embed("Only KifoPL#3358 and testers can use this bot.")
 			);
@@ -626,7 +626,7 @@ async function commands(message, prefix) {
 	// });
 
 	if (command == "serverlist" && message.author == Owner) {
-		console.log("run SERVERLIST command");
+		main.log("run SERVERLIST command");
 		let channel = client.guilds
 			.resolve("822800862581751848")
 			.channels?.resolve("863769411700785152");
@@ -637,9 +637,9 @@ async function commands(message, prefix) {
 			.each((guild) => {
 				serversarr.push({
 					name: `${guild.id}\t${guild.name}\t`,
-					value: `<:owner:823658022785908737> <@${guild.ownerID}>, ${
-						guild.memberCount
-					} members. ${
+					value: `<:owner:823658022785908737> <@${guild.ownerID}> ${
+						guild.owner.user.tag
+					}, ${guild.memberCount} members. ${
 						guild.available
 							? "<:online:823658022974521414>"
 							: "<:offline:823658022957613076> OUTAGE!"
@@ -648,7 +648,7 @@ async function commands(message, prefix) {
 			});
 		serverembed
 			.addFields(serversarr.slice(0, 10))
-			.setTitle("Server list:")
+			.setTitle("Server list (top 10 by member count):")
 			.setFooter(
 				`I am in ${serversarr.length} servers as of ${new Date(
 					Date.now()
@@ -696,29 +696,27 @@ async function commands(message, prefix) {
 
 	if (command == "help") {
 		const event = new Date(Date.now());
-		console.log(
-			message.author.tag,
-			"issued !kifo",
-			command,
-			"in",
-			message.channel.name,
-			"at",
-			event.toUTCString()
+		main.log(
+			`[Here](${message.url}) <@${message.author.id}> ${
+				message.author.tag
+			} issued \`${prefix}${command}\` in #${
+				message.channel.name
+			} at <t:${Math.floor(event.getTime() / 1000)}>, <t:${Math.floor(
+				event.getTime() / 1000
+			)}:R>.`
 		);
 		client.commands.get(command).execute(message, args, Discord, prefix);
 		return;
 	} else if (command == "error") {
 		const event = new Date(Date.now());
-		console.log(
-			message.author.tag,
-			"issued !kifo",
-			command,
-			"in",
-			message.channel.name,
-			"at",
-			message.guild.name,
-			"at",
-			event.toUTCString()
+		main.log(
+			`[Here](${message.url}) <@${message.author.id}> ${
+				message.author.tag
+			} issued \`${prefix}${command}\` in #${
+				message.channel.name
+			} at <t:${Math.floor(event.getTime() / 1000)}>, <t:${Math.floor(
+				event.getTime() / 1000
+			)}:R>.`
 		);
 		client.commands.get(command).execute(message, args, Discord, client);
 		return;
@@ -791,16 +789,14 @@ async function commands(message, prefix) {
 			return;
 		}
 		const event = new Date(Date.now());
-		console.log(
-			message.author.tag,
-			"issued !kifo",
-			command,
-			"in",
-			message.channel.name,
-			"at",
-			message.guild.name,
-			"at",
-			event.toUTCString()
+		main.log(
+			`[Here](${message.url}) <@${message.author.id}> ${
+				message.author.tag
+			} issued \`${prefix}${command}\` in #${
+				message.channel.name
+			} at <t:${Math.floor(event.getTime() / 1000)}>, <t:${Math.floor(
+				event.getTime() / 1000
+			)}:R>.`
 		);
 		if (args[0].toUpperCase() == "LIST") {
 			var FieldReactChannels = { name: "name", value: "description" };
@@ -826,10 +822,10 @@ async function commands(message, prefix) {
 			// 								`#${channel.name}`,
 			// 								`${reply}`
 			// 							);
-			// 							//console.log(`1 ${newReactChannelsEmbed.fields.toString()}`)
+			// 							//main.log(`1 ${newReactChannelsEmbed.fields.toString()}`)
 			// 						}
 			// 					);
-			// 					//console.log(`2 ${newReactChannelsEmbed.fields.toString()}`)
+			// 					//main.log(`2 ${newReactChannelsEmbed.fields.toString()}`)
 			// 				}
 			// 			}
 			// 		);
@@ -873,7 +869,7 @@ async function commands(message, prefix) {
 					return message.reply(newReactChannelsEmbed);
 				}
 			);
-			//console.log(newReactChannelsEmbed);
+			//main.log(newReactChannelsEmbed);
 			//message.channel.send(newReactChannelsEmbed);
 			//message.channel.send("End of list!");
 			return;
@@ -903,7 +899,7 @@ async function commands(message, prefix) {
 			// 		function (err, reply) {}
 			// 	);
 			// }
-			console.log(
+			main.log(
 				"I will now react in " +
 					message.channel.name +
 					" with " +
@@ -1005,16 +1001,14 @@ async function commands(message, prefix) {
 			return;
 		}
 		const event = new Date(Date.now());
-		console.log(
-			message.author.tag,
-			"issued !kifo",
-			command,
-			"in",
-			message.channel.name,
-			"at",
-			message.guild.name,
-			"at",
-			event.toUTCString()
+		main.log(
+			`[Here](${message.url}) <@${message.author.id}> ${
+				message.author.tag
+			} issued \`${prefix}${command}\` in #${
+				message.channel.name
+			} at <t:${Math.floor(event.getTime() / 1000)}>, <t:${Math.floor(
+				event.getTime() / 1000
+			)}:R>.`
 		);
 		if (args[0]?.toUpperCase() == "LIST") {
 			var FieldReactChannels = { name: "name", value: "description" };
@@ -1043,7 +1037,7 @@ async function commands(message, prefix) {
 			// 				FieldReactChannels.name,
 			// 				FieldReactChannels.value
 			// 			);
-			// 			//console.log(newReactChannelsEmbed.fields);
+			// 			//main.log(newReactChannelsEmbed.fields);
 			// 		}
 			// 	});
 			// });
@@ -1085,7 +1079,7 @@ async function commands(message, prefix) {
 				}
 			);
 
-			//console.log(newReactChannelsEmbed);
+			//main.log(newReactChannelsEmbed);
 			// message.channel.send("End of list!");
 			return;
 		}
@@ -1264,16 +1258,14 @@ async function commands(message, prefix) {
 		return;
 	} else {
 		const event = new Date(Date.now());
-		console.log(
-			message.author.tag,
-			"issued !kifo",
-			command,
-			"in",
-			message.channel.name,
-			"at",
-			message.guild.name,
-			"at",
-			event.toUTCString()
+		main.log(
+			`[Here](${message.url}) <@${message.author.id}> ${
+				message.author.tag
+			} issued \`${prefix}${command}\` in #${
+				message.channel.name
+			} at <t:${Math.floor(event.getTime() / 1000)}>, <t:${Math.floor(
+				event.getTime() / 1000
+			)}:R>.`
 		);
 		debug = client.commands
 			.get(command)
@@ -1450,7 +1442,7 @@ client.once("ready", () => {
 			})
 			.catch(() => {});
 	} catch (err) {
-		console.log(err);
+		main.log(err);
 	}
 });
 
@@ -1462,7 +1454,7 @@ function giveawayCheck() {
 		function (err, result) {
 			if (err) throw err;
 			if (result.length > 0) {
-				console.log(
+				main.log(
 					`${result.length} giveaway${
 						result.length > 1 ? "s have" : " has"
 					} ended!`
@@ -1480,9 +1472,9 @@ function giveawayCheck() {
 					if (msg == null)
 						Owner.send(
 							kifo.embed(`WARNING: ${link} giveaway not fetched.`)
-						).catch((err) => console.log(err));
+						).catch((err) => main.log(err));
 					if (msg.partial) {
-						await msg.fetch().catch((err) => console.log(err));
+						await msg.fetch().catch((err) => main.log(err));
 					}
 					let temp = {};
 					await msg.reactions
@@ -1493,7 +1485,7 @@ function giveawayCheck() {
 								.filter((user) => !user.bot)
 								.random(row.Winners + 1);
 						})
-						.catch((err) => console.log(err));
+						.catch((err) => main.log(err));
 					let winners = temp;
 					winners.shift();
 					//generate a .txt file
@@ -1506,7 +1498,7 @@ function giveawayCheck() {
 								" `not enough reactions to conclude, if that's not the case notify Kifo` <@289119054130839552> "
 							}>`;
 						}
-						if (winner === null) console.log(winners);
+						if (winner === null) main.log(winners);
 					});
 
 					const giveEmbed = new Discord.MessageEmbed()
@@ -1571,7 +1563,7 @@ function giveawayCheck() {
 												.ownerID
 										}>`,
 										giveEmbed
-									).catch((err) => console.log(err));
+									).catch((err) => main.log(err));
 								});
 						});
 					try {
@@ -1598,7 +1590,7 @@ function removeCheck() {
 		function (err, result) {
 			if (err) throw err;
 			if (result.length > 0) {
-				console.log(
+				main.log(
 					`${result.length} remove${
 						result.length > 1 ? "s" : ""
 					} found!`
@@ -1637,7 +1629,7 @@ function removeCheck() {
 											)
 										)
 										.catch(() => {});
-									console.log(err1);
+									main.log(err1);
 								});
 						})
 						.catch((err1) => {
@@ -1660,9 +1652,9 @@ function removeCheck() {
 											)
 										)
 										.catch(() => {});
-									console.log(err2);
+									main.log(err2);
 								});
-							console.log(err1);
+							main.log(err1);
 						});
 				});
 				con.query(
@@ -1685,7 +1677,7 @@ function permsCheck() {
 		function (err, result) {
 			if (err) throw err;
 			if (result.length > 0) {
-				console.log(
+				main.log(
 					`${result.length} perm${
 						result.length > 1 ? "s" : ""
 					} found!`
@@ -1723,7 +1715,7 @@ function permsCheck() {
 									: false,
 						})
 						// .then(() => {
-						// 	//client.channels.resolve(row.ChannelId)?.send(kifo.embed(`Changed ${row.PermFlag} from ${Current} to ${row.Command} for ${client.guilds.resolve(row.GuildId)?.members.resolve(row.PermId) != null ? "<@!" : "<@&"}${row.PermId}>.`, "Changed back perms")).catch((err) => console.log(err))
+						// 	//client.channels.resolve(row.ChannelId)?.send(kifo.embed(`Changed ${row.PermFlag} from ${Current} to ${row.Command} for ${client.guilds.resolve(row.GuildId)?.members.resolve(row.PermId) != null ? "<@!" : "<@&"}${row.PermId}>.`, "Changed back perms")).catch((err) => main.log(err))
 						// })
 						.catch((err) => {
 							failureMap.set(row.MessageId, true);
@@ -1736,7 +1728,7 @@ function permsCheck() {
 										"Could not revert perms command!"
 									)
 								)
-								.catch((err) => console.log(err));
+								.catch((err) => main.log(err));
 						});
 				});
 				previousMap.forEach((value, key) => {
@@ -1768,12 +1760,12 @@ function permsCheck() {
 							kifo.embed(Description, Title)
 						)
 						.catch((err) => {
-							console.log(err);
+							main.log(err);
 							client.guilds
 								.resolve(r.GuildId)
 								?.members.resolve(r.PerpetratorId)
 								?.send(kifo.embed(Description, Title))
-								.catch((err) => console.log(err));
+								.catch((err) => main.log(err));
 						});
 				});
 				con.query(
@@ -1805,7 +1797,7 @@ let reactreturn;
 client.on("message", (message) => {
 	//this allows me to 1. catch stuff and 2. use async
 	onmessage(message).catch((err) => {
-		console.log(err);
+		main.log(err);
 	});
 });
 
@@ -1940,8 +1932,10 @@ client.on("guildCreate", async (guild) => {
 		.addField("Member Count", guild.memberCount, true)
 		.setFooter("Joined at: " + date.toUTCString());
 
-	channel.send(embed).catch((err) => console.log(err));
+	channel.send(embed).catch((err) => main.log(err));
 });
+
+client.on("error", (err) => main.log(err));
 
 /**
  *
@@ -1951,6 +1945,33 @@ client.on("guildCreate", async (guild) => {
 exports.prefix = async function (guildID) {
 	if (prefixes.has(guildID)) return prefixes.get(guildID);
 	return "!kifo ";
+};
+
+/**
+ * Logs in #kifo-logs
+ * @param {string} log the message you want to log
+ * @returns Promise, in case something breaks
+ */
+exports.log = function (log, ...args) {
+	let channel = client.guilds
+		.resolve("822800862581751848")
+		.channels?.resolve("864112365896466432");
+
+	if (log instanceof Error)
+		return channel
+			.send(
+				`<@!289119054130839552>`,
+				kifo.embed(
+					`${log.name}: ${log.message} at line: ${
+						log.lineNumber
+					} file: ${log.fileName}, other args: ${args.join(" ")}`,
+					`CRITICAL ERROR`
+				)
+			)
+			.catch((err) => console.log(err));
+	return channel
+		.send(kifo.embed(`${log} ${args.join(" ")}`, "LOG"))
+		.catch((err) => main.log(err));
 };
 
 client.login(process.env.LOGIN_TOKEN);
