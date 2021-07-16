@@ -3,7 +3,7 @@ fail, run !kifo](https://i.imgur.com/hWkoxmm.jpg)
 
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/kifopl/kifo-clanker?label=latest)
 ![GitHub](https://img.shields.io/github/license/kifopl/kifo-clanker)
-[![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/kifopl/kifo-clanker)
+![Made with Node.js](https://img.shields.io/badge/Made%20with-Node.js-1f425f.svg)
 
 # Kifo Clanker: top-quality unorthodox Discord commands
 
@@ -48,8 +48,8 @@ fail, run !kifo](https://i.imgur.com/hWkoxmm.jpg)
 # Self-promotion:
 
 ## My socials:
-* [Reddit](http://reddit.com/u/kifopl)
-* [Youtube](https://www.youtube.com/channel/UC4yZgTHfmVDmKlDIhDwVp3w?sub_confirmation=1)
+- [![Reddit](https://aleen42.github.io/badges/src/reddit.svg)](http://reddit.com/u/kifopl)
+- [![Youtube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/channel/UC4yZgTHfmVDmKlDIhDwVp3w?sub_confirmation=1)
 
 ![GitHub Repo stars](https://img.shields.io/github/stars/kifopl/kifo-clanker?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/kifopl/kifo-clanker?style=social)
