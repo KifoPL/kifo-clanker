@@ -5,19 +5,12 @@ const fs = require("fs");
 const ms = require("ms");
 const kifo = require("kifo");
 const main = require(`./index.js`);
-//const prefix = `${process.env.PREFIX} `;
-
-//TEMPLATE EMBED
-
-// // const embedreply = new Discord.MessageEmbed();
-// // embedreply.setColor('a039a0')
-// // .setAuthor("Powered by Kifo Clanker™", null, `https://discord.gg/HxUFQCxPFp`)
-// // .setTitle(`Command ${this.name} issued by ${message.author.tag}`)
 
 //client login
 const client = new Discord.Client({
 	partials: [`MESSAGE`, `CHANNEL`, `REACTION`],
 });
+
 //Owner is Discord User @KifoPL#3358 - <@289119054130839552>
 async function loadowner() {
 	clientapp = await client.fetchApplication().catch(() => {});
@@ -25,15 +18,26 @@ async function loadowner() {
 	console.log("Bot owner object loaded!");
 }
 
-//OLD DATABASE CONNECTION
-// const db = require("redis").createClient(process.env.REDIS_URL);
-// db.on("connect", function () {
-// 	console.log("Database online!");
-// });
-
 //DATABASE CONNECTION
 const mysql = require("mysql");
 const prefixes = new Map();
+/**
+ * @example
+ * "menuId" = {
+	MessageId: "", //The same as menuId
+	ChannelId: "",
+	GuildId: "",
+
+	isPerm: true,
+	DestinationChannelId: "",
+	PermName: "",
+
+	isPerm: false,
+	RoleId = "",
+}
+ */
+const menus = new Map();
+module.exports.menus = menus;
 // var reactMap = new Map();
 // var superslowMap = new Map();
 var dbconfig = {
@@ -52,7 +56,7 @@ function dbReconnect() {
 			setTimeout(dbReconnect, 3000);
 		}
 		console.log(`Connected to ${process.env.HOST} MySQL DB!`);
-		module.exports = { con };
+		module.exports.con = con;
 
 		//for fetching prefixes from DB
 		con.query(
@@ -166,56 +170,6 @@ function sleep(ms) {
 
 //IF CORRECT CHANNEL, REACT
 async function react(message, prefix) {
-	// db.exists("RT" + message.channel.id, function (err, reply) {
-	// 	if (reply === 1) {
-	// 		if (!message.content.startsWith(prefix)) {
-	// 			//It will react to his own messages that have attachments, this is so #kenoc-hall-of-fame looks better
-	// 			if (message.author.id != client.user.id) {
-	// 				if (message.author.bot) return;
-	// 			} else {
-	// 				if (message.embeds[0] == null) return;
-	// 			}
-	// 			if (
-	// 				!message.guild.me
-	// 					.permissionsIn(message.channel)
-	// 					.has("ADD_REACTIONS")
-	// 			) {
-	// 				const embedreply = new Discord.MessageEmbed();
-	// 				embedreply
-	// 					.setColor("a039a0")
-	// 					.setAuthor(
-	// 						"Powered by Kifo Clanker™",
-	// 						null,
-	// 						`https://discord.gg/HxUFQCxPFp`
-	// 					)
-	// 					.setTitle(
-	// 						"Missing `ADD_REACTIONS` permission. Please turn off `react` module in this channel, or enable `ADD_REACTIONS` for me."
-	// 					);
-	// 				return message.reply(embedreply);
-	// 			}
-	// 			db.lrange(
-	// 				"RT" + message.channel.id,
-	// 				0,
-	// 				-1,
-	// 				function (err, reply) {
-	// 					for (i = 0; i < reply.length; i++) {
-	// 						if (message.deleted) return;
-	// 						message.react(reply[i]).catch(() => {});
-	// 						var eventRT = new Date(Date.now());
-	// 					}
-	// 					main.log(
-	// 						"Reacted in " +
-	// 							message.guild.name +
-	// 							", " +
-	// 							message.channel.name +
-	// 							" at " +
-	// 							eventRT.toUTCString()
-	// 					);
-	// 				}
-	// 			);
-	// 		}
-	// 	}
-	// });
 	con.query(
 		"SELECT ChannelId, emote FROM react WHERE ChannelId = ?",
 		[message.channel.id],
@@ -260,157 +214,6 @@ async function react(message, prefix) {
 }
 //IF CORRECT CHANNEL, SUPERSLOWMODE
 async function superslow(message, prefix) {
-	// db.exists("SM" + message.channel.id, function (err, reply) {
-	// 	if (reply === 1) {
-	// 		if (
-	// 			!message.guild.me
-	// 				.permissionsIn(message.channel)
-	// 				.has("MANAGE_CHANNELS")
-	// 		) {
-	// 			const embedreply = new Discord.MessageEmbed();
-	// 			embedreply
-	// 				.setColor("a039a0")
-	// 				.setAuthor(
-	// 					"Powered by Kifo Clanker™",
-	// 					null,
-	// 					`https://discord.gg/HxUFQCxPFp`
-	// 				)
-	// 				.setTitle(
-	// 					"Missing `MANAGE_CHANNELS` permission. Please turn off `superslow` module in this channel, or enable `MANAGE_CHANNELS` for me."
-	// 				);
-	// 			return message.reply(embedreply);
-	// 		}
-	// 		if (
-	// 			!message.guild.me
-	// 				.permissionsIn(message.channel)
-	// 				.has("MANAGE_MESSAGES")
-	// 		) {
-	// 			const embedreply = new Discord.MessageEmbed();
-	// 			embedreply
-	// 				.setColor("a039a0")
-	// 				.setAuthor(
-	// 					"Powered by Kifo Clanker™",
-	// 					null,
-	// 					`https://discord.gg/HxUFQCxPFp`
-	// 				)
-	// 				.setTitle(
-	// 					"Missing `MANAGE_MESSAGES` permission. Please turn off `superslow` module in this channel, or enable `MANAGE_MESSAGES` for me."
-	// 				);
-	// 			return message.reply(embedreply);
-	// 		}
-
-	// 		if (!message.member.permissions.has("ADMINISTRATOR")) {
-	// 			let slowmode;
-	// 			db.hget(
-	// 				"SM" + message.channel.id,
-	// 				"time",
-	// 				function (err, reply2) {
-	// 					slowmode = reply2;
-	// 				}
-	// 			);
-	// 			if (slowmode == 0) return;
-	// 			db.hexists(
-	// 				"SM" + message.channel.id,
-	// 				message.author.id,
-	// 				function (err, reply2) {
-	// 					if (reply2 === 1) {
-	// 						db.hget(
-	// 							"SM" + message.channel.id,
-	// 							message.author.id,
-	// 							async function (err, reply3) {
-	// 								if (
-	// 									message.createdTimestamp - reply3 <=
-	// 									slowmode
-	// 								) {
-	// 									if (
-	// 										message.content.trim() ==
-	// 										prefix.trim()
-	// 									) {
-	// 										message.author
-	// 											.send(
-	// 												`You can't talk in ${
-	// 													message.channel.name
-	// 												} yet, please wait another ${ms(
-	// 													slowmode -
-	// 														(message.createdTimestamp -
-	// 															reply3),
-	// 													{ long: true }
-	// 												)}.`
-	// 											)
-	// 											.catch(() => {});
-	// 										await message
-	// 											.delete()
-	// 											.catch(() => {});
-	// 										return;
-	// 									} else {
-	// 										//I'm not kidding this msg works, because apparently subtraction forces integer type ¯\_(ツ)_/¯
-	// 										let msg =
-	// 											"You can't talk in " +
-	// 											message.channel.name +
-	// 											" for **" +
-	// 											ms(
-	// 												slowmode -
-	// 													(message.createdTimestamp -
-	// 														reply3),
-	// 												{
-	// 													long: true,
-	// 												}
-	// 											) +
-	// 											"**. You can check, if you can talk (without risking waiting another " +
-	// 											ms(
-	// 												slowmode -
-	// 													(message.createdTimestamp -
-	// 														reply3) +
-	// 													(message.createdTimestamp -
-	// 														reply3),
-	// 												{ long: true }
-	// 											) +
-	// 											"), by typing **" +
-	// 											prefix.trim() +
-	// 											"**.";
-	// 										message.author
-	// 											.send(msg)
-	// 											.catch(() => {});
-	// 										await message
-	// 											.delete()
-	// 											.catch(() => {});
-	// 										return;
-	// 									}
-	// 								} else {
-	// 									if (
-	// 										message.content.trim() ==
-	// 										prefix.trim()
-	// 									) {
-	// 										message.author
-	// 											.send(
-	// 												`You can already talk in #${message.channel.name}.`
-	// 											)
-	// 											.catch(() => {});
-	// 										await message
-	// 											.delete()
-	// 											.catch(() => {});
-	// 										return;
-	// 									} else
-	// 										db.hset(
-	// 											"SM" + message.channel.id,
-	// 											message.author.id,
-	// 											message.createdTimestamp
-	// 										);
-	// 								}
-	// 							}
-	// 						);
-	// 					} else {
-	// 						db.hset(
-	// 							"SM" + message.channel.id,
-	// 							message.author.id,
-	// 							message.createdTimestamp
-	// 						);
-	// 					}
-	// 				}
-	// 			);
-	// 		}
-	// 	}
-	// });
 	con.query(
 		"SELECT ChannelId, Time FROM superslow WHERE ChannelId = ?",
 		[message.channel.id],
@@ -601,15 +404,6 @@ function checks(message, prefix) {
 			return false;
 		}
 
-	// //Perms beggar, only enters second "If" if first is true, the most optimized way to beg for perms I came up with
-	// if (!message.guild?.me.permissions.has("ADMINISTRATOR"))
-	// 	if (message.content.startsWith(prefix) && !message.author.bot) {
-	// 		message.reply(
-	// 			"until I have time to calculate all permissions for individual commands, this bot requires Admin to work."
-	// 		);
-	// 		return false;
-	// 	}
-
 	if (!message.guild?.me.permissionsIn(message.channel).has("SEND_MESSAGES"))
 		return false;
 
@@ -617,13 +411,8 @@ function checks(message, prefix) {
 }
 async function commands(message, prefix) {
 	//If command detected, create args struct
-	const args = message.content.slice(prefix.length).split(/ +/);
-	const command = args.shift().toLowerCase();
-
-	//var debug = "false";
-	// db.get("debug", function (err, reply) {
-	// 	debug = reply;
-	// });
+	let args = message.content.slice(prefix.length).split(/ +/);
+	let command = args.shift().toLowerCase();
 
 	if (command == "serverlist" && message.author == Owner) {
 		main.log("run SERVERLIST command");
@@ -694,583 +483,400 @@ async function commands(message, prefix) {
 	const contents = fs.readFileSync(`./commandList.json`);
 	var jsonCmdList = JSON.parse(contents);
 
-	if (command == "help") {
-		const event = new Date(Date.now());
-		main.log(
-			`[Here](${message.url}) <@${message.author.id}> ${
-				message.author.tag
-			} issued \`${prefix}${command}\` in #${
-				message.channel.name
-			} at <t:${Math.floor(event.getTime() / 1000)}>, <t:${Math.floor(
-				event.getTime() / 1000
-			)}:R>.`
-		);
-		client.commands.get(command).execute(message, args, Discord, prefix);
-		return;
-	} else if (command == "error") {
-		const event = new Date(Date.now());
-		main.log(
-			`[Here](${message.url}) <@${message.author.id}> ${
-				message.author.tag
-			} issued \`${prefix}${command}\` in #${
-				message.channel.name
-			} at <t:${Math.floor(event.getTime() / 1000)}>, <t:${Math.floor(
-				event.getTime() / 1000
-			)}:R>.`
-		);
-		client.commands.get(command).execute(message, args, Discord, client);
-		return;
-	} else if (command == "react") {
-		const command2 = require(`./${jsonCmdList.react.path}`);
-		const embedreactreply = new Discord.MessageEmbed();
-		embedreactreply
-			.setColor("a039a0")
-			.setAuthor(
-				"Powered by Kifo Clanker™",
-				null,
-				`https://discord.gg/HxUFQCxPFp`
-			)
-			.setTitle(
-				`Command "${command.toUpperCase()}" issued by ${
-					message.author.tag
-				}`
-			);
-		if (
-			!message.member
-				.permissionsIn(message.channel)
-				.has("MANAGE_CHANNELS")
-		)
-			return message.reply(
-				kifo.embed("You do not have `MANAGE_CHANNELS` permissions.")
-			);
-		if (!args[0]) {
-			con.query(
-				"SELECT * FROM react WHERE ChannelId = ?",
-				[message.channel.id],
-				function (err, result) {
-					if (err) throw err;
-					if (result.length > 0) {
-						embedreactreply.addField(
-							"Warning:",
-							"React is already **ON**!"
-						);
-						return message.reply(embedreactreply);
-					} else {
-						embedreactreply.addField(
-							"React is **Off**.",
-							`Syntax:\n${command2.usage.join("\n")}`
-						);
-						return message.reply(embedreactreply);
-					}
-				}
-			);
-			// db.exists("RT" + message.channel.id, function (err, reply) {
-			// 	if (reply === 1) {
-			// 		db.hget(
-			// 			"RT" + message.channel.id,
-			// 			"time",
-			// 			function (err, reply2) {
-			// 				embedreactreply.addField(
-			// 					"Warning:",
-			// 					"React is already **ON**!"
-			// 				);
-			// 				return message.reply(embedreactreply);
-			// 			}
-			// 		);
-			// 	} else {
-			// 		embedreactreply.addField(
-			// 			"React is **Off**.",
-			// 			`Syntax:\n${command2.usage.join("\n")}`
-			// 		);
-			// 		return message.reply(embedreactreply);
-			// 	}
-			// });
-			//just in case
-			return;
-		}
-		const event = new Date(Date.now());
-		main.log(
-			`[Here](${message.url}) <@${message.author.id}> ${
-				message.author.tag
-			} issued \`${prefix}${command}\` in #${
-				message.channel.name
-			} at <t:${Math.floor(event.getTime() / 1000)}>, <t:${Math.floor(
-				event.getTime() / 1000
-			)}:R>.`
-		);
-		if (args[0].toUpperCase() == "LIST") {
-			var FieldReactChannels = { name: "name", value: "description" };
-			const newReactChannelsEmbed = new Discord.MessageEmbed()
-				.setColor("a039a0")
-				.setAuthor("Powered by Kifo Clanker™")
-				.setTitle("List of channels, where command is active:");
-			// await message.guild.channels.cache
-			// 	.each(async (channel) => {
-			// 		await db.exists(
-			// 			"RT" + channel.id,
-			// 			async function (err, reply) {
-			// 				if (reply === 1) {
-			// 					await db.lrange(
-			// 						"RT" + channel.id,
-			// 						0,
-			// 						-1,
-			// 						async function (err, reply) {
-			// 							await message.channel.send(
-			// 								"<#" + channel.id + ">: " + reply
-			// 							); //TODO fix it someday
-			// 							newReactChannelsEmbed.addField(
-			// 								`#${channel.name}`,
-			// 								`${reply}`
-			// 							);
-			// 							//main.log(`1 ${newReactChannelsEmbed.fields.toString()}`)
-			// 						}
-			// 					);
-			// 					//main.log(`2 ${newReactChannelsEmbed.fields.toString()}`)
-			// 				}
-			// 			}
-			// 		);
-			// 	})
-			// 	.then(message.channel.send(newReactChannelsEmbed));
+	if (args[0] == "help") {
+		let x = args[0];
+		args[0] = command;
+		command = x;
+	}
 
-			con.query(
-				"SELECT ChannelId, GROUP_CONCAT(emote SEPARATOR ', ') AS emotes FROM react GROUP BY ChannelId ORDER BY ChannelId",
-				function (err, result) {
-					let guildChannels = [];
-					result.forEach((row) => {
-						if (
-							message.guild.channels.resolve(row.ChannelId) !=
-							null
-						) {
-							guildChannels.push(row);
+	try {
+		if (command == "help") {
+			const event = new Date(Date.now());
+			main.log(
+				`[Here](${message.url}) <@${message.author.id}> ${
+					message.author.tag
+				} issued \`${prefix}${command}\` in #${
+					message.channel.name
+				} at <t:${Math.floor(event.getTime() / 1000)}>, <t:${Math.floor(
+					event.getTime() / 1000
+				)}:R>.`
+			);
+			client.commands
+				.get(command)
+				.execute(message, args, Discord, prefix);
+			return;
+		} else if (command == "error") {
+			const event = new Date(Date.now());
+			main.log(
+				`[Here](${message.url}) <@${message.author.id}> ${
+					message.author.tag
+				} issued \`${prefix}${command}\` in #${
+					message.channel.name
+				} at <t:${Math.floor(event.getTime() / 1000)}>, <t:${Math.floor(
+					event.getTime() / 1000
+				)}:R>.`
+			);
+			client.commands
+				.get(command)
+				.execute(message, args, Discord, client);
+			return;
+		} else if (command == "react") {
+			const command2 = require(`./${jsonCmdList.react.path}`);
+			const embedreactreply = new Discord.MessageEmbed();
+			embedreactreply
+				.setColor("a039a0")
+				.setAuthor(
+					"Powered by Kifo Clanker™",
+					null,
+					`https://discord.gg/HxUFQCxPFp`
+				)
+				.setTitle(
+					`Command "${command.toUpperCase()}" issued by ${
+						message.author.tag
+					}`
+				);
+			if (
+				!message.member
+					.permissionsIn(message.channel)
+					.has("MANAGE_CHANNELS")
+			)
+				return message.reply(
+					kifo.embed("You do not have `MANAGE_CHANNELS` permissions.")
+				);
+			if (!args[0]) {
+				con.query(
+					"SELECT * FROM react WHERE ChannelId = ?",
+					[message.channel.id],
+					function (err, result) {
+						if (err) throw err;
+						if (result.length > 0) {
+							embedreactreply.addField(
+								"Warning:",
+								"React is already **ON**!"
+							);
+							return message.reply(embedreactreply);
+						} else {
+							embedreactreply.addField(
+								"React is **Off**.",
+								`Syntax:\n${command2.usage.join("\n")}`
+							);
+							return message.reply(embedreactreply);
 						}
-					});
-					if (guildChannels.length > 0) {
-						if (guildChannels.length < 25) {
-							guildChannels.forEach((row) => {
+					}
+				);
+				return;
+			}
+			const event = new Date(Date.now());
+			main.log(
+				`[Here](${message.url}) <@${message.author.id}> ${
+					message.author.tag
+				} issued \`${prefix}${command}\` in #${
+					message.channel.name
+				} at <t:${Math.floor(event.getTime() / 1000)}>, <t:${Math.floor(
+					event.getTime() / 1000
+				)}:R>.`
+			);
+			if (args[0].toUpperCase() == "LIST") {
+				var FieldReactChannels = { name: "name", value: "description" };
+				const newReactChannelsEmbed = new Discord.MessageEmbed()
+					.setColor("a039a0")
+					.setAuthor("Powered by Kifo Clanker™")
+					.setTitle("List of channels, where command is active:");
+
+				con.query(
+					"SELECT ChannelId, GROUP_CONCAT(emote SEPARATOR ', ') AS emotes FROM react GROUP BY ChannelId ORDER BY ChannelId",
+					function (err, result) {
+						let guildChannels = [];
+						result.forEach((row) => {
+							if (
+								message.guild.channels.resolve(row.ChannelId) !=
+								null
+							) {
+								guildChannels.push(row);
+							}
+						});
+						if (guildChannels.length > 0) {
+							if (guildChannels.length < 25) {
+								guildChannels.forEach((row) => {
+									newReactChannelsEmbed.addField(
+										`${row.emotes}`,
+										`<#${row.ChannelId}>`
+									);
+								});
+							} else {
 								newReactChannelsEmbed.addField(
-									`${row.emotes}`,
-									`<#${row.ChannelId}>`
+									`Channels:`,
+									`<#${guildChannels
+										.map((e) => e.ChannelId)
+										.join(">, <#")}>`
 								);
-							});
+							}
 						} else {
 							newReactChannelsEmbed.addField(
-								`Channels:`,
-								`<#${guildChannels
-									.map((e) => e.ChannelId)
-									.join(">, <#")}>`
+								`INFO:`,
+								`\`react\` is not enabled on your server yet.`
 							);
 						}
-					} else {
-						newReactChannelsEmbed.addField(
-							`INFO:`,
-							`\`react\` is not enabled on your server yet.`
-						);
+						return message.reply(newReactChannelsEmbed);
 					}
-					return message.reply(newReactChannelsEmbed);
-				}
-			);
-			//main.log(newReactChannelsEmbed);
-			//message.channel.send(newReactChannelsEmbed);
-			//message.channel.send("End of list!");
-			return;
-		}
-		reactreturn = client.commands
-			.get(command)
-			.execute(message, args, Discord, client);
-		if (reactreturn[0] == "ON") {
-			//channellist.set(message.channel.id, message.channel);
-			let arrout = [];
-			await reactreturn[1].forEach((emote) => {
-				arrout.push([message.channel.id, emote]);
-			});
+				);
+				return;
+			}
+			reactreturn = client.commands
+				.get(command)
+				.execute(message, args, Discord, client);
+			if (reactreturn[0] == "ON") {
+				let arrout = [];
+				await reactreturn[1].forEach((emote) => {
+					arrout.push([message.channel.id, emote]);
+				});
 
-			con.query(
-				"INSERT INTO react (ChannelId, emote) VALUES ?",
-				[arrout],
-				function (err) {
-					if (err) throw err;
-				}
-			);
-
-			// for (i = 0; i < arrout.length; i++) {
-
-			// 	db.rpush(
-			// 		["RT" + message.channel.id, arrout[i]],
-			// 		function (err, reply) {}
-			// 	);
-			// }
-			main.log(
-				"I will now react in " +
-					message.channel.name +
-					" with " +
-					arrout.map((e) => e[1]).join(", ")
-			);
-		} else if (reactreturn[0] == "OFF") {
-			con.query(
-				"DELETE FROM react WHERE ChannelId = ?",
-				[message.channel.id],
-				function (err) {
-					if (err) throw err;
-				}
-			);
-			// //channellist.delete(message.channel.id);
-			// db.del("RT" + message.channel.id);
-		}
-		return;
-	} else if (command == "superslow") {
-		//DB structure:
-		// "SM" + channel id
-		// {
-		//     time: ms(time)
-		//     userid: timestamp
-		//     userid: timestamp
-		// }
-
-		const embedsuperslowreply = new Discord.MessageEmbed();
-		embedsuperslowreply
-			.setColor("a039a0")
-			.setAuthor(
-				"Powered by Kifo Clanker™",
-				null,
-				`https://discord.gg/HxUFQCxPFp`
-			)
-			.setTitle(
-				`Command "${command.toUpperCase()}" issued by ${
-					message.author.tag
-				}`
-			);
-
-		const commandfile = require(`./${jsonCmdList.superslow.path}`);
-		if (
-			!message.member
-				.permissionsIn(message.channel)
-				.has("MANAGE_CHANNELS")
-		)
-			return message.reply(
-				kifo.embed("You do not have `MANAGE_CHANNELS` permissions.")
-			);
-		if (!args[0]) {
-			// db.exists("SM" + message.channel.id, function (err, reply) {
-			// 	if (reply === 1) {
-			// 		db.hget(
-			// 			"SM" + message.channel.id,
-			// 			"time",
-			// 			function (err, reply2) {
-			// 				embedsuperslowreply
-			// 					.setTitle("Result:")
-			// 					.setDescription(
-			// 						"Super slow-mode is already set here to " +
-			// 							ms(ms(reply2, { long: true }))
-			// 					);
-			// 				return message.reply(embedsuperslowreply);
-			// 			}
-			// 		);
-			// 	} else {
-			// 		embedsuperslowreply
-			// 			.setTitle("Super slow-mode is **NOT** activated.")
-			// 			.setDescription(
-			// 				"Syntax:\n" + commandfile.usage.join("\n")
-			// 			);
-			// 		return message.reply(embedsuperslowreply);
-			// 	}
-			// });
-			con.query(
-				"SELECT ChannelId, Time FROM superslow WHERE ChannelId = ?",
-				[message.channel.id],
-				function (err, result) {
-					if (err) throw err;
-					if (result.length > 0) {
-						embedsuperslowreply
-							.setTitle("Result:")
-							.setDescription(
-								"Super slow-mode is already set here to " +
-									ms(ms(result[0].Time, { long: true }))
-							);
-						return message.reply(embedsuperslowreply);
-					} else {
-						embedsuperslowreply
-							.setTitle("Super slow-mode is **NOT** activated.")
-							.setDescription(
-								"Syntax:\n" + commandfile.usage.join("\n")
-							);
-						return message.reply(embedsuperslowreply);
+				con.query(
+					"INSERT INTO react (ChannelId, emote) VALUES ?",
+					[arrout],
+					function (err) {
+						if (err) throw err;
 					}
-				}
-			);
-			//just in case
+				);
+
+				main.log(
+					"I will now react in " +
+						message.channel.name +
+						" with " +
+						arrout.map((e) => e[1]).join(", ")
+				);
+			} else if (reactreturn[0] == "OFF") {
+				con.query(
+					"DELETE FROM react WHERE ChannelId = ?",
+					[message.channel.id],
+					function (err) {
+						if (err) throw err;
+					}
+				);
+			}
 			return;
-		}
-		const event = new Date(Date.now());
-		main.log(
-			`[Here](${message.url}) <@${message.author.id}> ${
-				message.author.tag
-			} issued \`${prefix}${command}\` in #${
-				message.channel.name
-			} at <t:${Math.floor(event.getTime() / 1000)}>, <t:${Math.floor(
-				event.getTime() / 1000
-			)}:R>.`
-		);
-		if (args[0]?.toUpperCase() == "LIST") {
-			var FieldReactChannels = { name: "name", value: "description" };
-			const newSuperslowChannelsEmbed = new Discord.MessageEmbed()
+		} else if (command == "superslow") {
+			const embedsuperslowreply = new Discord.MessageEmbed();
+			embedsuperslowreply
 				.setColor("a039a0")
-				.setTitle("List of channels, where command is active:");
-			// message.guild.channels.cache.each((channel) => {
-			// 	db.exists("SM" + channel.id, function (err, reply) {
-			// 		if (reply === 1) {
-			// 			db.hget(
-			// 				"SM" + channel.id,
-			// 				"time",
-			// 				function (err, reply2) {
-			// 					message.channel.send(
-			// 						"<#" +
-			// 							channel.id +
-			// 							">: " +
-			// 							ms(ms(reply2, { long: true }))
-			// 					); //TODO fix it someday
-			// 				}
-			// 			);
-			// 			var FieldReactChannels = {};
-			// 			FieldReactChannels.name = "#" + channel.name;
-			// 			FieldReactChannels.value = "Super slow-mode ON.";
-			// 			newSuperslowChannelsEmbed.addField(
-			// 				FieldReactChannels.name,
-			// 				FieldReactChannels.value
-			// 			);
-			// 			//main.log(newReactChannelsEmbed.fields);
-			// 		}
-			// 	});
-			// });
-			con.query(
-				"SELECT ChannelId, Time FROM superslow",
-				function (err, result) {
-					let guildChannels = [];
-					result.forEach((row) => {
-						if (
-							message.guild.channels.resolve(row.ChannelId) !=
-							null
-						) {
-							guildChannels.push(row);
-						}
-					});
-					if (guildChannels.length > 0) {
-						if (guildChannels.length < 25) {
-							guildChannels.forEach((row) => {
-								newSuperslowChannelsEmbed.addField(
-									`${ms(row.Time, { long: true })}`,
-									`<#${row.ChannelId}>`
-								);
-							});
-						} else {
-							newSuperslowChannelsEmbed.addField(
-								`Channels:`,
-								`<#${guildChannels
-									.map((e) => e.ChannelId)
-									.join(">, <#")}>`
-							);
-						}
-					} else {
-						newSuperslowChannelsEmbed.addField(
-							`INFO:`,
-							`\`superslow\` is not enabled on your server yet.`
-						);
-					}
-					return message.reply(newSuperslowChannelsEmbed);
-				}
-			);
+				.setAuthor(
+					"Powered by Kifo Clanker™",
+					null,
+					`https://discord.gg/HxUFQCxPFp`
+				)
+				.setTitle(
+					`Command "${command.toUpperCase()}" issued by ${
+						message.author.tag
+					}`
+				);
 
-			//main.log(newReactChannelsEmbed);
-			// message.channel.send("End of list!");
-			return;
-		}
-		//[0] - isOff, [1] - ms(args[0])
-		superslowreturn = client.commands
-			.get(command)
-			.execute(message, args, Discord, client);
-		if (superslowreturn == null) return;
-		//Just making sure lmao
-		if (superslowreturn[0] == undefined) return;
-
-		if (!superslowreturn[0]) {
-			// db.hexists(
-			// 	"SM" + message.channel.id,
-			// 	"time",
-			// 	function (err, reply) {
-			// 		if (reply === 1) {
-			// 			db.hget(
-			// 				"SM" + message.channel.id,
-			// 				"time",
-			// 				function (err, timestamp) {
-			// 					if (timestamp == superslowreturn[1]) {
-			// 						embedsuperslowreply
-			// 							.setTitle("Result:")
-			// 							.setDescription(
-			// 								"it's already set to " +
-			// 									ms(superslowreturn[1], {
-			// 										long: true,
-			// 									}) +
-			// 									"!"
-			// 							);
-			// 						return message.reply(embedsuperslowreply);
-			// 					}
-			// 					db.hset(
-			// 						"SM" + message.channel.id,
-			// 						"time",
-			// 						superslowreturn[1]
-			// 					);
-			// 					embedsuperslowreply
-			// 						.setTitle("Result:")
-			// 						.setDescription(
-			// 							"Super slow-mode was already activated. It is now set to " +
-			// 								ms(superslowreturn[1], {
-			// 									long: true,
-			// 								})
-			// 						);
-			// 					return message.reply(embedsuperslowreply);
-			// 				}
-			// 			);
-			// 		} else {
-			// 			db.hmset("SM" + message.channel.id, {
-			// 				time: superslowreturn[1],
-			// 			});
-			// 			embedsuperslowreply
-			// 				.setTitle("Result:")
-			// 				.setDescription(
-			// 					"set Super slow-mode to " +
-			// 						ms(superslowreturn[1], { long: true }) +
-			// 						"."
-			// 				);
-			// 			message.reply(embedsuperslowreply);
-			// 			//This is to notify users of Super slow-mode active in the channel.
-			// 			message.channel.setRateLimitPerUser(10);
-			// 			return;
-			// 		}
-			// 	}
-			// );
-			con.query(
-				"SELECT ChannelId, time FROM superslow WHERE ChannelId = ?",
-				[message.channel.id],
-				function (err, result) {
-					if (result.length > 0) {
-						let timestamp = result[0].Time;
-						if (timestamp == superslowreturn[1]) {
+			const commandfile = require(`./${jsonCmdList.superslow.path}`);
+			if (
+				!message.member
+					.permissionsIn(message.channel)
+					.has("MANAGE_CHANNELS")
+			)
+				return message.reply(
+					kifo.embed("You do not have `MANAGE_CHANNELS` permissions.")
+				);
+			if (!args[0]) {
+				con.query(
+					"SELECT ChannelId, Time FROM superslow WHERE ChannelId = ?",
+					[message.channel.id],
+					function (err, result) {
+						if (err) throw err;
+						if (result.length > 0) {
 							embedsuperslowreply
 								.setTitle("Result:")
 								.setDescription(
-									"it's already set to " +
-										ms(superslowreturn[1], {
-											long: true,
-										}) +
-										"!"
+									"Super slow-mode is already set here to " +
+										ms(ms(result[0].Time, { long: true }))
+								);
+							return message.reply(embedsuperslowreply);
+						} else {
+							embedsuperslowreply
+								.setTitle(
+									"Super slow-mode is **NOT** activated."
+								)
+								.setDescription(
+									"Syntax:\n" + commandfile.usage.join("\n")
 								);
 							return message.reply(embedsuperslowreply);
 						}
-						con.query(
-							"UPDATE superslow SET ChannelId = ?, Time = ? WHERE ChannelId = ?",
-							[
-								message.channel.id,
-								superslowreturn[1],
-								message.channel.id,
-							],
-							function (err) {
-								if (err) throw err;
-								embedsuperslowreply
-									.setTitle("Result:")
-									.setDescription(
-										"Super slow-mode was already activated. It is now set to " +
-											ms(superslowreturn[1], {
-												long: true,
-											})
-									);
-								return message.reply(embedsuperslowreply);
+					}
+				);
+				//just in case
+				return;
+			}
+			const event = new Date(Date.now());
+			main.log(
+				`[Here](${message.url}) <@${message.author.id}> ${
+					message.author.tag
+				} issued \`${prefix}${command}\` in #${
+					message.channel.name
+				} at <t:${Math.floor(event.getTime() / 1000)}>, <t:${Math.floor(
+					event.getTime() / 1000
+				)}:R>.`
+			);
+			if (args[0]?.toUpperCase() == "LIST") {
+				var FieldReactChannels = { name: "name", value: "description" };
+				const newSuperslowChannelsEmbed = new Discord.MessageEmbed()
+					.setColor("a039a0")
+					.setTitle("List of channels, where command is active:");
+				con.query(
+					"SELECT ChannelId, Time FROM superslow",
+					function (err, result) {
+						let guildChannels = [];
+						result.forEach((row) => {
+							if (
+								message.guild.channels.resolve(row.ChannelId) !=
+								null
+							) {
+								guildChannels.push(row);
 							}
-						);
-					} else {
-						con.query(
-							"INSERT INTO superslow ( ChannelId ,Time ) VALUES ( ?, ? );",
-							[message.channel.id, superslowreturn[1]],
-							function (err) {
-								if (err) throw err;
+						});
+						if (guildChannels.length > 0) {
+							if (guildChannels.length < 25) {
+								guildChannels.forEach((row) => {
+									newSuperslowChannelsEmbed.addField(
+										`${ms(row.Time, { long: true })}`,
+										`<#${row.ChannelId}>`
+									);
+								});
+							} else {
+								newSuperslowChannelsEmbed.addField(
+									`Channels:`,
+									`<#${guildChannels
+										.map((e) => e.ChannelId)
+										.join(">, <#")}>`
+								);
+							}
+						} else {
+							newSuperslowChannelsEmbed.addField(
+								`INFO:`,
+								`\`superslow\` is not enabled on your server yet.`
+							);
+						}
+						return message.reply(newSuperslowChannelsEmbed);
+					}
+				);
+				return;
+			}
+			//[0] - isOff, [1] - ms(args[0])
+			superslowreturn = client.commands
+				.get(command)
+				.execute(message, args, Discord, client);
+			if (superslowreturn == null) return;
+			//Just making sure lmao
+			if (superslowreturn[0] == undefined) return;
+
+			if (!superslowreturn[0]) {
+				con.query(
+					"SELECT ChannelId, time FROM superslow WHERE ChannelId = ?",
+					[message.channel.id],
+					function (err, result) {
+						if (result.length > 0) {
+							let timestamp = result[0].Time;
+							if (timestamp == superslowreturn[1]) {
 								embedsuperslowreply
 									.setTitle("Result:")
 									.setDescription(
-										"set Super slow-mode to " +
+										"it's already set to " +
 											ms(superslowreturn[1], {
 												long: true,
 											}) +
-											"."
+											"!"
+									);
+								return message.reply(embedsuperslowreply);
+							}
+							con.query(
+								"UPDATE superslow SET ChannelId = ?, Time = ? WHERE ChannelId = ?",
+								[
+									message.channel.id,
+									superslowreturn[1],
+									message.channel.id,
+								],
+								function (err) {
+									if (err) throw err;
+									embedsuperslowreply
+										.setTitle("Result:")
+										.setDescription(
+											"Super slow-mode was already activated. It is now set to " +
+												ms(superslowreturn[1], {
+													long: true,
+												})
+										);
+									return message.reply(embedsuperslowreply);
+								}
+							);
+						} else {
+							con.query(
+								"INSERT INTO superslow ( ChannelId ,Time ) VALUES ( ?, ? );",
+								[message.channel.id, superslowreturn[1]],
+								function (err) {
+									if (err) throw err;
+									embedsuperslowreply
+										.setTitle("Result:")
+										.setDescription(
+											"set Super slow-mode to " +
+												ms(superslowreturn[1], {
+													long: true,
+												}) +
+												"."
+										);
+									message.reply(embedsuperslowreply);
+									//This is to notify users of Super slow-mode active in the channel.
+									message.channel.setRateLimitPerUser(10);
+									return;
+								}
+							);
+						}
+					}
+				);
+			} else if (superslowreturn[0]) {
+				con.query(
+					"DELETE FROM superslowusers WHERE ChannelId = ?",
+					[message.channel.id],
+					function (err) {
+						if (err) throw err;
+						con.query(
+							"DELETE FROM superslow WHERE ChannelId = ?",
+							[message.channel.id],
+							function (err1) {
+								if (err1) throw err1;
+								embedsuperslowreply
+									.setTitle("Result:")
+									.setDescription(
+										"Super slow-mode is successfully disabled."
 									);
 								message.reply(embedsuperslowreply);
-								//This is to notify users of Super slow-mode active in the channel.
-								message.channel.setRateLimitPerUser(10);
+								message.channel.setRateLimitPerUser(0);
 								return;
 							}
 						);
 					}
-				}
+				);
+			}
+			return;
+		} else {
+			const event = new Date(Date.now());
+			main.log(
+				`[Here](${message.url}) <@${message.author.id}> ${
+					message.author.tag
+				} issued \`${prefix}${command}\` in #${
+					message.channel.name
+				} at <t:${Math.floor(event.getTime() / 1000)}>, <t:${Math.floor(
+					event.getTime() / 1000
+				)}:R>.`
 			);
-		} else if (superslowreturn[0]) {
-			// db.hexists(
-			// 	"SM" + message.channel.id,
-			// 	"time",
-			// 	function (err, reply) {
-			// 		if (reply === 1) {
-			// 			db.del("SM" + message.channel.id);
-			// 			embedsuperslowreply
-			// 				.setTitle("Result:")
-			// 				.setDescription(
-			// 					"Super slow-mode is successfully disabled."
-			// 				);
-			// 			message.reply(embedsuperslowreply);
-			// 			message.channel.setRateLimitPerUser(0);
-			// 		} else
-			// 			embedsuperslowreply
-			// 				.setTitle("Result:")
-			// 				.setDescription(
-			// 					"this channel does not have super slow-mode. Maybe you already deleted it?"
-			// 				);
-			// 		return message.reply(embedsuperslowreply);
-			// 	}
-			// );
-			con.query(
-				"DELETE FROM superslowusers WHERE ChannelId = ?",
-				[message.channel.id],
-				function (err) {
-					if (err) throw err;
-					con.query(
-						"DELETE FROM superslow WHERE ChannelId = ?",
-						[message.channel.id],
-						function (err1) {
-							if (err1) throw err1;
-							embedsuperslowreply
-								.setTitle("Result:")
-								.setDescription(
-									"Super slow-mode is successfully disabled."
-								);
-							message.reply(embedsuperslowreply);
-							message.channel.setRateLimitPerUser(0);
-							return;
-						}
-					);
-				}
-			);
+			debug = client.commands
+				.get(command)
+				.execute(message, args, Discord, prefix);
+			return;
 		}
-		return;
-	} else {
-		const event = new Date(Date.now());
-		main.log(
-			`[Here](${message.url}) <@${message.author.id}> ${
-				message.author.tag
-			} issued \`${prefix}${command}\` in #${
-				message.channel.name
-			} at <t:${Math.floor(event.getTime() / 1000)}>, <t:${Math.floor(
-				event.getTime() / 1000
-			)}:R>.`
-		);
-		debug = client.commands
-			.get(command)
-			.execute(message, args, Discord, prefix);
-		return;
+	} catch (err) {
+		message.reply(kifo.embed(err, "Error!"));
+		main.log(err);
 	}
 }
 async function onmessage(message) {
@@ -1288,12 +894,6 @@ async function onmessage(message) {
 			message.author.bot
 		)
 			return;
-
-		//No role and @here and @everyone pings
-		// if (message.mentions.roles.firstKey() != undefined)
-		// 	return message.reply(kifo.embed("no roles in commands!"));
-		// if (message.mentions.everyone)
-		// 	return message.reply(kifo.embed("don't even try pinging..."));
 
 		if (
 			message.content
@@ -1379,6 +979,8 @@ client.once("ready", () => {
 	setInterval(removeCheck, 1000 * 60);
 	permsCheck();
 	setInterval(permsCheck, 1000 * 60);
+	menusCheck();
+	setInterval(menusCheck, 1000 * 60);
 
 	try {
 		//for WoofWoofWolffe feature
@@ -1441,9 +1043,55 @@ client.once("ready", () => {
 					.catch(() => {});
 			})
 			.catch(() => {});
+		//for Shadow MilSim feature
+		client.guilds
+			.fetch("698075892974354482")
+			.then((guild) => {
+				guild
+					.fetchInvites()
+					.then((invites) => {
+						ShadowInviteCount = invites.find(
+							(invite) =>
+								invite.inviter.id == "418938568543830033"
+						).uses;
+					})
+					.catch(() => {});
+			})
+			.catch(() => {});
 	} catch (err) {
 		main.log(err);
 	}
+	con.query("SELECT * FROM menu_perms", [], function (err, result) {
+		if (err) throw err;
+		if (result.length > 0) {
+			result.forEach((row) => {
+				menus.set(row.MessageId, {
+					MessageId: row.MessageId,
+					ChannelId: row.ChannelId,
+					GuildId: row.GuildId,
+					isPerm: true,
+					DestinationChannelId: row.DestinationChannelId,
+					PermName: row.PermName,
+				});
+			});
+		}
+		console.log(`Mapped ${result.length} Perm Menus!`);
+	});
+	con.query("SELECT * FROM menu_roles", [], function (err, result) {
+		if (err) throw err;
+		if (result.length > 0) {
+			result.forEach((row) => {
+				menus.set(row.MessageId, {
+					MessageId: row.MessageId,
+					ChannelId: row.ChannelId,
+					GuildId: row.GuildId,
+					isPerm: false,
+					RoleId: row.RoleId,
+				});
+			});
+		}
+		console.log(`Mapped ${result.length} Role Menus!`);
+	});
 });
 
 function giveawayCheck() {
@@ -1472,9 +1120,13 @@ function giveawayCheck() {
 					if (msg == null)
 						Owner.send(
 							kifo.embed(`WARNING: ${link} giveaway not fetched.`)
-						).catch((err) => main.log(err));
+						).catch((err) => {
+							main.log(err);
+						});
 					if (msg.partial) {
-						await msg.fetch().catch((err) => main.log(err));
+						await msg.fetch().catch((err) => {
+							main.log(err);
+						});
 					}
 					let temp = {};
 					await msg.reactions
@@ -1485,7 +1137,9 @@ function giveawayCheck() {
 								.filter((user) => !user.bot)
 								.random(row.Winners + 1);
 						})
-						.catch((err) => main.log(err));
+						.catch((err) => {
+							main.log(err);
+						});
 					let winners = temp;
 					winners.shift();
 					//generate a .txt file
@@ -1563,7 +1217,9 @@ function giveawayCheck() {
 												.ownerID
 										}>`,
 										giveEmbed
-									).catch((err) => main.log(err));
+									).catch((err) => {
+										main.log(err);
+									});
 								});
 						});
 					try {
@@ -1715,7 +1371,7 @@ function permsCheck() {
 									: false,
 						})
 						// .then(() => {
-						// 	//client.channels.resolve(row.ChannelId)?.send(kifo.embed(`Changed ${row.PermFlag} from ${Current} to ${row.Command} for ${client.guilds.resolve(row.GuildId)?.members.resolve(row.PermId) != null ? "<@!" : "<@&"}${row.PermId}>.`, "Changed back perms")).catch((err) => main.log(err))
+						// 	//client.channels.resolve(row.ChannelId)?.send(kifo.embed(`Changed ${row.PermFlag} from ${Current} to ${row.Command} for ${client.guilds.resolve(row.GuildId)?.members.resolve(row.PermId) != null ? "<@!" : "<@&"}${row.PermId}>.`, "Changed back perms")).catch((err) => {main.log(err)})
 						// })
 						.catch((err) => {
 							failureMap.set(row.MessageId, true);
@@ -1728,7 +1384,9 @@ function permsCheck() {
 										"Could not revert perms command!"
 									)
 								)
-								.catch((err) => main.log(err));
+								.catch((err) => {
+									main.log(err);
+								});
 						});
 				});
 				previousMap.forEach((value, key) => {
@@ -1765,7 +1423,9 @@ function permsCheck() {
 								.resolve(r.GuildId)
 								?.members.resolve(r.PerpetratorId)
 								?.send(kifo.embed(Description, Title))
-								.catch((err) => main.log(err));
+								.catch((err) => {
+									main.log(err);
+								});
 						});
 				});
 				con.query(
@@ -1775,6 +1435,71 @@ function permsCheck() {
 						if (err1) throw err1;
 					}
 				);
+			}
+		}
+	);
+}
+
+function menusCheck() {
+	let now = new Date(Date.now());
+	con.query(
+		"SELECT Id, GuildId, ChannelId, CmdMsgId, CmdChId, MessageId, PermName, EndDate, StartDate, DestinationChannelId FROM menu_perms WHERE EndDate <= ?",
+		[now],
+		function (err, result) {
+			if (err) throw err;
+			if (result.length > 0) {
+				result.forEach(async (row) => {
+					let msg = await client.guilds
+						.resolve(row.GuildId)
+						.channels?.resolve(row.CmdChId)
+						.messages?.fetch(row.CmdMsgId);
+					let menu = await client.guilds
+						.resolve(row.GuildId)
+						.channels?.resolve(row.CmdChId)
+						.messages?.fetch(row.MessageId);
+					client.commands
+						.get("menu")
+						.revert(
+							msg,
+							menu,
+							true,
+							client.guilds
+								.resolve(row.GuildId)
+								.channels?.resolve(row.ChannelId),
+							row.PermName
+						);
+				});
+				main.log(`${result.length} perm menus found!`);
+			}
+		}
+	);
+	con.query(
+		"SELECT Id, GuildId, ChannelId, MessageId, RoleId, EndDate, StartDate, CmdMsgId, CmdChId FROM menu_roles WHERE EndDate <= ?",
+		[now],
+		function (err, result) {
+			if (err) throw err;
+			if (result.length > 0) {
+				result.forEach(async (row) => {
+					let msg = await client.guilds
+						.resolve(row.GuildId)
+						.channels?.resolve(row.CmdChId)
+						.messages?.fetch(row.CmdMsgId);
+					let menu = await client.guilds
+						.resolve(row.GuildId)
+						.channels?.resolve(row.CmdChId)
+						.messages?.fetch(row.MessageId);
+					client.commands
+						.get("menu")
+						.revert(
+							msg,
+							menu,
+							false,
+							client.guilds
+								.resolve(row.GuildId)
+								.roles?.resolve(row.RoleId)
+						);
+				});
+				main.log(`${result.length} role menus found!`);
 			}
 		}
 	);
@@ -1802,10 +1527,13 @@ client.on("message", (message) => {
 });
 
 //USED BY TODO COMMAND
-client.on("messageReactionAdd", async (msgReaction) => {
+client.on("messageReactionAdd", async (msgReaction, user) => {
 	let msg = msgReaction.message;
 	if (msg.partial) {
 		await msg.fetch().catch(() => {});
+	}
+	if (user.partial) {
+		await user.fetch().catch(() => {});
 	}
 	if (
 		msg.channel.type == "dm" &&
@@ -1814,7 +1542,116 @@ client.on("messageReactionAdd", async (msgReaction) => {
 		msg.embeds[0]?.author?.name == `TODO`
 	) {
 		msg.delete().catch(() => {});
-	} else return;
+	} else if (menus.has(msg.id) && !msgReaction.bot) {
+		let menu = menus.get(msg.id);
+		if (menu.isPerm) {
+			let channel = msg.guild?.channels.resolve(
+				menu.DestinationChannelId
+			);
+			channel
+				.updateOverwrite(user.id, {
+					[menu.PermName]: true,
+				})
+				.then(() => {
+					user.send(
+						kifo.embed(
+							`You now have <:GreenCheck:857976926941478923> \`${menu.PermName}\` in <#${menu.DestinationChannelId}>!`
+						)
+					).catch(() => {});
+				})
+				.catch((err) => {
+					main.log(err);
+					msg.reply(
+						kifo.embed(
+							`Could not give \`${menu.PermName}\` for <@!${user.id}>!\n${err.message}`
+						)
+					);
+				});
+		} else {
+			let role = msg.guild?.roles.resolve(menu.RoleId);
+			let member = msg.guild?.members.resolve(user.id);
+			if (member != undefined) {
+				member.roles
+					.add(menu.RoleId, "Used Role Menu!")
+					.then(() =>
+						member
+							.send(
+								kifo.embed(
+									`Gave you ${role.name} role! (ID: ${menu.RoleId})`
+								)
+							)
+							.catch(() => {})
+					)
+					.catch((err) => {
+						msg.reply(
+							kifo.embed(
+								`Could not give <@&${menu.RoleId}> to <@!${user.id}>!\n${err.message}`
+							)
+						).catch(() => {});
+					});
+			}
+		}
+	}
+});
+
+client.on("messageReactionRemove", async (msgReaction, user) => {
+	let msg = msgReaction.message;
+	if (msg.partial) {
+		await msg.fetch().catch(() => {});
+	}
+	if (user.partial) {
+		await user.fetch().catch(() => {});
+	}
+	if (menus.has(msg.id) && !msgReaction.bot) {
+		let menu = menus.get(msg.id);
+		if (menu.isPerm) {
+			let channel = msg.guild?.channels.resolve(
+				menu.DestinationChannelId
+			);
+			channel
+				.updateOverwrite(user.id, {
+					[menu.PermName]: null,
+				})
+				.then(() => {
+					user.send(
+						kifo.embed(
+							`Set <:GreySlash:857976926445502505> \`${menu.PermName}\` in <#${menu.DestinationChannelId}>!`
+						)
+					).catch(() => {});
+				})
+				.catch((err) => {
+					main.log(err);
+					msg.reply(
+						kifo.embed(
+							`Could not remove \`${menu.PermName}\` for <@!${user.id}>!\n${err.message}`
+						)
+					);
+				});
+		} else {
+			let role = msg.guild?.roles.resolve(menu.RoleId);
+			let member = msg.guild?.members.resolve(user.id);
+			if (member != undefined) {
+				member.roles
+					.remove(menu.RoleId, "Used Role Menu!")
+					.then(() =>
+						member
+							.send(
+								kifo.embed(
+									`Removed ${role.name} role! (ID: ${menu.RoleId})`
+								)
+							)
+							.catch(() => {})
+					)
+					.catch((err) => {
+						msg.reply(
+							kifo.embed(
+								`Could not remove <@&${menu.RoleId}> from <@!${user.id}>!\n${err.message}`
+							)
+						).catch(() => {});
+					});
+			}
+		}
+	}
 });
 
 //Code for adding special roles for ppl invited by partners
@@ -1822,6 +1659,7 @@ let WoofInviteCount;
 let HaberInviteCount;
 let NumeralJokerCount;
 let SWInsiderInviteCount;
+let ShadowInviteCount;
 
 client.on("guildMemberAdd", (member) => {
 	if (member.guild.id == "698075892974354482")
@@ -1859,7 +1697,9 @@ client.on("guildMemberAdd", (member) => {
 						)
 						.catch(console.error);
 					HaberInviteCount++;
-				} else if (
+				}
+				//SW Insider
+				else if (
 					invites.find(
 						(invite) => invite.inviter.id == "813613441448804354"
 					)?.uses ==
@@ -1869,6 +1709,22 @@ client.on("guildMemberAdd", (member) => {
 						.add(
 							member.guild.roles.cache.find(
 								(role) => role.id == "858056136045756486"
+							)
+						)
+						.catch(console.error);
+					SWInsiderInviteCount++;
+				}
+				//Shadow Republic MilSim
+				else if (
+					invites.find(
+						(invite) => invite.inviter.id == "418938568543830033"
+					)?.uses ==
+					SWInsiderInviteCount + 1
+				) {
+					member.roles
+						.add(
+							member.guild.roles.cache.find(
+								(role) => role.id == "867145484191399956"
 							)
 						)
 						.catch(console.error);
@@ -1932,7 +1788,9 @@ client.on("guildCreate", async (guild) => {
 		.addField("Member Count", guild.memberCount, true)
 		.setFooter("Joined at: " + date.toUTCString());
 
-	channel.send(embed).catch((err) => main.log(err));
+	channel.send(embed).catch((err) => {
+		main.log(err);
+	});
 });
 //kifo-advanced-logs
 client.on("guildDelete", (guild) => {
@@ -1950,38 +1808,38 @@ client.on("guildDelete", (guild) => {
 		.addField("Member Count", guild.memberCount, true)
 		.setFooter("Left at: " + date.toUTCString());
 
-	channel.send(embed).catch((err) => main.log(err));
+	channel.send(embed).catch((err) => {
+		main.log(err);
+	});
 });
 //kifo-logs
-client.on("error", (err) => main.log(err));
+client.on("error", (err) => {
+	main.log(err);
+});
 //kifo-logs
 client.on("warn", (info) => {
 	let channel = client.guilds
 		.resolve("822800862581751848")
 		.channels?.resolve("864112365896466432");
-	return channel
-		.send(kifo.embed(`${info}`, "WARNING"))
-		.catch((err) => main.log(err));
+	return channel.send(kifo.embed(`${info}`, "WARNING")).catch((err) => {
+		main.log(err);
+	});
 });
 //kifo-advanced-logs
 client.on("guildUnavailable", (guild) => {
-	let channel = client.guilds.resolve("822800862581751848").channels("863769411700785152");
-	channel.send(kifo.embed(`A guild "${guild.name}", ID ${guild.id}, Owner: <@${guild.ownerID}>, ${guild.owner.tag} has become unavailable!`)).catch(err => main.log(err))
-})
-// //kifo-advanced-logs ratelimit event (too spammy)
-// client.on("rateLimit", (info) => {
-// 	let channel = client.guilds
-// 		.resolve("822800862581751848")
-// 		.channels?.resolve("863769411700785152");
-// 	channel
-// 		.send(
-// 			kifo.embed(
-// 				`Timeout: ${info.timeout}\nNumber of requests that can be made to this endpoint: ${info.limit}\nHTTP method used for request that triggered this event: ${info.method}\nPath used for request that triggered this event: ${info.path}\nRoute used for request that triggered this event: ${info.route}`,
-// 				`Rate Limit reached!`
-// 			)
-// 		)
-// 		.catch((err) => main.log(err));
-// });
+	let channel = client.guilds
+		.resolve("822800862581751848")
+		.channels("863769411700785152");
+	channel
+		.send(
+			kifo.embed(
+				`A guild "${guild.name}", ID ${guild.id}, Owner: <@${guild.ownerID}>, ${guild.owner.tag} has become unavailable!`
+			)
+		)
+		.catch((err) => {
+			main.log(err);
+		});
+});
 
 /**
  *
@@ -1989,6 +1847,7 @@ client.on("guildUnavailable", (guild) => {
  * @returns prefix for the guild (default "!kifo ")
  */
 exports.prefix = async function (guildID) {
+	if (client.user.id == "796447999747948584") return "!ktest ";
 	if (prefixes.has(guildID)) return prefixes.get(guildID);
 	return "!kifo ";
 };
@@ -2023,7 +1882,9 @@ exports.log = function (log, ...args) {
 	}
 	return channel
 		.send(kifo.embed(`${log} ${args.join(" ")}`, "LOG"))
-		.catch((err) => main.log(err));
+		.catch((err) => {
+			main.log(err);
+		});
 };
 
 client.login(process.env.LOGIN_TOKEN);

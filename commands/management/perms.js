@@ -4,146 +4,6 @@ const kifo = require("kifo");
 const fs = require("fs");
 const ms = require("ms");
 const now = new Date(Date.now());
-const channelPerms = [
-	//below perms are for text channels
-	(VIEW_CHANNEL = {
-		Id: 1,
-		name: "VIEW_CHANNEL",
-		type: "text",
-		aliases: ["view", "vch"],
-	}),
-	(MANAGE_CHANNELS = {
-		Id: 2,
-		name: "MANAGE_CHANNELS",
-		type: "text",
-		aliases: ["mngc"],
-	}),
-	(MANAGE_ROLES = {
-		Id: 3,
-		name: "MANAGE_ROLES",
-		type: "text",
-		aliases: ["mngr"],
-	}),
-	(MANAGE_WEBHOOKS = {
-		Id: 4,
-		name: "MANAGE_WEBHOOKS",
-		type: "text",
-		aliases: ["mngw", "webhooks"],
-	}),
-	(CREATE_INSTANT_INVITE = {
-		Id: 5,
-		name: "CREATE_INSTANT_INVITE",
-		type: "text",
-		aliases: ["cri", "invites", "inv"],
-	}),
-	(SEND_MESSAGES = {
-		Id: 6,
-		name: "SEND_MESSAGES",
-		type: "text",
-		aliases: ["sm", "msg", "msgs"],
-	}),
-	(EMBED_LINKS = {
-		Id: 7,
-		name: "EMBED_LINKS",
-		type: "text",
-		aliases: ["el", "embed", "links"],
-	}),
-	(ATTACH_FILES = {
-		Id: 8,
-		name: "ATTACH_FILES",
-		type: "text",
-		aliases: ["af", "files"],
-	}),
-	(ADD_REACTIONS = {
-		Id: 9,
-		name: "ADD_REACTIONS",
-		type: "text",
-		aliases: ["ar", "reactions"],
-	}),
-	(USER_EXTERNAL_EMOJIS = {
-		Id: 10,
-		name: "USER_EXTERNAL_EMOJIS",
-		type: "text",
-		aliases: ["uee", "emojis"],
-	}),
-	(MENTION_EVERYONE = {
-		Id: 11,
-		name: "MENTION_EVERYONE",
-		type: "text",
-		aliases: ["evr", "me", "every1"],
-	}),
-	(MANAGE_MESSAGES = {
-		Id: 12,
-		name: "MANAGE_MESSAGES",
-		type: "text",
-		aliases: ["mngm", "mmsg"],
-	}),
-	(READ_MESSAGE_HISTORY = {
-		Id: 13,
-		name: "READ_MESSAGE_HISTORY",
-		type: "text",
-		aliases: ["rmh", "msgh", "history"],
-	}),
-	(SEND_TTS_MESSAGES = {
-		Id: 14,
-		name: "SEND_TTS_MESSAGES",
-		type: "text",
-		aliases: ["stts", "tts", "ttsm", "msgtts", "ttsmsg"],
-	}),
-	//WARNING Discord v12.0 does not have `Use Slash Commands` perms yet. Update when v13.0 is live
-	//voice perms
-	(CONNECT = {
-		Id: 15,
-		name: "CONNECT",
-		type: "voice",
-		aliases: ["cnt", "con"],
-	}),
-	(SPEAK = {
-		Id: 16,
-		name: "SPEAK",
-		type: "voice",
-		aliases: ["spk", "say", "talk"],
-	}),
-	(STREAM = {
-		Id: 17,
-		name: "STREAM",
-		type: "voice",
-		aliases: ["str", "vid", "video", "scr", "screen", "share"],
-	}),
-	(USE_VAD = {
-		Id: 18,
-		name: "USE_VAD",
-		type: "voice",
-		aliases: ["vad", "vca", "vcad", "vact"],
-	}),
-	(PRIORITY_SPEAKER = {
-		Id: 19,
-		name: "PRIORITY_SPEAKER",
-		type: "voice",
-		aliases: ["pspk", "psay", "ptalk"],
-	}),
-	(MUTE_MEMBERS = {
-		Id: 20,
-		name: "MUTE_MEMBERS",
-		type: "voice",
-		aliases: ["mm", "mute", "mtm"],
-	}),
-	(DEAFEN_MEMBERS = {
-		Id: 21,
-		name: "DEAFEN_MEMBERS",
-		type: "voice",
-		aliases: ["dm", "deafen", "deaf", "dfm"],
-	}),
-	(MOVE_MEMBERS = {
-		Id: 22,
-		name: "MOVE_MEMBERS",
-		type: "voice",
-		aliases: ["move", "mvm", "movm"],
-	}),
-	//WARNING: REQUEST TO SPEAK IS NOT IN discord.js v12.0
-	//UPDATE WHEN it's updated
-	//so, with those 2 it will be 22 perms, I only have one field left.
-];
 
 module.exports = {
 	name: "perms",
@@ -208,7 +68,7 @@ module.exports = {
 					} at ${now.toUTCString()}.`
 				);
 			//write all aliases of all text channel perms.
-			channelPerms.forEach(async (perm) => {
+			kifo.channelPerms.forEach(async (perm) => {
 				if (perm.type == "text") {
 					newEmbed.addField(
 						`${perm.Id}. ${perm.name}`,
@@ -364,7 +224,7 @@ module.exports = {
 							`I don't know what ${args[0]} is supposed to mean. Type \`${prefix}perms\` or \`${prefix}help perms\` to learn about this command.\nSyntax: \`${this.usage}\``
 						)
 					);
-				let perm = channelPerms.find(
+				let perm = kifo.channelPerms.find(
 					(permOver) =>
 						permOver.aliases.includes(args[1].toLowerCase()) ||
 						permOver.name.toLowerCase() == args[1].toLowerCase() ||

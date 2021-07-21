@@ -378,6 +378,18 @@ module.exports = {
 						.catch(() => {});
 				}
 
+				if (entity == undefined) {
+					main.log("SOMETHING BROKE IN LIST COMMAND");
+					return message
+						.reply(
+							kifo.embed(
+								"Uknown error has occured when trying to execute the command. Please use `error` command to notify bot author.",
+								"Error!"
+							)
+						)
+						.catch(() => {});
+				}
+
 				const contents = fs.readFileSync(`././commandList.json`);
 				var jsonCmdList = JSON.parse(contents);
 

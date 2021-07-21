@@ -292,6 +292,18 @@ module.exports = {
 				}
 
 				if (whatami == undefined) {
+					main.log("SOMETHING BROKE IN STATS COMMAND");
+					return message
+						.reply(
+							kifo.embed(
+								"Uknown error has occured when trying to execute the command. Please use `error` command to notify bot author.",
+								"Error!"
+							)
+						)
+						.catch(() => {});
+				}
+				
+				if (entity == undefined) {
 					main.log("SOMETHING BROKE IN LIST COMMAND");
 					return message
 						.reply(

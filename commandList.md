@@ -8,6 +8,7 @@
 - `help` - lists all available commands
 - `help <category>` - lists all commands for a specific category
 - `help <command>` - shows help for specific command
+- `<command> help` - shows help for specific command
 ## DEBUG
 
 ### error
@@ -89,6 +90,19 @@ If the bot doesn't see some channels, lists ~~may~~ will be incorrect.
 	- `list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.
 	- `list <message_id>` - pastes raw message content *(with formatting, works with embeds and all types of messages)*.
 - Required user permissions: `SEND_MESSAGES`, `MANAGE_GUILD`
+
+### menu
+
+- This powerful command allows you to create role menu or channel perms menu with optional timeout
+- Usage:
+	- `menu` - DMs you with channel aliases and syntax of the command.
+	- `menu list` - lists active menus in the server (requires `MANAGE_GUILD`)
+	- `menu perm <perm_alias> <channel>` - creates a menu, that when user reacts, they get `perm_alias` in `channel`.
+	- `menu perm <perm_alias> <channel> <time_period>` - creates a menu, that when user reacts, they get `perm_alias` in `channel`. Everyone's perms will be reverted `time_period` after menu is created.
+	- `menu role <role>` - creates a menu, that when user reacts, they get `role`.
+	- `menu role <role> <time_period>` - creates a menu, that when user reacts, they get `role`. Everyone's role will be reverted `time_period` after menu is created.
+	- `menu revert <message_url>` - removes `role` / `channel perm` from everyone who reacted to menu.
+- Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`
 
 ### perms
 
@@ -180,4 +194,4 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Mon, 12 Jul 2021 12:24:28 GMT*
+> - *Last update: Wed, 21 Jul 2021 15:27:34 GMT*
