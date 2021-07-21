@@ -48,8 +48,9 @@ fail, run !kifo](https://i.imgur.com/hWkoxmm.jpg)
 # Self-promotion:
 
 ## My socials:
-- [![Reddit](https://aleen42.github.io/badges/src/reddit.svg)](http://reddit.com/u/kifopl)
-- [![Youtube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/channel/UC4yZgTHfmVDmKlDIhDwVp3w?sub_confirmation=1)
+[![Contact links](http://ForTheBadge.com/images/badges/built-with-love.svg)](https://bio.link/kifopl)
+
+*Check out all of my links and contact info by clicking the button above!*
 
 ![GitHub Repo stars](https://img.shields.io/github/stars/kifopl/kifo-clanker?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/kifopl/kifo-clanker?style=social)
