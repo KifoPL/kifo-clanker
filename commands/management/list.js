@@ -1219,12 +1219,12 @@ async function whatamifunc(message, args, callback) {
 				callback({ entity: entity, whatami: whatami });
 				return;
 			} else if (message.mentions.channels.firstKey() != undefined) {
-				entity = message.mentions.channels.firstKey();
+				entity = message.mentions.channels.first();
 				whatami = "channel";
 				callback({ entity: entity, whatami: whatami });
 				return;
 			} else if (message.mentions.roles.firstKey() != undefined) {
-				entity = message.mentions.roles.firstKey();
+				entity = message.mentions.roles.first();
 				whatami = "role";
 				callback({ entity: entity, whatami: whatami });
 				return;

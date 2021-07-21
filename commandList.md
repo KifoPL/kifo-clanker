@@ -194,4 +194,4 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Wed, 21 Jul 2021 15:27:34 GMT*
+> - *Last update: Wed, 21 Jul 2021 16:07:06 GMT*
