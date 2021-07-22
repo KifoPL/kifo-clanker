@@ -1542,7 +1542,7 @@ client.on("messageReactionAdd", async (msgReaction, user) => {
 		msg.embeds[0]?.author?.name == `TODO`
 	) {
 		msg.delete().catch(() => {});
-	} else if (menus.has(msg.id) && !msgReaction.bot) {
+	} else if (menus.has(msg.id) && !user.bot) {
 		let menu = menus.get(msg.id);
 		if (menu.isPerm) {
 			let channel = msg.guild?.channels.resolve(
@@ -1602,7 +1602,7 @@ client.on("messageReactionRemove", async (msgReaction, user) => {
 	if (user.partial) {
 		await user.fetch().catch(() => {});
 	}
-	if (menus.has(msg.id) && !msgReaction.bot) {
+	if (menus.has(msg.id) && !user.bot) {
 		let menu = menus.get(msg.id);
 		if (menu.isPerm) {
 			let channel = msg.guild?.channels.resolve(
