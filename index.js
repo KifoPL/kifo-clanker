@@ -1770,7 +1770,7 @@ client.on("guildMemberAdd", (member) => {
 						});
 				}
 			})
-			.catch(console.error);
+			.catch((err) => { main.log(err) });
 });
 //kifo-advanced-logs
 client.on("guildCreate", async (guild) => {
