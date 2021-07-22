@@ -126,7 +126,9 @@ module.exports = {
 							}
 						);
 					})
-					.catch((err) => main.log(err));
+					.catch((err) => {
+						main.log(err);
+					});
 			});
 	},
 };

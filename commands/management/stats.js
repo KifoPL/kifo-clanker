@@ -292,6 +292,18 @@ module.exports = {
 				}
 
 				if (whatami == undefined) {
+					main.log("SOMETHING BROKE IN STATS COMMAND");
+					return message
+						.reply(
+							kifo.embed(
+								"Uknown error has occured when trying to execute the command. Please use `error` command to notify bot author.",
+								"Error!"
+							)
+						)
+						.catch(() => {});
+				}
+				
+				if (entity == undefined) {
 					main.log("SOMETHING BROKE IN LIST COMMAND");
 					return message
 						.reply(
@@ -1008,12 +1020,12 @@ async function whatamifunc(message, args, callback) {
 				callback({ entity: entity, whatami: whatami });
 				return;
 			} else if (message.mentions.channels.firstKey() != undefined) {
-				entity = message.mentions.channels.firstKey();
+				entity = message.mentions.channels.first();
 				whatami = "channel";
 				callback({ entity: entity, whatami: whatami });
 				return;
 			} else if (message.mentions.roles.firstKey() != undefined) {
-				entity = message.mentions.roles.firstKey();
+				entity = message.mentions.roles.first();
 				whatami = "role";
 				callback({ entity: entity, whatami: whatami });
 				return;

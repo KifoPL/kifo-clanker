@@ -23,18 +23,18 @@ module.exports = {
 		//perms check
 		if (
 			!message.guild?.me
-				.permissionsIn(message.channel)
+				.permissions
 				.has("MANAGE_ROLES")
 		) {
 			return message
-				.reply(kifo.embed("Missing `MANAGE_ROLES` permission!"))
+				.reply(kifo.embed("I don't have `MANAGE_ROLES` permission!"))
 				.catch(() => {});
 		}
 		if (
-			!message.member.permissionsIn(message.channel).has("MANAGE_ROLES")
+			!message.member.permissions.has("MANAGE_ROLES")
 		) {
 			return message
-				.reply(kifo.embed("Missing `MANAGE_ROLES` permission!"))
+				.reply(kifo.embed("You don't have `MANAGE_ROLES` permission!"))
 				.catch(() => {});
 		}
 

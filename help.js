@@ -7,6 +7,7 @@ module.exports = {
 		"`help` - lists all available commands",
 		"`help <category>` - lists all commands for a specific category",
 		"`help <command>` - shows help for specific command",
+		"`<command> help` - shows help for specific command",
 	],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
@@ -71,7 +72,14 @@ module.exports = {
 					commandList
 						.filter((cmd) => cmd.folder == args[0].toLowerCase())
 						.each((cmd) => {
-							if (cmd.command.perms.every(perm => message.member.permissionsIn(message.channel).toArray().includes(perm))) {
+							if (
+								cmd.command.perms.every((perm) =>
+									message.member
+										.permissionsIn(message.channel)
+										.toArray()
+										.includes(perm)
+								)
+							) {
 								var Field = {};
 								Field.name = cmd.command.name;
 								Field.value = `${cmd.command.description}`;
@@ -149,7 +157,14 @@ module.exports = {
 				commandList
 					.filter((cmd) => cmd.folder == categoryName)
 					.each((cmd) => {
-						if (cmd.command.perms.every(perm => message.member.permissionsIn(message.channel).toArray().includes(perm))) {
+						if (
+							cmd.command.perms.every((perm) =>
+								message.member
+									.permissionsIn(message.channel)
+									.toArray()
+									.includes(perm)
+							)
+						) {
 							cmdListString += `**${cmd.command.name}**, `;
 						}
 					});
