@@ -1,10 +1,13 @@
+const Discord = require("discord.js");
 module.exports = {
 	name: "todo",
 	description: "This command allows you to create a simple todo notes.",
-	usage: ["`todo <description>` - sends a DM with description (react with any emote to the message to delete it)."],
+	usage: [
+		"`todo <description>` - sends a DM with description (react with any emote to the message to delete it).",
+	],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
-	execute(message, args, Discord) {
+	execute(message, args) {
 		const kifo = require("kifo");
 		if (!args[0]) return message.reply(kifo.embed(`usage: ${this.usage}`));
 

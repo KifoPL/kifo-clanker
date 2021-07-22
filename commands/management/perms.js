@@ -4,6 +4,7 @@ const kifo = require("kifo");
 const fs = require("fs");
 const ms = require("ms");
 const now = new Date(Date.now());
+const Discord = require("discord.js");
 
 module.exports = {
 	name: "perms",
@@ -19,7 +20,7 @@ module.exports = {
 	],
 	adminonly: true,
 	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
-	async execute(message, args, Discord, prefix) {
+	async execute(message, args, prefix) {
 		const { con } = require("../../index.js");
 		//precheck
 		if (!message.guild == null)

@@ -1,3 +1,4 @@
+const Discord = require("discord.js");
 module.exports = {
 	name: "howgay",
 	description: `A quick test to find out your gayness level.`,
@@ -6,25 +7,25 @@ module.exports = {
 	],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
-	execute(message, args, Discord, isStats = false, userID = 0) {
+	execute(message, args, isStats = false, userID = 0) {
 		const kifo = require("kifo");
-		let userid = 0;
+		let userid = args[0];
 		let howgay = 0;
 		let reply = "";
 		let comment = "";
 		let Troll = false;
-		if (userID != 0) args[0] = userID;
-		if (args[0]) {
-			if (!isNaN(args[0])) {
+		if (userID != 0) userid = userID;
+		if (userid) {
+			if (!isNaN(userid)) {
 				//console.log(message.guild.members.resolve(args[0]));
 				if (
-					args[0] == 289119054130839552 ||
-					args[0] == 795638549730295820
+					userid == 289119054130839552 ||
+					userid == 795638549730295820
 				) {
 					Troll = true;
-				} else if (!message.guild.members.resolve(args[0]))
+				} else if (!message.guild.members.resolve(userid))
 					return message.reply(kifo.embed("user not found."));
-				userid = args[0];
+				userid = userid;
 			} else {
 				if (message.mentions.users.firstKey() != undefined) {
 					if (
@@ -48,7 +49,7 @@ module.exports = {
 		} else {
 			userid = message.author.id;
 		}
-		if (userid == 289119054130839552 || args[0] == 795638549730295820)
+		if (userid == 289119054130839552 || userid == 795638549730295820)
 			Troll = true;
 		let username = message.guild.members.resolve(userid).displayName;
 		if (!Troll) {

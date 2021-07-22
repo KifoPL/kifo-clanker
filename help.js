@@ -11,7 +11,7 @@ module.exports = {
 	],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
-	execute(message, args, Discord, prefix) {
+	execute(message, args, prefix) {
 		const fs = require("fs");
 		const client = message.client;
 

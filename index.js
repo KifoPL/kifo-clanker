@@ -503,7 +503,7 @@ async function commands(message, prefix) {
 			);
 			client.commands
 				.get(command)
-				.execute(message, args, Discord, prefix);
+				.execute(message, args, prefix);
 			return;
 		} else if (command == "error") {
 			const event = new Date(Date.now());
@@ -1770,7 +1770,7 @@ client.on("guildMemberAdd", (member) => {
 						});
 				}
 			})
-			.catch(console.error);
+			.catch((err) => { main.log(err) });
 });
 //kifo-advanced-logs
 client.on("guildCreate", async (guild) => {

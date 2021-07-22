@@ -1,4 +1,5 @@
-const main = require(`../../index.js`)
+const Discord = require("discord.js");
+const main = require(`../../index.js`);
 module.exports = {
 	name: "prefix",
 	description:
@@ -6,11 +7,12 @@ module.exports = {
 	usage: ["`prefix` - sends a DM with details on prefix change process."],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
-	async execute(message, args, Discord) {
+	async execute(message, args) {
 		const prefix = await main.prefix(message.guild?.id);
 		const kifo = require("kifo");
 		message.author
-			.send(`__**Current prefix for ${message.guild?.name}:**__ "${prefix}"`,
+			.send(
+				`__**Current prefix for ${message.guild?.name}:**__ "${prefix}"`,
 				kifo.embed(
 					`Hello! I'm really glad you've decided to change prefix on your server.\n\n\
 		As harsh as it sounds, making the bot *costs* a lot of time and money ||electricity, coding knowledge, VPS, etc.||, and that's why I have decided to make this a **premium** feature.\n\n\
