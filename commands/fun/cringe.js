@@ -1,10 +1,11 @@
+const Discord = require("discord.js");
 module.exports = {
 	name: "cringe",
 	description: `Express your feelings to another discord user with this beautiful poem.`,
 	usage: ["`cringe <optional_user>` - informs user of their cringe level."],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
-	execute(message, args, Discord) {
+	execute(message, args) {
 		//THIS IS A TEMPLATE
 		const kifo = require("kifo");
 		const embedreply = new Discord.MessageEmbed();

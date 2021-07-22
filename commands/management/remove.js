@@ -1,3 +1,4 @@
+const Discord = require("discord.js");
 module.exports = {
 	name: "remove",
 	description: "This command allows you to (temporarily) remove user role.",
@@ -8,7 +9,7 @@ module.exports = {
 	],
 	adminonly: false,
 	perms: ["SEND_MESSAGES", "MANAGE_ROLES"],
-	async execute(message, args, Discord, prefix) {
+	async execute(message, args) {
 		const kifo = require("kifo");
 		const ms = require("ms");
 		const client = require("../../index.js").client;
@@ -16,23 +17,17 @@ module.exports = {
 
 		//precheck
 		if (!message.guild == null)
-			return message.reply(
-				kifo.embed(`you can only run this command in a server!`)
-			).catch(() => {});
+			return message
+				.reply(kifo.embed(`you can only run this command in a server!`))
+				.catch(() => {});
 
 		//perms check
-		if (
-			!message.guild?.me
-				.permissions
-				.has("MANAGE_ROLES")
-		) {
+		if (!message.guild?.me.permissions.has("MANAGE_ROLES")) {
 			return message
 				.reply(kifo.embed("I don't have `MANAGE_ROLES` permission!"))
 				.catch(() => {});
 		}
-		if (
-			!message.member.permissions.has("MANAGE_ROLES")
-		) {
+		if (!message.member.permissions.has("MANAGE_ROLES")) {
 			return message
 				.reply(kifo.embed("You don't have `MANAGE_ROLES` permission!"))
 				.catch(() => {});
@@ -53,7 +48,7 @@ module.exports = {
 				)
 				.catch(() => {});
 		}
-		
+
 		let time = args[2];
 
 		let member = {};

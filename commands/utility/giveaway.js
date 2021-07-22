@@ -1,3 +1,4 @@
+const Discord = require("discord.js");
 const main = require(`../../index.js`);
 module.exports = {
 	name: "giveaway",
@@ -10,7 +11,7 @@ module.exports = {
 	],
 	adminonly: false,
 	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS", "ADD_REACTIONS"],
-	async execute(message, args, Discord, prefix) {
+	async execute(message, args) {
 		const kifo = require("kifo");
 		const ms = require("ms");
 		const client = require("../../index.js").client;

@@ -1,7 +1,8 @@
+const Discord = require("discord.js");
 module.exports = {
 	name: "react",
 	description:
-		'This command tells the bot to react to all messages in the channel with specific reactions.',
+		"This command tells the bot to react to all messages in the channel with specific reactions.",
 	usage: [
 		"`react on <emote1> <optional_emote2> ... <optional_emoten>` - turns on react command in this channel.",
 		"`react off` - turns off react command in this channel",
@@ -10,7 +11,7 @@ module.exports = {
 	],
 	adminonly: true,
 	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
-	execute(message, args, Discord) {
+	execute(message, args) {
 		const kifo = require("kifo");
 		const client = require("../../index.js").client;
 		if (message.guild == null)
@@ -18,7 +19,9 @@ module.exports = {
 				kifo.embed("you can only run this command on the server.")
 			);
 		if (!(args[0].toUpperCase() == "ON" || args[0].toUpperCase() == "OFF"))
-			return message.reply(kifo.embed(`Usage: ${this.usage.join("\n")}.`));
+			return message.reply(
+				kifo.embed(`Usage: ${this.usage.join("\n")}.`)
+			);
 		if (
 			!message.guild.me
 				.permissionsIn(message.channel)
@@ -62,17 +65,17 @@ module.exports = {
 					.setDescription(`Too many reactions!`);
 				return message.reply(embedreply);
 			}
-			args.forEach(arg => {
-						if (
-							client.emojis.resolveIdentifier(arg) == null &&
-							!arg.match(kifo.emojiRegex())
-						) {
-							stop = true;
-							return message.reply(
-								kifo.embed(`${arg} is an incorrect reaction!`)
-							).catch(() => {});
-						}
-			})
+			args.forEach((arg) => {
+				if (
+					client.emojis.resolveIdentifier(arg) == null &&
+					!arg.match(kifo.emojiRegex())
+				) {
+					stop = true;
+					return message
+						.reply(kifo.embed(`${arg} is an incorrect reaction!`))
+						.catch(() => {});
+				}
+			});
 			if (stop) return;
 			let params = [option, emotes];
 			embedreply.setDescription("It's ON!");

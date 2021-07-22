@@ -503,7 +503,7 @@ async function commands(message, prefix) {
 			);
 			client.commands
 				.get(command)
-				.execute(message, args, Discord, prefix);
+				.execute(message, args, prefix);
 			return;
 		} else if (command == "error") {
 			const event = new Date(Date.now());

@@ -1,10 +1,11 @@
+const Discord = require("discord.js");
 module.exports = {
 	name: "reverse",
 	description: "This command reverses anything you type.",
 	usage: ["`reverse <text>` - reverses the text."],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
-	execute(message, args, Discord) {
+	execute(message, args) {
 		const kifo = require("kifo");
 		if (!args[0]) return message.reply(kifo.embed(`Usage: ${this.usage}.`));
 

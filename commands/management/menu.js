@@ -1,3 +1,4 @@
+const Discord = require("discord.js");
 const { MessageMentions } = require("discord.js");
 
 const kifo = require("kifo");
@@ -46,27 +47,27 @@ async function revert(message, menu, isPerm, obj, permName = null) {
 				if (perm != undefined) {
 					perm.update({
 						[permName]: null,
-					}).then(() => {
-						user.send(
-							kifo.embed(
-								`Set <:GreySlash:857976926445502505> \`${menu.PermName}\` in <#${menu.DestinationChannelId}>!`
-							)
-						).catch(() => {});
-					}).catch((err) => {
-						message
-							.reply(
+					})
+						.then(() => {
+							user.send(
 								kifo.embed(
-									`Couldn't change <@!${user.id}> ${PermName} to <:GreySlash:857976926445502505>!`
+									`Set <:GreySlash:857976926445502505> \`${menu.PermName}\` in <#${menu.DestinationChannelId}>!`
 								)
-							)
-							.catch(() => {});
-						main.log(err);
-					});
+							).catch(() => {});
+						})
+						.catch((err) => {
+							message
+								.reply(
+									kifo.embed(
+										`Couldn't change <@!${user.id}> ${PermName} to <:GreySlash:857976926445502505>!`
+									)
+								)
+								.catch(() => {});
+							main.log(err);
+						});
 				}
 			});
-			message.author.send(
-				kifo.embed(`Removed [perm menu](${message.url})!`)
-			);
+		message.author.send(kifo.embed(`Removed [perm menu](${message.url})!`));
 		main.con.query(
 			"DELETE FROM menu_perms WHERE MessageId = ?",
 			[menu.id],
@@ -83,27 +84,30 @@ async function revert(message, menu, isPerm, obj, permName = null) {
 			.each((user) => {
 				let member = message.guild.members.resolve(user.id);
 				if (member != undefined) {
-					member.roles.remove(obj).then(() => {
-						member
-							.send(
-								kifo.embed(
-									`Removed ${obj.name} role! (ID: ${menu.RoleId})`
+					member.roles
+						.remove(obj)
+						.then(() => {
+							member
+								.send(
+									kifo.embed(
+										`Removed ${obj.name} role! (ID: ${menu.RoleId})`
+									)
 								)
-							)
-							.catch(() => {});
-					}).catch((err) => {
-						message
-							.reply(
-								kifo.embed(
-									`Could not remove <@!${member.id}>'s role <@&${obj.id}>!`
+								.catch(() => {});
+						})
+						.catch((err) => {
+							message
+								.reply(
+									kifo.embed(
+										`Could not remove <@!${member.id}>'s role <@&${obj.id}>!`
+									)
 								)
-							)
-							.catch(() => {});
-						main.log(err);
-					});
+								.catch(() => {});
+							main.log(err);
+						});
 				}
 			});
-		message.author.send(kifo.embed(`Removed [role menu](${message.url})!`))
+		message.author.send(kifo.embed(`Removed [role menu](${message.url})!`));
 		main.con.query(
 			"DELETE FROM menu_roles WHERE MessageId = ?",
 			[menu.id],
@@ -125,7 +129,7 @@ async function revert(message, menu, isPerm, obj, permName = null) {
 			.catch(() => {});
 	});
 }
-async function execute(message, args, Discord, prefix) {
+async function execute(message, args, prefix) {
 	const { con } = require(`../../index.js`);
 	//menu
 	if (!args[0]) {
@@ -328,9 +332,9 @@ async function execute(message, args, Discord, prefix) {
 										  )}>`
 										: `no End Date.`
 								}, [menu](${
-									message.guild.channels.resolve(row.ChannelId).messages.resolve(
-										row.MessageId
-									).url
+									message.guild.channels
+										.resolve(row.ChannelId)
+										.messages.resolve(row.MessageId).url
 								})`
 							);
 						});
@@ -388,9 +392,9 @@ async function execute(message, args, Discord, prefix) {
 										  )}>`
 										: `no End Date.`
 								}, [menu](${
-									message.guild.channels.resolve(row.ChannelId).messages.resolve(
-										row.MessageId
-									).url
+									message.guild.channels
+										.resolve(row.ChannelId)
+										.messages.resolve(row.MessageId).url
 								})`
 							);
 						});
@@ -444,7 +448,6 @@ async function execute(message, args, Discord, prefix) {
 		let now = new Date(Date.now());
 		//!kifo menu role
 		if (args[0].toLowerCase() === "role") {
-
 			if (!message.member.permissions.has("MANAGE_ROLES"))
 				return message.reply(
 					kifo.embed("You don't have `MANAGE_ROLES` permission!")
@@ -577,12 +580,16 @@ async function execute(message, args, Discord, prefix) {
 			//PERM CHECK
 			if (!message.member.permissionsIn(channel).has("MANAGE_CHANNELS"))
 				return message.reply(
-					kifo.embed(`You don't have \`MANAGE_CHANNELS\` permission in <#${channel.id}>!`)
+					kifo.embed(
+						`You don't have \`MANAGE_CHANNELS\` permission in <#${channel.id}>!`
+					)
 				);
 
 			if (!message.guild.me.permissionsIn(channel).has("MANAGE_CHANNELS"))
 				return message.reply(
-					kifo.embed(`I don't have \`MANAGE_CHANNELS\` permission in <#${channel.id}>!`)
+					kifo.embed(
+						`I don't have \`MANAGE_CHANNELS\` permission in <#${channel.id}>!`
+					)
 				);
 			let perm = kifo.channelPerms.find(
 				(c) =>
