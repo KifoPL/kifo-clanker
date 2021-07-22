@@ -26,13 +26,14 @@ fail, run !kifo](https://i.imgur.com/hWkoxmm.jpg)
 
 # Showcase:
 
-![top](https://i.imgur.com/EO1mKBX.jpg)
+![temporary role remover](https://i.imgur.com/xJ7bxUu.png)
 
-![react](https://i.imgur.com/AsdDyDi.jpg)
+![channel contest manager](https://i.imgur.com/3S2ssFr.png)
 
-![list](https://i.imgur.com/ibQI4wY.jpg)
+![very detailed stats!](https://i.imgur.com/84yIvBP.png)
 
-![stats](https://i.imgur.com/qB2r2wZ.jpg)
+![quick channel perm menu!](https://i.imgur.com/xzpjGTp.png)
+
 
 # Useful links:
 
