@@ -142,6 +142,16 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 
 ## UTILITY
 
+### clean
+
+- This command cleans any permission overwrites that don't have `DENY` (<:RedX:857976926542757910>) or `ALLOW` (<:GreenCheck:857976926941478923>).
+- Usage:
+	- `clean` - cleans permission overwrites in the current channel.
+	- `clean <channel>` - cleans permission overwrites in `channel`.
+	- `clean <category>` - clean permission overwrites for `category` and all channels in `category`
+	- `clean all` - clean permission overwrites for `all` channels in the server.
+- Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`, `MANAGE_ROLES`
+
 ### giveaway
 
 - This command allows you to set up a timeout, after which random winners who reacted will be selected.
@@ -194,4 +204,4 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Thu, 22 Jul 2021 12:23:22 GMT*
+> - *Last update: Fri, 23 Jul 2021 15:42:09 GMT*
