@@ -1868,13 +1868,11 @@ exports.log = function (log, ...args) {
 			.send(
 				`<@!289119054130839552>`,
 				kifo.embed(
-					`${log.name}: ${log.message} at line: ${
-						log.lineNumber
-					} file: ${log.fileName} at <t:${Math.floor(
+					`${log.name}: ${log.message}\nStack: ${log.stack}\n\nAt <t:${Math.floor(
 						now.getTime() / 1000
 					)}>, <t:${Math.floor(
 						now.getTime() / 1000
-					)}:R>, other args: ${args.join(" ")}`,
+					)}:R>\nOther args: ${args.join(" ")}`,
 					`CRITICAL ERROR`
 				)
 			)
@@ -1888,3 +1886,8 @@ exports.log = function (log, ...args) {
 };
 
 client.login(process.env.LOGIN_TOKEN);
+
+process.on('uncaughtException', err => {
+	main.log(err)
+	process.exit(1) //mandatory (as per the Node.js docs)
+})
