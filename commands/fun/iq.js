@@ -7,8 +7,7 @@ module.exports = {
 	perms: ["SEND_MESSAGES"],
 	execute(message, args, isStats = false, userID = 0) {
 		const kifo = require("kifo");
-		let userid = args[0];
-		if (!args[0]) userid = message.author.id;
+		let userid = args[0] ?? message.author.id;
 		let iq = 0;
 		let reply = "";
 		let comment = "";

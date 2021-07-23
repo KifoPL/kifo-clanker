@@ -857,7 +857,7 @@ async function commands(message, prefix) {
 			try {
 				debug = client.commands
 				.get(command)
-				.execute(message, args, Discord, prefix);
+					.execute(message, args, prefix);
 			} catch (error) {
 				message.reply(kifo.embed(error, "Error!"));
 				main.log(error);
