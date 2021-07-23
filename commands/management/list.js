@@ -722,7 +722,7 @@ async function stats(message, args, prefix, isList = true) {
 							entity.joinedAt.getTime() -
 							entity.user.createdAt.getTime(),
 							{ long: true }
-						)} after server creation).`
+						)} after account creation).`
 					)
 					.addFields(
 						{
