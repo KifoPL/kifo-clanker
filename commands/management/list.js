@@ -179,7 +179,7 @@ async function stats(message, args, prefix, isList = true) {
 			var Count = 0;
 
 			await memberList.each(() => Count++);
-			if (Count > limit && !message.member.permissions.has("MANAGE_GUILD")) {
+			if (Count > limit && !message.member.permissions.has("MANAGE_GUILD") && isList) {
 				message.channel.stopTyping(true);
 				return message.reply(
 					kifo.embed(
@@ -271,7 +271,7 @@ async function stats(message, args, prefix, isList = true) {
 			await message.guild.members.cache.each(() => Count++);
 			if (
 				Count > limit &&
-				!message.member.permissions.has("MANAGE_GUILD")
+				!message.member.permissions.has("MANAGE_GUILD") && isList
 			) {
 				message.channel.stopTyping(true);
 				return message.reply(
@@ -801,7 +801,7 @@ async function stats(message, args, prefix, isList = true) {
 					});
 				if (
 					Count > 1000 &&
-					!message.member.permissions.has("MANAGE_ROLES")
+					!message.member.permissions.has("MANAGE_ROLES") && isList
 				)
 					return message.reply(
 						kifo.embed(
