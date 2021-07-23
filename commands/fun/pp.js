@@ -10,6 +10,7 @@ module.exports = {
 	execute(message, args, isStats = false, userID = 0) {
 		const kifo = require("kifo");
 		let userid = args[0];
+		if (!args[0]) userid = message.author.id;
 		let pplen = 0;
 		let pp = "8";
 		let Troll = false;
