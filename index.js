@@ -1669,7 +1669,7 @@ client.on("guildMemberAdd", (member) => {
 				//WoofWoof
 				if (
 					invites.find(
-						(invite) => invite.inviter.id == "376956266293231628"
+						(invite) => invite.inviter?.id == "376956266293231628"
 					)?.uses ==
 					WoofInviteCount + 1
 				) {
@@ -1685,7 +1685,7 @@ client.on("guildMemberAdd", (member) => {
 				//HaberJordan
 				else if (
 					invites.find(
-						(invite) => invite.inviter.id == "221771499843878912"
+						(invite) => invite.inviter?.id == "221771499843878912"
 					)?.uses ==
 					HaberInviteCount + 1
 				) {
@@ -1701,7 +1701,7 @@ client.on("guildMemberAdd", (member) => {
 				//SW Insider
 				else if (
 					invites.find(
-						(invite) => invite.inviter.id == "813613441448804354"
+						(invite) => invite.inviter?.id == "813613441448804354"
 					)?.uses ==
 					SWInsiderInviteCount + 1
 				) {
@@ -1717,7 +1717,7 @@ client.on("guildMemberAdd", (member) => {
 				//Shadow Republic MilSim
 				else if (
 					invites.find(
-						(invite) => invite.inviter.id == "418938568543830033"
+						(invite) => invite.inviter?.id == "418938568543830033"
 					)?.uses ==
 					SWInsiderInviteCount + 1
 				) {
@@ -1733,7 +1733,7 @@ client.on("guildMemberAdd", (member) => {
 				//NumeralJoker
 				else if (
 					invites.find(
-						(invite) => invite.inviter.id == "285906871393452043"
+						(invite) => invite.inviter?.id == "285906871393452043"
 					)?.uses ==
 					NumeralJokerCount + 1
 				) {
@@ -1868,7 +1868,7 @@ exports.log = function (log, ...args) {
 			.send(
 				`<@!289119054130839552>`,
 				kifo.embed(
-					`${log.name}: ${log.message}\nStack: ${log.stack}\n\nAt <t:${Math.floor(
+					`${log.stack}\n\nAt <t:${Math.floor(
 						now.getTime() / 1000
 					)}>, <t:${Math.floor(
 						now.getTime() / 1000
