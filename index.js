@@ -856,7 +856,7 @@ async function commands(message, prefix) {
 			);
 			try {
 				debug = client.commands
-				.get(command)
+					.get(command)
 					.execute(message, args, prefix);
 			} catch (error) {
 				message.reply(kifo.embed(error, "Error!"));
@@ -1377,18 +1377,18 @@ function permsCheck() {
 					let Output = result.filter((row) => row.MessageId == key);
 					let r = Output[0];
 					let Title = `Changed ${r.PermFlag} from ${value} to ${r.Command == "add"
-							? "allow"
-							: r.Command == "rm"
+						? "allow"
+						: r.Command == "rm"
 							? "neutral"
 							: "deny"
 						} for:\n`;
 					let Description = "";
 					Output.forEach((rr) => {
 						Description += `- <@${client.guilds
-								.resolve(rr.GuildId)
-								?.members.resolve(rr.PermId) != null
-								? "!"
-								: "&"
+							.resolve(rr.GuildId)
+							?.members.resolve(rr.PermId) != null
+							? "!"
+							: "&"
 							}${rr.PermId}>\n`;
 					});
 					client.channels
@@ -1505,6 +1505,37 @@ client.on("message", (message) => {
 		main.log(err);
 	});
 });
+
+client.on("messageDelete", (message) => {
+	try {
+		if (menus.has(message.id)) {
+			if (menus.get(message.id).isPerm) {
+				client.commands.get("menu")
+					.revert(message, message, menus.get(message.id).isPerm, message.guild.channels.resolve(menus.get(message.id).DestinationChannelId), menus.get(message.id).PermName)
+			}
+			else {
+				client.commands.get("menu").revert(message, message, menus.get(message.id).isPerm, message.guild.roles.resolve(menus.get(message.id).RoleId))
+			}
+		}
+	} catch (error) {
+		main.log(error)
+	}
+
+})
+
+client.on("messageDeleteBulk", (messages) => {
+	messages.filter(msg => menus.has(msg.id)).each(message => {
+		if (menus.has(message.id)) {
+			if (menus.get(message.id).isPerm) {
+				client.commands.get("menu")
+					.revert(message, message, menus.get(message.id).isPerm, message.guild.channels.resolve(menus.get(message.id).DestinationChannelId), menus.get(message.id).PermName)
+			}
+			else {
+				client.commands.get("menu").revert(message, message, menus.get(message.id).isPerm, message.guild.roles.resolve(menus.get(message.id).RoleId))
+			}
+		}
+	})
+})
 
 //USED BY TODO COMMAND
 client.on("messageReactionAdd", async (msgReaction, user) => {
@@ -1867,7 +1898,8 @@ exports.log = function (log, ...args) {
 
 client.login(process.env.LOGIN_TOKEN);
 
-process.on('uncaughtException', err => {
-	main.log(err)
-	process.exit(1) //mandatory (as per the Node.js docs)
+process.on('uncaughtException', async (err) => {
+	console.error(err)
+	await main.log(err)
+	process.exit(1);
 })

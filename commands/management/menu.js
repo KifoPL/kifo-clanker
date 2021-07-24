@@ -5,6 +5,7 @@ const kifo = require("kifo");
 const main = require("../../index.js");
 const fs = require("fs");
 const ms = require("ms");
+const { SSL_OP_EPHEMERAL_RSA } = require("constants");
 const now = new Date(Date.now());
 
 module.exports = {
@@ -35,39 +36,51 @@ module.exports = {
 };
 
 async function revert(message, menu, isPerm, obj, permName = null) {
+
 	//obj is either channel or role
 	if (isPerm) {
-		let reaction = menu.reactions.resolve("857976926941478923");
-		await reaction.users.fetch();
-		await reaction.users.cache
-			.filter((user) => !user.bot)
-			.each((user) => {
-				//change perm to neutral
-				let perm = obj.permissionOverwrites.get(user.id);
-				if (perm != undefined) {
-					perm.update({
-						[permName]: null,
-					})
-						.then(() => {
-							user.send(
-								kifo.embed(
-									`Set <:GreySlash:857976926445502505> \`${menu.PermName}\` in <#${menu.DestinationChannelId}>!`
-								)
-							).catch(() => {});
+		if (!menu.deleted) {
+			let reaction = menu.reactions.resolve("857976926941478923");
+			await reaction.users.fetch();
+			await reaction.users.cache
+				.filter((user) => !user.bot)
+				.each((user) => {
+					//change perm to neutral
+					let perm = obj.permissionOverwrites.get(user.id);
+					if (perm != undefined) {
+						perm.update({
+							[permName]: null,
 						})
-						.catch((err) => {
-							message
-								.reply(
+							.then(() => {
+								user.send(
 									kifo.embed(
-										`Couldn't change <@!${user.id}> ${PermName} to <:GreySlash:857976926445502505>!`
+										`Set <:GreySlash:857976926445502505> \`${menu.PermName}\` in <#${menu.DestinationChannelId}>!`
 									)
-								)
-								.catch(() => {});
-							main.log(err);
-						});
-				}
-			});
-		message.author.send(kifo.embed(`Removed [perm menu](${message.url})!`));
+								).catch(() => { });
+							})
+							.catch((err) => {
+								message
+									.reply(
+										kifo.embed(
+											`Couldn't change <@!${user.id}> ${PermName} to <:GreySlash:857976926445502505>!`
+										)
+									)
+									.catch(() => { });
+								main.log(err);
+							});
+					}
+				});
+			message.author.send(kifo.embed(`Removed [perm menu](${message.url})!`));
+		}
+		else {
+			const timer = ms => new Promise(res => setTimeout(res, ms));
+			menu.channel.send(kifo.embed(`Removed [perm menu](${message.url})!\n__**Beware the effects of the command HAVE NOT BEEN REVERTED.**__ People who reacted to the menu will still have the \`${main.menus.get(menu.id).PermName}\` perms in <#${main.menus.get(menu.id).DestinationChannelId}>.\nIn the future, **if you want to remove perms from those who reacted**, use \`menu revert\`.\n\n*This message will be deleted automatically in 30 seconds...*`)).then(async (msg) => {
+				timer(30000).then(_ => {
+					msg.delete().catch(() => { });
+				})
+			})
+		}
+
 		main.con.query(
 			"DELETE FROM menu_perms WHERE MessageId = ?",
 			[menu.id],
@@ -77,37 +90,45 @@ async function revert(message, menu, isPerm, obj, permName = null) {
 		);
 		main.menus.delete(menu.id);
 	} else {
-		let reaction = menu.reactions.resolve("823658022948700240");
-		await reaction.users.fetch();
-		await reaction.users.cache
-			.filter((user) => !user.bot)
-			.each((user) => {
-				let member = message.guild.members.resolve(user.id);
-				if (member != undefined) {
-					member.roles
-						.remove(obj)
-						.then(() => {
-							member
-								.send(
-									kifo.embed(
-										`Removed ${obj.name} role! (ID: ${menu.RoleId})`
+		if (!menu.deleted) {
+			let reaction = menu.reactions.resolve("823658022948700240");
+			await reaction.users.fetch();
+			await reaction.users.cache
+				.filter((user) => !user.bot)
+				.each((user) => {
+					let member = message.guild.members.resolve(user.id);
+					if (member != undefined) {
+						member.roles
+							.remove(obj)
+							.then(() => {
+								member
+									.send(
+										kifo.embed(
+											`Removed ${obj.name} role! (ID: ${menu.RoleId})`
+										)
 									)
-								)
-								.catch(() => {});
-						})
-						.catch((err) => {
-							message
-								.reply(
-									kifo.embed(
-										`Could not remove <@!${member.id}>'s role <@&${obj.id}>!`
+									.catch(() => { });
+							})
+							.catch((err) => {
+								message
+									.reply(
+										kifo.embed(
+											`Could not remove <@!${member.id}>'s role <@&${obj.id}>!`
+										)
 									)
-								)
-								.catch(() => {});
-							main.log(err);
-						});
-				}
-			});
-		message.author.send(kifo.embed(`Removed [role menu](${message.url})!`));
+									.catch(() => { });
+								main.log(err);
+							});
+					}
+				});
+		} else {
+			const timer = ms => new Promise(res => setTimeout(res, ms));
+			menu.channel.send(kifo.embed(`Removed [role menu](${message.url})!\n__**Beware the effects of the command HAVE NOT BEEN REVERTED.**__ People who reacted to the menu will still have the <@&${main.menus.get(menu.id).RoleId}> role.\nIn the future, **if you want to remove role for users who reacted**, use \`menu revert\`.\n\n*This message will be deleted automatically in 30 seconds...*`)).then(async (msg) => {
+				timer(30000).then(_ => {
+					msg.delete().catch(() => { });
+				})
+			})
+		}
 		main.con.query(
 			"DELETE FROM menu_roles WHERE MessageId = ?",
 			[menu.id],
@@ -117,16 +138,15 @@ async function revert(message, menu, isPerm, obj, permName = null) {
 		);
 		main.menus.delete(menu.id);
 	}
-	menu.delete({ timeout: 2000, reason: "Reverted Menu!" }).catch(() => {
+	if (!menu.deleted) menu.delete({ timeout: 2000, reason: "Reverted Menu!" }).catch((err) => {
 		message
 			.reply(
 				kifo.embed(
-					`Could not delete [${isPerm ? "Perm Menu" : "Role Menu"}](${
-						menu.url
-					})!\nThe message may be too old to remove it automatically, you need to do it manually.`
+					`Could not delete [${isPerm ? "Perm Menu" : "Role Menu"}](${menu.url
+					})!\nThe message may be too old to remove it automatically, you need to do it manually.\n\nError:\n${err}`
 				)
 			)
-			.catch(() => {});
+			.catch(() => { });
 	});
 }
 async function execute(message, args, prefix) {
@@ -147,8 +167,7 @@ async function execute(message, args, prefix) {
 				"https://kifopl.github.io/kifo-clanker/"
 			)
 			.setFooter(
-				`Issued by ${message.member.displayName} - ${
-					message.member.id
+				`Issued by ${message.member.displayName} - ${message.member.id
 				} at ${now.toUTCString()}.`
 			);
 		//write all aliases of all text channel perms.
@@ -162,7 +181,7 @@ async function execute(message, args, prefix) {
 		message.author
 			.send(newEmbed)
 			.then(() => message.reply(kifo.embed("Check your DMs!")))
-			.catch(() => {});
+			.catch(() => { });
 		return;
 	}
 	if (!args[1]) {
@@ -179,7 +198,7 @@ async function execute(message, args, prefix) {
 								"You need `MANAGE_CHANNELS` permissions to see menus in this channel, or `MANAGE_GUILD` to see menus in entire server!"
 							)
 						)
-						.catch(() => {});
+						.catch(() => { });
 				}
 				//list perm menus from this channel
 				con.query(
@@ -204,25 +223,21 @@ async function execute(message, args, prefix) {
 									"https://kifopl.github.io/kifo-clanker/"
 								)
 								.setFooter(
-									`Issued by ${
-										message.member.displayName
-									} - ${
-										message.member.id
+									`Issued by ${message.member.displayName
+									} - ${message.member.id
 									} at ${now.toUTCString()}.`
 								);
 							result.forEach((row) => {
 								newEmbed.addField(
 									`${row.PermName}`,
-									`${
-										row.EndDate != null
-											? `Reverts at <t:${Math.floor(
-													row.EndDate.getTime() / 1000
-											  )}>`
-											: `No End Date.`
-									}, [menu](${
-										message.channel.messages.resolve(
-											row.MessageId
-										).url
+									`${row.EndDate != null
+										? `Reverts at <t:${Math.floor(
+											row.EndDate.getTime() / 1000
+										)}>`
+										: `No End Date.`
+									}, [menu](${message.channel.messages.resolve(
+										row.MessageId
+									).url
 									})`
 								);
 							});
@@ -256,25 +271,21 @@ async function execute(message, args, prefix) {
 									"https://kifopl.github.io/kifo-clanker/"
 								)
 								.setFooter(
-									`Issued by ${
-										message.member.displayName
-									} - ${
-										message.member.id
+									`Issued by ${message.member.displayName
+									} - ${message.member.id
 									} at ${now.toUTCString()}.`
 								);
 							result.forEach((row) => {
 								newEmbed.addField(
 									`${row.RoleId}`,
-									`<@&${row.RoleId}>, ${
-										row.EndDate != null
-											? `Reverts at <t:${Math.floor(
-													row.EndDate.getTime() / 1000
-											  )}>`
-											: `No End Date.`
-									}, [menu](${
-										message.channel.messages.resolve(
-											row.MessageId
-										).url
+									`<@&${row.RoleId}>, ${row.EndDate != null
+										? `Reverts at <t:${Math.floor(
+											row.EndDate.getTime() / 1000
+										)}>`
+										: `No End Date.`
+									}, [menu](${message.channel.messages.resolve(
+										row.MessageId
+									).url
 									})`
 								);
 							});
@@ -314,27 +325,23 @@ async function execute(message, args, prefix) {
 								"https://kifopl.github.io/kifo-clanker/"
 							)
 							.setFooter(
-								`Issued by ${message.member.displayName} - ${
-									message.member.id
+								`Issued by ${message.member.displayName} - ${message.member.id
 								} at ${now.toUTCString()}.`
 							);
 						result.forEach((row) => {
 							newEmbed.addField(
-								`${
-									message.guild.channels.resolve(
-										row.ChannelId
-									).name
+								`${message.guild.channels.resolve(
+									row.ChannelId
+								).name
 								} ${row.PermName}`,
-								`<#${row.ChannelId}> ${row.PermName}, ${
-									row.EndDate != null
-										? `reverts at <t:${Math.floor(
-												row.EndDate.getTime() / 1000
-										  )}>`
-										: `no End Date.`
-								}, [menu](${
-									message.guild.channels
-										.resolve(row.ChannelId)
-										.messages.resolve(row.MessageId).url
+								`<#${row.ChannelId}> ${row.PermName}, ${row.EndDate != null
+									? `reverts at <t:${Math.floor(
+										row.EndDate.getTime() / 1000
+									)}>`
+									: `no End Date.`
+								}, [menu](${message.guild.channels
+									.resolve(row.ChannelId)
+									.messages.resolve(row.MessageId).url
 								})`
 							);
 						});
@@ -372,29 +379,24 @@ async function execute(message, args, prefix) {
 								"https://kifopl.github.io/kifo-clanker/"
 							)
 							.setFooter(
-								`Issued by ${message.member.displayName} - ${
-									message.member.id
+								`Issued by ${message.member.displayName} - ${message.member.id
 								} at ${now.toUTCString()}.`
 							);
 						result.forEach((row) => {
 							newEmbed.addField(
-								`${
-									message.guild.channels.resolve(
-										row.ChannelId
-									).name
-								}, ${
-									message.guild.roles.resolve(row.RoleId).name
+								`${message.guild.channels.resolve(
+									row.ChannelId
+								).name
+								}, ${message.guild.roles.resolve(row.RoleId).name
 								}`,
-								`<#${row.ChannelId}> <@&${row.RoleId}>, ${
-									row.EndDate != null
-										? `reverts at <t:${Math.floor(
-												row.EndDate.getTime() / 1000
-										  )}>`
-										: `no End Date.`
-								}, [menu](${
-									message.guild.channels
-										.resolve(row.ChannelId)
-										.messages.resolve(row.MessageId).url
+								`<#${row.ChannelId}> <@&${row.RoleId}>, ${row.EndDate != null
+									? `reverts at <t:${Math.floor(
+										row.EndDate.getTime() / 1000
+									)}>`
+									: `no End Date.`
+								}, [menu](${message.guild.channels
+									.resolve(row.ChannelId)
+									.messages.resolve(row.MessageId).url
 								})`
 							);
 						});
@@ -476,7 +478,7 @@ async function execute(message, args, prefix) {
 				if (isNaN(time)) {
 					return message
 						.reply(kifo.embed(`Incorrect syntax!`))
-						.catch(() => {});
+						.catch(() => { });
 				}
 				if (time < 1000 * 60 || time > ms("1y"))
 					return message.reply(
@@ -489,16 +491,14 @@ async function execute(message, args, prefix) {
 				.setTitle("__Role Menu:__")
 				.setColor("a039a0")
 				.setDescription(
-					`React with <:role:823658022948700240> to get <@&${
-						role.id
-					}>!${
-						time != null
-							? `\nYour role will be removed at <t:${Math.floor(
-									(now.getTime() + time) / 1000
-							  )}>, <t:${Math.floor(
-									(now.getTime() + time) / 1000
-							  )}:R>`
-							: ""
+					`React with <:role:823658022948700240> to get <@&${role.id
+					}>!${time != null
+						? `\nYour role will be removed at <t:${Math.floor(
+							(now.getTime() + time) / 1000
+						)}>, <t:${Math.floor(
+							(now.getTime() + time) / 1000
+						)}:R>`
+						: ""
 					}`
 				)
 				.setAuthor(
@@ -511,8 +511,7 @@ async function execute(message, args, prefix) {
 					"https://kifopl.github.io/kifo-clanker/"
 				)
 				.setFooter(
-					`Issued by ${message.member.displayName} - ${
-						message.member.id
+					`Issued by ${message.member.displayName} - ${message.member.id
 					} at ${now.toUTCString()}.`
 				);
 
@@ -566,7 +565,7 @@ async function execute(message, args, prefix) {
 			if (channelResolvable == undefined)
 				return message
 					.reply(kifo.embed("Invalid syntax!"))
-					.catch(() => {});
+					.catch(() => { });
 			if (channelResolvable.match(MessageMentions.CHANNELS_PATTERN)) {
 				channel = message.guild.channels.resolve(
 					channelResolvable.slice(2, -1)
@@ -575,7 +574,7 @@ async function execute(message, args, prefix) {
 			if (channel == null) {
 				return message
 					.reply(kifo.embed("Invalid channel!"))
-					.catch(() => {});
+					.catch(() => { });
 			}
 			//PERM CHECK
 			if (!message.member.permissionsIn(channel).has("MANAGE_CHANNELS"))
@@ -601,7 +600,7 @@ async function execute(message, args, prefix) {
 			if (perm == undefined) {
 				return message
 					.reply(kifo.embed("Invalid Perm!"))
-					.catch(() => {});
+					.catch(() => { });
 			}
 			//!kifo menu perms perm channel time_period
 			if (args[3] != undefined) {
@@ -609,7 +608,7 @@ async function execute(message, args, prefix) {
 				if (isNaN(time)) {
 					return message
 						.reply(kifo.embed(`Incorrect syntax!`))
-						.catch(() => {});
+						.catch(() => { });
 				}
 				if (time < 1000 * 60 || time > ms("1y"))
 					return message.reply(
@@ -622,16 +621,14 @@ async function execute(message, args, prefix) {
 				.setTitle("__Perm Menu:__")
 				.setColor("a039a0")
 				.setDescription(
-					`React with <:GreenCheck:857976926941478923> to get \`${
-						perm.name
-					}\` in <#${channel.id}>!${
-						time != null
-							? `\nYour perm will be removed at <t:${Math.floor(
-									(now.getTime() + time) / 1000
-							  )}>, <t:${Math.floor(
-									(now.getTime() + time) / 1000
-							  )}:R>`
-							: ""
+					`React with <:GreenCheck:857976926941478923> to get \`${perm.name
+					}\` in <#${channel.id}>!${time != null
+						? `\nYour perm will be removed at <t:${Math.floor(
+							(now.getTime() + time) / 1000
+						)}>, <t:${Math.floor(
+							(now.getTime() + time) / 1000
+						)}:R>`
+						: ""
 					}`
 				)
 				.setAuthor(
@@ -644,8 +641,7 @@ async function execute(message, args, prefix) {
 					"https://kifopl.github.io/kifo-clanker/"
 				)
 				.setFooter(
-					`Issued by ${message.member.displayName} - ${
-						message.member.id
+					`Issued by ${message.member.displayName} - ${message.member.id
 					} at ${now.toUTCString()}.`
 				);
 
@@ -743,7 +739,7 @@ async function execute(message, args, prefix) {
 								} else
 									return message
 										.reply(kifo.embed("Message not found!"))
-										.catch(() => {});
+										.catch(() => { });
 							}
 						);
 				}
@@ -753,6 +749,6 @@ async function execute(message, args, prefix) {
 				.reply(
 					kifo.embed(`Invalid syntax!\n- ${this.usage.join("\n- ")}`)
 				)
-				.catch(() => {});
+				.catch(() => { });
 	}
 }
