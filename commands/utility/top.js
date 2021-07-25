@@ -232,7 +232,7 @@ module.exports = {
 						dynamic: true,
 						size: 32,
 					}),
-					"https://kifopl.github.io/kifo-clanker/wiki"
+					"https://kifopl.github.io/kifo-clanker/"
 				);
 
 				//if two posts have the same amount of upvotes, they're equal place

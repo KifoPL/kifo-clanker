@@ -77,6 +77,13 @@ WARNING! If you spam this command for no reason, you will get warned on the same
 	- `stfu <optional_user>` - ask someone to lower their voice to the sub-audible level in an elegant manner.
 - Required user permissions: `SEND_MESSAGES`
 
+### urmum
+
+- Random *yo momma* joke.
+- Usage:
+	- `urmum` - get a random *yo momma* joke.
+- Required user permissions: `SEND_MESSAGES`
+
 ## MANAGEMENT
 
 ### list
@@ -161,6 +168,13 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 	- `giveaway <x> <time_period> <reaction>` - sets up a message with `reaction`, that'll choose `x` random users after `time_period`.
 - Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`, `ADD_REACTIONS`
 
+### lang
+
+- This command allows you to detect message language.
+- Usage:
+	- `lang <message_id_or_url>` - sends a DM with description (react with any emote to the message to delete it).
+- Required user permissions: `SEND_MESSAGES`
+
 ### prefix
 
 - This command informs you in detail how you can change server prefix.
@@ -204,4 +218,4 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Sat, 24 Jul 2021 13:25:00 GMT*
+> - *Last update: Sun, 25 Jul 2021 17:43:03 GMT*

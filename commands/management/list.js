@@ -2,6 +2,7 @@ const limit = 1000;
 const kifo = require("kifo");
 const main = require(`../../index.js`);
 const Discord = require("discord.js");
+const api = require("axios")
 module.exports = {
 	name: "list",
 	description: `Lists all users in the server, or users having certain role.\nTo list more than ${limit} users you need \`MANAGE_GUILD\` perms.\nIf the bot doesn't see some channels, lists ~~may~~ will be incorrect.`,
@@ -819,6 +820,8 @@ async function stats(message, args, prefix, isList = true) {
 					() => { }
 				);
 
+				let colour = await api.get(`http://www.thecolorapi.com/id`, { params: { hex: entity.hexColor.slice(1) } })
+
 				newEmbed
 					.setColor("a039a0")
 					.setTitle(`${entity.name} stats:`)
@@ -846,7 +849,7 @@ async function stats(message, args, prefix, isList = true) {
 					.addFields(
 						{
 							name: `Colour:`,
-							value: `${entity.hexColor}`,
+							value: `${entity.hexColor}${colour.status === 200 ? `\n${colour.data.name.value}` : ``}`,
 							inline: true,
 						},
 						{
