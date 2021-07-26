@@ -86,6 +86,16 @@ WARNING! If you spam this command for no reason, you will get warned on the same
 
 ## MANAGEMENT
 
+### clean
+
+- This command cleans any permission overwrites that don't have `DENY` (<:RedX:857976926542757910>) or `ALLOW` (<:GreenCheck:857976926941478923>).
+- Usage:
+	- `clean` - cleans permission overwrites in the current channel.
+	- `clean <channel>` - cleans permission overwrites in `channel`.
+	- `clean <category>` - clean permission overwrites for `category` and all channels in `category`
+	- `clean all` - clean permission overwrites for `all` channels in the server.
+- Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`, `MANAGE_ROLES`
+
 ### list
 
 - Lists all users in the server, or users having certain role.
@@ -147,17 +157,14 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 	- `stats me` - shows your stats.
 - Required user permissions: `SEND_MESSAGES`
 
-## UTILITY
+### top
 
-### clean
-
-- This command cleans any permission overwrites that don't have `DENY` (<:RedX:857976926542757910>) or `ALLOW` (<:GreenCheck:857976926941478923>).
+- This command lists x messages with most reactions from other channel.
 - Usage:
-	- `clean` - cleans permission overwrites in the current channel.
-	- `clean <channel>` - cleans permission overwrites in `channel`.
-	- `clean <category>` - clean permission overwrites for `category` and all channels in `category`
-	- `clean all` - clean permission overwrites for `all` channels in the server.
-- Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`, `MANAGE_ROLES`
+	- `top <x> <time_period> <other_channel> <reaction>` - lists top x messages with most reactions from other channel. Sends x embeds (don't set it too large).
+- Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`
+
+## UTILITY
 
 ### giveaway
 
@@ -208,14 +215,7 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 	- `todo <description>` - sends a DM with description (react with any emote to the message to delete it).
 - Required user permissions: `SEND_MESSAGES`
 
-### top
-
-- This command lists x messages with most reactions from other channel.
-- Usage:
-	- `top <x> <time_period> <other_channel> <reaction>` - lists top x messages with most reactions from other channel. Sends x embeds (don't set it too large).
-- Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`
-
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Sun, 25 Jul 2021 17:43:03 GMT*
+> - *Last update: Mon, 26 Jul 2021 08:41:36 GMT*
