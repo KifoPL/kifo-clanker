@@ -877,7 +877,7 @@ async function onmessage(message) {
 	if (message.deleted) return;
 
 	if (message.content === `<@!${client.user.id}>`) {
-		return message.reply(kifo.embed(`<:KifoClanker:863793928377729065> My prefix is: \`${prefix}\`\n\n<:online:823658022974521414> I'm online for **${ms(client.uptime, { long: true })}**.`, "Hello there!"));
+		return message.reply(kifo.embed(`<:KifoClanker:863793928377729065> My prefix is: \`${prefix}\`\n\n<:online:823658022974521414> I'm online for **${ms(client.uptime, { long: true })}**.`, "Hello there!")).catch(() => { });
 	}
 
 	speakcheck = checks(message, prefix);
