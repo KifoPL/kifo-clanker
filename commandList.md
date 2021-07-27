@@ -77,7 +77,24 @@ WARNING! If you spam this command for no reason, you will get warned on the same
 	- `stfu <optional_user>` - ask someone to lower their voice to the sub-audible level in an elegant manner.
 - Required user permissions: `SEND_MESSAGES`
 
+### urmum
+
+- Random *yo momma* joke.
+- Usage:
+	- `urmum` - get a random *yo momma* joke.
+- Required user permissions: `SEND_MESSAGES`
+
 ## MANAGEMENT
+
+### clean
+
+- This command cleans any permission overwrites that don't have `DENY` (<:RedX:857976926542757910>) or `ALLOW` (<:GreenCheck:857976926941478923>).
+- Usage:
+	- `clean` - cleans permission overwrites in the current channel.
+	- `clean <channel>` - cleans permission overwrites in `channel`.
+	- `clean <category>` - clean permission overwrites for `category` and all channels in `category`
+	- `clean all` - clean permission overwrites for `all` channels in the server.
+- Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`, `MANAGE_ROLES`
 
 ### list
 
@@ -88,6 +105,7 @@ If the bot doesn't see some channels, lists ~~may~~ will be incorrect.
 	- `list` - lists all users in the server
 	- `list <user>` - lists roles of specified user.
 	- `list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.
+	- `list <channel/"here"> <role> <optional_role2> <optional_role_n> - lists users with specified roles in specified channel.
 	- `list <message_id>` - pastes raw message content *(with formatting, works with embeds and all types of messages)*.
 - Required user permissions: `SEND_MESSAGES`, `MANAGE_GUILD`
 
@@ -140,17 +158,14 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 	- `stats me` - shows your stats.
 - Required user permissions: `SEND_MESSAGES`
 
-## UTILITY
+### top
 
-### clean
-
-- This command cleans any permission overwrites that don't have `DENY` (<:RedX:857976926542757910>) or `ALLOW` (<:GreenCheck:857976926941478923>).
+- This command lists x messages with most reactions from other channel.
 - Usage:
-	- `clean` - cleans permission overwrites in the current channel.
-	- `clean <channel>` - cleans permission overwrites in `channel`.
-	- `clean <category>` - clean permission overwrites for `category` and all channels in `category`
-	- `clean all` - clean permission overwrites for `all` channels in the server.
-- Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`, `MANAGE_ROLES`
+	- `top <x> <time_period> <other_channel> <reaction>` - lists top x messages with most reactions from other channel. Sends x embeds (don't set it too large).
+- Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`
+
+## UTILITY
 
 ### giveaway
 
@@ -160,6 +175,13 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 	- `giveaway <x> <time_period>` - sets up a message with default reaction as <a:done:828097348545544202> that'll choose `x` random users after `time_period`.
 	- `giveaway <x> <time_period> <reaction>` - sets up a message with `reaction`, that'll choose `x` random users after `time_period`.
 - Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`, `ADD_REACTIONS`
+
+### lang
+
+- This command allows you to detect message language.
+- Usage:
+	- `lang <message_id_or_url>` - sends a DM with description (react with any emote to the message to delete it).
+- Required user permissions: `SEND_MESSAGES`
 
 ### prefix
 
@@ -192,16 +214,10 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 - This command allows you to create a simple todo notes.
 - Usage:
 	- `todo <description>` - sends a DM with description (react with any emote to the message to delete it).
+	- `todo <message_url> <optional_description>` - sends a DM with message content, link to the message and optional description.
 - Required user permissions: `SEND_MESSAGES`
-
-### top
-
-- This command lists x messages with most reactions from other channel.
-- Usage:
-	- `top <x> <time_period> <other_channel> <reaction>` - lists top x messages with most reactions from other channel. Sends x embeds (don't set it too large).
-- Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`
 
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Sat, 24 Jul 2021 13:25:00 GMT*
+> - *Last update: Tue, 27 Jul 2021 15:46:35 GMT*
