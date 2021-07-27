@@ -154,7 +154,7 @@ async function hello(message, prefix) {
 			)
 			.addField(
 				"\u200B",
-				"This bot is developed by [KifoPL](https://github.com/KifoPL).\nDiscord: <@289119054130839552> : @KifoPL#3358\nReddit: [u/kifopl](http://reddit.com/u/kifopl)\n[Buy me a beer!](https://www.buymeacoffee.com/kifoPL) (developing bot takes a lot of time, by donating you help me pay for hosting / my electricity / internet bills!)"
+				"This bot is developed by [KifoPL](https://bio.link/kifopl)."
 			);
 		message.channel.send(helloEmbed).catch(() => { });
 		message.channel.stopTyping(true);
@@ -875,6 +875,10 @@ async function onmessage(message) {
 	await superslow(message, prefix).catch(() => { });
 
 	if (message.deleted) return;
+
+	if (message.content === `<@!${client.user.id}>`) {
+		return message.reply(kifo.embed(`<:KifoClanker:863793928377729065> My prefix is: \`${prefix}\`\n\n<:online:823658022974521414> I'm online for **${ms(client.uptime, { long: true })}**.`, "Hello there!"));
+	}
 
 	speakcheck = checks(message, prefix);
 

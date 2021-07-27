@@ -5,7 +5,8 @@ fail, run !kifo](https://i.imgur.com/hWkoxmm.jpg)
 ![GitHub](https://img.shields.io/github/license/kifopl/kifo-clanker)
 ![Made with Node.js](https://img.shields.io/badge/Made%20with-Node.js-1f425f.svg)
 
-# Kifo Clanker: top-quality unorthodox Discord commands
+# [Kifo Clanker: top-quality unorthodox Discord commands!](https://discord.com/oauth2/authorize?client_id=795638549730295820&permissions=2416299088&scope=bot)
+> *Click the text above to invite Kifo Clanker to your Discord server and try it yourself.*
 
 ## **This bot contains:**
 - Channel contest manager,
