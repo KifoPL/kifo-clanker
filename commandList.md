@@ -105,6 +105,7 @@ If the bot doesn't see some channels, lists ~~may~~ will be incorrect.
 	- `list` - lists all users in the server
 	- `list <user>` - lists roles of specified user.
 	- `list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.
+	- `list <channel/"here"> <role> <optional_role2> <optional_role_n> - lists users with specified roles in specified channel.
 	- `list <message_id>` - pastes raw message content *(with formatting, works with embeds and all types of messages)*.
 - Required user permissions: `SEND_MESSAGES`, `MANAGE_GUILD`
 
@@ -213,9 +214,10 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 - This command allows you to create a simple todo notes.
 - Usage:
 	- `todo <description>` - sends a DM with description (react with any emote to the message to delete it).
+	- `todo <message_url> <optional_description>` - sends a DM with message content, link to the message and optional description.
 - Required user permissions: `SEND_MESSAGES`
 
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Mon, 26 Jul 2021 08:41:36 GMT*
+> - *Last update: Tue, 27 Jul 2021 15:46:35 GMT*

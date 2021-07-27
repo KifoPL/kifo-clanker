@@ -1559,6 +1559,8 @@ client.on("messageReactionAdd", async (msgReaction, user) => {
 			let channel = msg.guild?.channels.resolve(
 				menu.DestinationChannelId
 			);
+			//If someone has specifically denied perms, they shouldn't be able to use the menu
+			if (channel.permissionOverwrites.get(user.id)?.deny.has(menu.PermName)) return;
 			channel
 				.updateOverwrite(user.id, {
 					[menu.PermName]: true,

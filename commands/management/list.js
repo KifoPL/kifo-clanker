@@ -10,6 +10,7 @@ module.exports = {
 		"`list` - lists all users in the server",
 		"`list <user>` - lists roles of specified user.",
 		"`list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.",
+		"`list <channel/\"here\"> <role> <optional_role2> <optional_role_n> - lists users with specified roles in specified channel.",
 		"`list <message_id>` - pastes raw message content *(with formatting, works with embeds and all types of messages)*.",
 	],
 	adminonly: false,
@@ -120,6 +121,8 @@ async function whatamifunc(message, args, callback) {
 
 async function stats(message, args, prefix, isList = true) {
 
+	//If you're reading this, good luck understanding wtf is happening here :)
+
 	//This is for timestamps
 	const ms = require(`ms`);
 	const fs = require("fs");
@@ -151,18 +154,128 @@ async function stats(message, args, prefix, isList = true) {
 
 	//if you provide multiple role IDs you get a list of members with these roles
 	if (args[1] != undefined) {
-		if (isList) {
+		if (args[0].toLowerCase() == "here" || message.guild.channels.resolve(args[0]) || args[0].match(Discord.MessageMentions.CHANNELS_PATTERN)) {
+			if (!isList) return message.reply(kifo.embed("Too many arguments! If you want to make role filter, use `list`.")).catch(() => { })
+			let thisChannel = null;
+			if (args[0].toLowerCase() == "here") thisChannel = message.channel;
+			else if (message.guild.channels.resolve(args[0]) != undefined) {
+				thisChannel = message.guild.channels.resolve(args[0]);
+			} else if (args[0].match(Discord.MessageMentions.CHANNELS_PATTERN)) {
+				thisChannel = message.guild.channels.resolve(args[0].slice(2, -1));
+			}
+			if (thisChannel == null) return message.reply(kifo.embed("Invalid channel!"))
+			let roleIDs = [];
+			i = 0;
+			args.shift();
+			while (args[i] != undefined) {
+				if (
+					message.guild.roles.resolve(args[i]) !=
+					undefined
+				) {
+					roleIDs.push(args[i]);
+				} else if (message.guild.roles.resolve(args[i].slice(3, -1)) != undefined) {
+					roleIDs.push(args[i].slice(3, -1));
+					args[i] = args[i].slice(3, -1);
+				} else
+					return message.reply(
+						kifo.embed(`${args[i]} is not a valid role!`)
+					);
+				i++;
+			}
+			let memberList = await message.guild.members.cache.filter((member) =>
+				member.roles.cache.has(roleIDs[0])
+			);
+			for (i = 1; i < roleIDs.length; i++) {
+				memberList = await memberList.filter((member) =>
+					member.roles.cache.has(roleIDs[i])
+				);
+			}
+
+			memberList = await memberList.filter((member) => member.permissionsIn(thisChannel).has("VIEW_CHANNEL"))
+
+			var fileContent = `User ID\tPosition\tUser name\tNickname\n`;
+
+			var Count = 0;
+
+			await memberList.each(() => Count++);
+			if (Count > limit && !message.member.permissions.has("MANAGE_GUILD") && isList) {
+				message.channel.stopTyping(true);
+				return message.reply(
+					kifo.embed(
+						`The output has ${Count} records, you need \`MANAGE_GUILD\` to create a file this large.`
+					)
+				);
+			}
+
+			await memberList
+				.each((member) => {
+					fileContent += `${member.id}\t${member.roles.highest.rawPosition
+						}\t${member.user.username}\t${member.nickname ?? ""}\n`;
+				});
+
+			fs.writeFileSync(`./${args[0]}ETCmembers.txt`, fileContent, () => { });
+
+			var roleList = "";
+			for (i = 0; i < roleIDs.length; i++) {
+				roleList += `${roleIDs[i]} - ${message.guild.roles.cache.find((role) => role.id == roleIDs[i])
+					.name
+					}\n`;
+			}
+
+			newEmbed
+				.setColor("a039a0")
+				.setTitle(`Multiple roles in ${thisChannel.name} list:`)
+				.setDescription(
+					"You will find the list of members with all specified roles in the ``.txt`` attachment"
+				)
+				.setAuthor(
+					"Kifo Clanker™, by KifoPL#3358",
+					message.guild.me?.user?.avatarURL({
+						format: "png",
+						dynamic: true,
+						size: 64,
+					}),
+					"https://kifopl.github.io/kifo-clanker/"
+				)
+				.setFooter(`State of members as of ${time.toUTCString()}.`)
+				.addFields(
+					{
+						name: `${thisChannel.name}`,
+						value: `Showing people who are in <#${thisChannel.id}>.`
+					},
+					{
+						name: `Role filter (${i} role${i > 1 ? "s" : ""}):`,
+						value: `${roleList}`,
+					},
+					//{name: "Also:", value: `You can check your own stats with "stats me", or someone else's stats by ${this.usage}`},
+					{
+						name: "More",
+						value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
+					}
+				)
+				.attachFiles([
+					{
+						attachment: `./${args[0]}ETCmembers.txt`,
+						name: `${args[0]}ETCmembers.txt`,
+					},
+				]);
+		}
+		else if (isList) {
 			let roleIDs = [];
 			i = 0;
 			while (args[i] != undefined) {
 				if (
-					message.guild.roles.cache.find((role) => role.id == args[i]) ==
+					message.guild.roles.resolve(args[i]) !=
 					undefined
-				)
+				) {
+					roleIDs.push(args[i]);
+				} else if (message.guild.roles.resolve(args[i].slice(3, -1)) != undefined) {
+					roleIDs.push(args[i].slice(3, -1))
+					args[i] = args[i].slice(3, -1);
+				} else
 					return message.reply(
-						kifo.embed(`${args[i]} is not a valid role ID!`)
+						kifo.embed(`${args[i]} is not a valid role!`)
 					);
-				roleIDs.push(args[i]);
 				i++;
 			}
 
@@ -222,10 +335,9 @@ async function stats(message, args, prefix, isList = true) {
 				.setFooter(`State of members as of ${time.toUTCString()}.`)
 				.addFields(
 					{
-						name: `Role filter:`,
+						name: `Role filter (${i} role${i > 1 ? "s" : ""}):`,
 						value: `${roleList}`,
 					},
-					//{name: "Also:", value: `You can check your own stats with "stats me", or someone else's stats by ${this.usage}`},
 					{
 						name: "More",
 						value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
@@ -325,7 +437,6 @@ async function stats(message, args, prefix, isList = true) {
 					() => { }
 				);
 			}
-			//console.log(`${path.resolve(`${message.guild.id}members.txt`)}`);
 
 			let servertime = time.getTime() - message.guild.createdAt.getTime();
 			newEmbed
