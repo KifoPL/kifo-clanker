@@ -15,11 +15,10 @@ module.exports = {
 			)
 			.setColor("a039a0")
 			.setTitle(
-				`Command "${this.name.toUpperCase()}" issued by ${
-					message.author.tag
+				`Command "${this.name.toUpperCase()}" issued by ${message.author.tag
 				}`
 			)
 			.setDescription("...pong!");
-		message.channel.send(Embed).catch();
+		message.reply({ embeds: [Embed] }).catch();
 	},
 };

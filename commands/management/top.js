@@ -14,52 +14,66 @@ module.exports = {
 		const ms = require(`ms`);
 		const kifo = require("kifo");
 		if (message.guild == null)
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed("you can only run this command on the server.")
-			);
+				]
+			});
 		if (
 			!message.member
 				.permissionsIn(message.channel)
-				.has("MANAGE_CHANNELS")
+				.has(Discord.Permissions.FLAGS.MANAGE_CHANNELS)
 		)
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed("You do not have `MANAGE_CHANNELS` permissions.")
-			);
+				]
+			});
 		if (!args[3])
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed(`insufficient arguments. Use ${this.usage}`)
-			);
+				]
+			});
 		if (isNaN(args[0]))
-			return message.reply(kifo.embed("incorrect amount of posts."));
+			return message.reply({ embeds: [kifo.embed("incorrect amount of posts.")] });
 		if (args[0] < 1 || args[0] > 100)
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed(
 					"incorrect amount of posts. You must select at least 1, but not more than 100."
 				)
-			);
+				]
+			});
 		let x = args[0];
 		if (isNaN(ms(args[1])))
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed(
 					"incorrect time period. Please specify correct time period."
 				)
-			);
+				]
+			});
 		if (ms(args[1]) < ms("10s") || ms(args[1]) > ms("14d"))
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed(
 					"incorrect amount of time. For the command to work, please input period of time that is between 10 seconds and 14 days."
 				)
-			);
+				]
+			});
 		if (
 			message.guild.channels.cache.find(
 				(channel) => channel.id == args[2].slice(2, 20)
 			) == undefined
 		)
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed(
 					"channel does not exist. Please input correct channel."
 				)
-			);
+				]
+			});
 		if (
 			message.guild.emojis.cache.find(
 				(emojis) =>
@@ -67,15 +81,19 @@ module.exports = {
 					args[3].slice(args[3].length - 19, args[3].length - 1)
 			) == undefined
 		)
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed(
 					"this reaction does not exist / is not from this server. Please use only emotes from this server."
 				)
-			);
+				]
+			});
 		if (args[4] != undefined)
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed(`too many arguments! Use ${this.usage}`)
-			);
+				]
+			});
 
 		function place(number) {
 			if (number % 10 == 1 && number % 100 != 11) return `st`;
@@ -88,40 +106,48 @@ module.exports = {
 		let whichchannel = message.channel.guild.channels.cache.find(
 			(channel) => channel.id == args[2].slice(2, 20)
 		);
-		if (!message.guild.me.permissionsIn(whichchannel).has("VIEW_CHANNEL"))
-			return message.reply(
+		if (!message.guild.me.permissionsIn(whichchannel).has(Discord.Permissions.FLAGS.VIEW_CHANNEL))
+			return message.reply({
+				embeds: [
 				kifo.embed(
 					"I do not have `VIEW_CHANNEL` permissions in " +
 						"<#" +
 						whichchannel.id +
 						">"
 				)
-			);
-		if (!message.guild.me.permissionsIn(whichchannel).has("VIEW_CHANNEL"))
-			return message.reply(
+				]
+			});
+		if (!message.guild.me.permissionsIn(whichchannel).has(Discord.Permissions.FLAGS.VIEW_CHANNEL))
+			return message.reply({
+				embeds: [
 				kifo.embed(
 					"I do not have `READ_MESSAGE_HISTORY` permissions in " +
 						"<#" +
 						whichchannel.id +
 						">"
 				)
-			);
+				]
+			});
 		if (
-			!message.guild.me.permissionsIn(message.channel).has("ATTACH_FILES")
+			!message.guild.me.permissionsIn(message.channel).has(Discord.Permissions.FLAGS.ATTACH_FILES)
 		)
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed(
 					"I do not have `ATTACH_FILES` permissions in this channel."
 				)
-			);
-		if (!message.member.permissionsIn(whichchannel).has("MANAGE_CHANNELS"))
-			return message.reply(
+				]
+			});
+		if (!message.member.permissionsIn(whichchannel).has(Discord.Permissions.FLAGS.MANAGE_CHANNELS))
+			return message.reply({
+				embeds: [
 				kifo.embed(
 					"You need to have `MANAGE_CHANNELS` permissions in <#" +
 						whichchannel.id +
 						">"
 				)
-			);
+				]
+			});
 		let chmessages = [];
 		let key = args[3].slice(args[3].length - 19, args[3].length - 1);
 
@@ -168,11 +194,13 @@ module.exports = {
 		// // 	.then((messages) => (chmessages = messages.array()))
 		// // 	.catch((err) => console.log(err));
 		if (!chmessages[0])
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed(
 					"no posts found matching criteria. Maybe try longer time period?"
 				)
-			);
+				]
+			});
 		chmessages.sort((a, b) => {
 			if (
 				b.reactions.cache.find(
@@ -202,7 +230,7 @@ module.exports = {
 		} else loops = x;
 		let ii = 1;
 		let userids = [];
-		message.channel.startTyping();
+		message.channel.sendTyping().catch();
 		for (i = 0; i < loops; i++) {
 			//one person can only get one place.
 			if (
@@ -248,7 +276,7 @@ module.exports = {
 					}
 				}
 
-				message.channel.startTyping().catch();
+				message.channel.sendTyping().catch();
 				newEmbed.setTitle(
 					"**" +
 						ii +
@@ -281,15 +309,15 @@ module.exports = {
 				newEmbed.setURL(
 					`https://discord.com/channels/${chmessages[i].channel.guild.id}/${chmessages[i].channel.id}/${chmessages[i].id}`
 				);
-				message.channel.send(newEmbed).catch();
+				message.channel.send({ embeds: [newEmbed] }).catch();
 				ii++;
 			}
-			//message.channel.startTyping().catch();
+			//message.channel.sendTyping().catch();
 		}
-		message.channel.stopTyping(true);
+		message.delete().catch(() => { })
 		if (loops < args[0])
 			message.channel
-				.send("No more posts with given criteria found.")
+				.send({ embeds: [kifo.embed("No more posts with given criteria found.")] })
 				.catch();
 	},
 };

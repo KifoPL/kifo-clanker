@@ -20,7 +20,7 @@ module.exports = {
 
 		let command = {};
 		var AmIAdmin = false;
-		if (message.member.permissions.has("ADMINISTRATOR")) AmIAdmin = true;
+		if (message.member.permissions.has(Discord.Permissions.FLAGS.ADMINISTRATOR)) AmIAdmin = true;
 
 		const commandFolders = fs.readdirSync("./commands");
 		for (const folder of commandFolders) {
@@ -47,7 +47,7 @@ module.exports = {
 					.setDescription(this.description)
 					.addField("Usage:", this.usage.join("\n"))
 					.addField("Required permissions:", this.perms.join(", "));
-				message.channel.send(newEmbed);
+				message.reply({ embeds: [newEmbed] });
 				return;
 			}
 			//help <command>
@@ -62,7 +62,7 @@ module.exports = {
 						"Required permissions:",
 						command.perms.join(", ")
 					);
-				message.channel.send(newEmbed);
+				message.reply({ embeds: [newEmbed] });
 				return;
 			} else {
 				//help <category>
@@ -103,7 +103,7 @@ module.exports = {
 						)
 						.addFields(FieldArr);
 
-					return message.channel.send(newEmbed);
+					return message.reply({ embeds: [newEmbed] });
 				}
 				const embedreply = new Discord.MessageEmbed();
 				embedreply
@@ -120,7 +120,7 @@ module.exports = {
 						`Command ${args[0]} not found.`,
 						`Run \`${prefix.trim()} help\` to get list of available commands.`
 					);
-				return message.channel.send(embedreply);
+				return message.reply({ embeds: [embedreply] });
 			}
 		}
 		//help
@@ -202,6 +202,6 @@ module.exports = {
 			)
 			.addFields(FieldArr);
 
-		message.channel.send(newEmbed);
+		message.reply({ embeds: [newEmbed] });
 	},
 };

@@ -20,68 +20,80 @@ module.exports = {
 		//precheck
 		if (!message.guild == null)
 			return message
-				.reply(kifo.embed(`you can only run this command in a server!`))
+				.reply({ embeds: [kifo.embed(`you can only run this command in a server!`)] })
 				.catch(() => {});
 
 		//perms check
 		if (
 			!message.guild?.me
 				.permissionsIn(message.channel)
-				.has("MANAGE_CHANNELS")
+				.has(Discord.Permissions.FLAGS.MANAGE_CHANNELS)
 		) {
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed("Missing `MANAGE_CHANNELS` permission!")
-			);
+				]
+			});
 		}
 		if (
 			!message.guild?.me
 				.permissionsIn(message.channel)
-				.has("ADD_REACTIONS")
+				.has(Discord.Permissions.FLAGS.ADD_REACTIONS)
 		) {
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed("Missing `ADD_REACTIONS` permission!")
-			);
+				]
+			});
 		}
 
 		if (!args[0]) {
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed(`- ${this.usage.join("\n- ")}`, "Usage:")
-			);
+				]
+			});
 		}
 		if (!args[1]) {
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed(
 					`Usage: ${this.usage.join("\n")}`,
 					"Incorrect syntax!"
 				)
-			);
+				]
+			});
 		}
 
 		if (isNaN(args[0]))
 			return message
-				.reply(kifo.embed("Please provide correct amount of winners!"))
+				.reply({ embeds: [kifo.embed("Please provide correct amount of winners!")] })
 				.catch(() => {});
 		if (args[0] < 1)
 			return message
-				.reply(kifo.embed("Please choose at least one winner!"))
+				.reply({ embeds: [kifo.embed("Please choose at least one winner!")] })
 				.catch(() => {});
 		if (Math.floor(args[0]) != args[0])
 			return message
-				.reply(
+				.reply({
+					embeds: [
 					kifo.embed("Please choose an integer amount of winners!")
-				)
+					]
+				})
 				.catch(() => {});
 		if (isNaN(ms(args[1])))
 			return message
-				.reply(kifo.embed("Please provide correct time period!"))
+				.reply({ embeds: [kifo.embed("Please provide correct time period!")] })
 				.catch(() => {});
 		if (ms(args[1]) < 1000 * 60)
 			return message
-				.reply(
+				.reply({
+					embeds: [
 					kifo.embed(
 						"Please set the giveaway to at least 1 minute long."
 					)
-				)
+					]
+				})
 				.catch(() => {});
 
 		const time = args[1];
@@ -93,22 +105,25 @@ module.exports = {
 			client.emojis.resolveIdentifier(reaction) == null &&
 			!reaction.match(kifo.emojiRegex())
 		) {
-			return message.reply(kifo.embed("Incorrect reaction!"));
+			return message.reply({ embeds: [kifo.embed("Incorrect reaction!")] });
 		}
 
 		message.channel
-			.send(
+			.send({
+				content:
 				`Ends at: <t:${Math.floor(
 					end.getTime() / 1000
 				)}>, <t:${Math.floor(end.getTime() / 1000)}:R>`,
-				kifo.embed(
+				embeds:
+					[kifo.embed(
 					`React with ${reaction} to enter! The ${x} winner${
 						x > 1 ? "s" : ""
 					} will be chosen at ${end.toUTCString()}.`,
 					"GIVEAWAY!"
-				)
-			)
+					)]
+			})
 			.then((msg) => {
+				message.delete().catch(() => { })
 				msg.react(reaction)
 					.then((reaction1) => {
 						con.query(

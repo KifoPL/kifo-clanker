@@ -19,20 +19,17 @@ module.exports = {
 				`https://discord.gg/HxUFQCxPFp`
 			)
 			.setTitle(
-				`Command "${this.name.toUpperCase()}" issued by ${
-					message.author.tag
+				`Command "${this.name.toUpperCase()}" issued by ${message.author.tag
 				}`
 			);
-		if (message.member.permissions.has("ADMINISTRATOR")) {
+		if (message.member.permissions.has(Discord.Permissions.FLAGS.ADMINISTRATOR)) {
 			embedreply.setDescription(
 				`Works fine, Mr. Admin ${message.author}!`
 			);
-			message.channel.stopTyping(true);
-			return message.reply(embedreply);
+			return message.reply({ embeds: [embedreply], files: [] });
 		} else {
 			embedreply.setDescription(`It works, regular person.`);
-			message.channel.stopTyping(true);
-			return message.reply(embedreply);
+			return message.reply({ embeds: [embedreply] });
 		}
 	},
 };

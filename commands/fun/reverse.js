@@ -7,7 +7,10 @@ module.exports = {
 	perms: ["SEND_MESSAGES"],
 	execute(message, args) {
 		const kifo = require("kifo");
-		if (!args[0]) return message.reply(kifo.embed(`Usage: ${this.usage}.`));
+		if (!args[0])
+			return message.reply({
+				embeds: [kifo.embed(`Usage: ${this.usage}.`)],
+			});
 
 		const embedreply = new Discord.MessageEmbed();
 		embedreply
@@ -36,6 +39,6 @@ module.exports = {
 		// 	return message.reply(embedreply).catch();
 		// }
 		embedreply.setDescription(output);
-		message.channel.send(embedreply).catch();
+		message.reply({ embeds: [embedreply] }).catch();
 	},
 };
