@@ -1906,5 +1906,6 @@ client.login(process.env.LOGIN_TOKEN);
 
 process.on('uncaughtException', async (err) => {
 	console.error(err)
+	console.log(err)
 	await main.log(err)
 })
