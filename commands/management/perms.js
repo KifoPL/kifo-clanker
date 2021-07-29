@@ -5,6 +5,7 @@ const fs = require("fs");
 const ms = require("ms");
 const now = new Date(Date.now());
 const Discord = require("discord.js");
+const { resolve } = require("path");
 
 module.exports = {
 	name: "perms",
@@ -116,26 +117,16 @@ module.exports = {
 					whatami = "channel";
 					if (entity == null)
 						entity = message.guild.channels.resolve(
-							args[0].slice(2, -1)
+							kifo.mentionTrim(args[0])
 						);
 				} else {
-					entity = message.guild.roles.resolve(args[0]);
-					mention = args[0].match(MessageMentions.ROLES_PATTERN);
-					if (entity != null || mention != null) {
+					entity = message.guild.roles.resolve(kifo.mentionTrim(args[0]));
+					if (entity != null) {
 						whatami = "role";
-						if (entity == null)
-							entity = message.guild.roles.resolve(
-								args[0].slice(3, -1)
-							);
 					} else {
-						entity = message.guild.members.resolve(args[0]);
-						mention = args[0].match(MessageMentions.USERS_PATTERN);
-						if (entity != null || mention != null) {
+						entity = message.guild.members.resolve(kifo.mentionTrim(args[0]));
+						if (entity != null) {
 							whatami = "member";
-							if (entity == null)
-								entity = await message.guild.members.resolve(
-									args[0].slice(3, -1)
-								);
 						} else {
 							return message.reply({
 								embeds: [
@@ -165,7 +156,7 @@ module.exports = {
 					) {
 						description += `Permissions are synchronised with **"${message.channel.parent.name}"** category.\n`;
 					}
-					if (!message.channel.permissionOverwrites.has(entity.id)) {
+					if (!message.channel.permissionOverwrites.resolve(entity.id)) {
 						description += `No permission overwrites for ${whatami == "member" ? `<@` : `<@&`
 							}${entity.id}>.\n`;
 					}
@@ -289,16 +280,7 @@ module.exports = {
 				//console.log(`IdINPUT ${IdInput}`);
 				let IdArray = [];
 				IdInput.forEach((Id) => {
-					if (
-						Id.match(MessageMentions.USERS_PATTERN) ||
-						Id.match(MessageMentions.ROLES_PATTERN)
-					) {
-						IdArray.push(Id.slice(3, -1));
-						//console.log("sliced!")
-					} else {
-						IdArray.push(Id);
-						//console.log("NOT sliced!")
-					}
+					IdArray.push(kifo.mentionTrim(Id));
 				});
 				IdArray.forEach((Id) => {
 					if (stop) return;

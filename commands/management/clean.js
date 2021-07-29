@@ -128,22 +128,14 @@ async function execute(message, args) {
 				.catch((err) => main.log(err));
 		} else {
 			//!kifo clean channel
-			if (args[0].match(Discord.MessageMentions.CHANNELS_PATTERN)) {
-				//<#222>
-				channel = message.guild.channels.resolve(args[0].slice(2, -1));
-			} else channel = message.guild.channels.resolve(args[0]);
+			channel = message.guild.channels.resolve(kifo.mentionTrim(args[0]));
 			if (channel == null) {
 				return message
 					.reply({ embeds: [kifo.embed("Invalid channel!")] })
 					.catch(() => { });
 			}
 			if (channel.type === "GUILD_CATEGORY") {
-				channelsToClean++;
-				await cleanChannel(message, channel, function (err, result) {
-					result.isSuccess ? channelsCleaned++ : channelsErrors++;
-					outputMsg += `${channel.id}\t${channel.name}\t${result.isSuccess ? "Success" : `Error\t${err.message}`
-						}\n`;
-				});
+
 				await message.guild.fetch().then((guild) =>
 					guild.channels.cache
 						.filter((ch) => ch.parent == channel)
@@ -165,6 +157,12 @@ async function execute(message, args) {
 						})
 				);
 			}
+			channelsToClean++;
+			await cleanChannel(message, channel, function (err, result) {
+				result.isSuccess ? channelsCleaned++ : channelsErrors++;
+				outputMsg += `${channel.id}\t${channel.name}\t${result.isSuccess ? "Success" : `Error\t${err.message}`
+					}\n`;
+			});
 		}
 	} else
 		return message
@@ -175,7 +173,7 @@ async function execute(message, args) {
 	let embed = kifo.embed(
 		`Channels Found: ${channelsToClean}, channels cleaned: ${channelsCleaned}, errors: ${channelsErrors}`
 	);
-	await message.reply({ embeds: [embed], files: `./clean${message.id}.txt` }).catch((err) => console.error(err));
+	await message.reply({ embeds: [embed], files: [`./clean${message.id}.txt`] }).catch((err) => console.error(err));
 
 	try {
 		fs.unlinkSync(`./clean${message.id}.txt`, (err) => {

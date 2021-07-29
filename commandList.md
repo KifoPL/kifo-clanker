@@ -15,7 +15,7 @@ This command lists all categories of commands and shows help for every command.
 If this bot encountered an error anywhere, please type this command right after. It will ping me (KifoPL#3358) and automatically create an issue on [GitHub](https://github.com/KifoPL/kifo-clanker/issues).
 WARNING! If you spam this command for no reason, you will get warned on the same premise as spam pinging. Use only when encountering actual errors.
 - Usage:
-	- `error <optional_description>` - pings <@289119054130839552> with optionally provided description.
+	- `error <description>` - pings <@289119054130839552> with provided description and creates an issue on [GitHub](https://github.com/KifoPL/kifo-clanker/issues).
 - Required user permissions: `SEND_MESSAGES`
 
 ### ping
@@ -208,4 +208,4 @@ test out if the `/` commands work properly.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Wed, 28 Jul 2021 15:31:11 GMT*
+> - *Last update: Thu, 29 Jul 2021 11:54:38 GMT*

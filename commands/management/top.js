@@ -10,6 +10,7 @@ module.exports = {
 	adminonly: true,
 	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
 	async execute(message, args) {
+		const { client, con } = require("../../index.js");
 		//This is for timestamps
 		const ms = require(`ms`);
 		const kifo = require("kifo");
@@ -37,11 +38,11 @@ module.exports = {
 			});
 		if (isNaN(args[0]))
 			return message.reply({ embeds: [kifo.embed("incorrect amount of posts.")] });
-		if (args[0] < 1 || args[0] > 100)
+		if (args[0] < 1 || args[0] > 10)
 			return message.reply({
 				embeds: [
 				kifo.embed(
-					"incorrect amount of posts. You must select at least 1, but not more than 100."
+					"incorrect amount of posts. You must select at least 1, but not more than 10."
 				)
 				]
 			});
@@ -64,7 +65,7 @@ module.exports = {
 			});
 		if (
 			message.guild.channels.cache.find(
-				(channel) => channel.id == args[2].slice(2, 20)
+				(channel) => channel.id == kifo.mentionTrim(args[2])
 			) == undefined
 		)
 			return message.reply({
@@ -74,20 +75,13 @@ module.exports = {
 				)
 				]
 			});
+		let reaction = args[3]
 		if (
-			message.guild.emojis.cache.find(
-				(emojis) =>
-					emojis.id ==
-					args[3].slice(args[3].length - 19, args[3].length - 1)
-			) == undefined
-		)
-			return message.reply({
-				embeds: [
-				kifo.embed(
-					"this reaction does not exist / is not from this server. Please use only emotes from this server."
-				)
-				]
-			});
+			client.emojis.resolveIdentifier(reaction) == null &&
+			!reaction.match(kifo.emojiRegex())
+		) {
+			return message.reply({ embeds: [kifo.embed("Incorrect reaction!")] });
+		}
 		if (args[4] != undefined)
 			return message.reply({
 				embeds: [
@@ -149,7 +143,7 @@ module.exports = {
 				]
 			});
 		let chmessages = [];
-		let key = args[3].slice(args[3].length - 19, args[3].length - 1);
+		let key = kifo.emojiTrim(reaction);
 
 		let messageCollection = new Discord.Collection();
 		let fetchoptions = { before: null, limit: 100 };
@@ -179,20 +173,12 @@ module.exports = {
 					}
 				});
 		}
+		console.log(messageCollection);
 		messageCollection = messageCollection
 			.filter((m) => now - m.createdTimestamp <= ms(args[1]))
 			.filter((m) => m.reactions.resolve(key) != undefined);
+		console.log(messageCollection);
 		chmessages = messageCollection.array();
-		// // await whichchannel.messages
-		// // 	.fetch()
-		// // 	.then((messages) =>
-		// // 		messages.filter((m) => now - m.createdTimestamp <= ms(args[1]))
-		// // 	)
-		// // 	.then((messages) =>
-		// // 		messages.filter((m) => m.reactions.resolve(key) != undefined)
-		// // 	)
-		// // 	.then((messages) => (chmessages = messages.array()))
-		// // 	.catch((err) => console.log(err));
 		if (!chmessages[0])
 			return message.reply({
 				embeds: [
@@ -205,8 +191,7 @@ module.exports = {
 			if (
 				b.reactions.cache.find(
 					(reaction) =>
-						reaction.emoji.id ==
-						args[3].slice(args[3].length - 19, args[3].length - 1)
+						reaction.emoji.id == key
 				) == undefined
 			) {
 				return -1;
@@ -214,8 +199,7 @@ module.exports = {
 			if (
 				a.reactions.cache.find(
 					(reaction) =>
-						reaction.emoji.id ==
-						args[3].slice(args[3].length - 19, args[3].length - 1)
+						reaction.emoji.id == key
 				) == undefined
 			) {
 				return 1;
@@ -229,20 +213,19 @@ module.exports = {
 			while (chmessages[loops] != undefined) loops++;
 		} else loops = x;
 		let ii = 1;
-		let userids = [];
+		let userids = new Map();
 		message.channel.sendTyping().catch();
 		for (i = 0; i < loops; i++) {
 			//one person can only get one place.
 			if (
-				userids.find((userid) => userid == chmessages[i].author.id) !=
-				undefined
+				userids.has(chmessages[i].author.id)
 			) {
 				loops++;
 				if (!chmessages[loops]) {
 					loops--;
 				}
 			} else {
-				userids.push(chmessages[i].author.id);
+				userids.set(chmessages[i].author.id, null);
 
 				const newEmbed = new Discord.MessageEmbed();
 				newEmbed.setColor("a039a0");
@@ -278,18 +261,7 @@ module.exports = {
 
 				message.channel.sendTyping().catch();
 				newEmbed.setTitle(
-					"**" +
-						ii +
-						place(ii) +
-						"** place by **" +
-						chmessages[i].author.username +
-						"** with **" +
-						chmessages[i].reactions.resolve(key).count +
-						"** <:" +
-						chmessages[i].reactions.resolve(key).name +
-						":" +
-						key +
-						">"
+					`**${ii}${place(ii)}** place by **${chmessages[i].author.username}** with **${chmessages[i].reactions.resolve(key).count}** ${reaction}`
 				);
 
 				if (chmessages[i].content.length > 0) {

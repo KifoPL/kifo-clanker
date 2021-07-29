@@ -10,7 +10,7 @@ const kifo = require("kifo")
 module.exports = {
 	name: "error",
 	description: `If this bot encountered an error anywhere, please type this command right after. It will ping me (KifoPL#3358) and automatically create an issue on [GitHub](https://github.com/KifoPL/kifo-clanker/issues).\nWARNING! If you spam this command for no reason, you will get warned on the same premise as spam pinging. Use only when encountering actual errors.`,
-	usage: ["`error <optional_description>` - pings <@289119054130839552> with optionally provided description."],
+	usage: ["`error <description>` - pings <@289119054130839552> with provided description and creates an issue on [GitHub](https://github.com/KifoPL/kifo-clanker/issues)."],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	async execute(message, args) {

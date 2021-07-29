@@ -25,7 +25,6 @@ module.exports = {
 					Troll = true;
 				} else if (!message.guild.members.resolve(userid))
 					return message.reply({ embeds: [kifo.embed("user not found.")] });
-				userid = userid;
 			} else {
 				if (message.mentions.users.firstKey() != undefined) {
 					if (

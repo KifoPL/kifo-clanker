@@ -73,7 +73,7 @@ module.exports = {
 			}
 			args.forEach((arg) => {
 				if (
-					client.emojis.resolveIdentifier(arg) == null &&
+					client.emojis.resolve(kifo.emojiTrim(arg)) == null &&
 					!arg.match(kifo.emojiRegex())
 				) {
 					stop = true;

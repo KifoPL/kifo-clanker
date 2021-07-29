@@ -1673,7 +1673,11 @@ let reactreturn;
 
 client.on("interactionCreate", (interaction) => {
 	if (interaction.isCommand()) {
-		client.slash_commands.get(interaction.commandName).execute(interaction)
+		if (client.slash_commands.has(interaction.commandName)) {
+			client.slash_commands.get(interaction.commandName).execute(interaction)
+		} else {
+			interaction.reply({ embeds: [kifo.embed("Unknown command! If this should not happen, please use `error` command and provide a description.")] })
+		}
 	}
 	else
 		clientapp.commands.cache.forEach(cmd => {
@@ -2155,6 +2159,6 @@ client.login(process.env.LOGIN_TOKEN);
 
 process.on("uncaughtException", async (err) => {
 	console.error(err);
+	console.log(err);
 	await main.log(err);
-	process.exit(1);
 });

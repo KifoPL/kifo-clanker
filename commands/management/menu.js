@@ -121,8 +121,8 @@ async function revert(message, menu, isPerm, obj, permName = null) {
 										embeds: [
 											kifo.embed(
 												`Removed ${obj.name} role! (Id: ${menu.RoleId})`
-											)
-										]
+											),
+										],
 									})
 									.catch(() => { });
 							})
@@ -132,8 +132,8 @@ async function revert(message, menu, isPerm, obj, permName = null) {
 										embeds: [
 											kifo.embed(
 												`Could not remove <@!${member.id}>'s role <@&${obj.id}>!`
-											)
-										]
+											),
+										],
 									})
 									.catch(() => { });
 								main.log(err);
@@ -149,8 +149,8 @@ async function revert(message, menu, isPerm, obj, permName = null) {
 							`Removed [role menu](${message.url
 							})!\n__**Beware the effects of the command HAVE NOT BEEN REVERTED.**__ People who reacted to the menu will still have the <@&${main.menus.get(menu.id).RoleId
 							}> role.\nIn the future, **if you want to remove role for users who reacted**, use \`menu revert\`.\n\n*This message will be deleted automatically in 30 seconds...*`
-						)
-					]
+						),
+					],
 				})
 				.then(async (msg) => {
 					timer(30000).then((_) => {
@@ -177,8 +177,8 @@ async function revert(message, menu, isPerm, obj, permName = null) {
 								`Could not delete [${isPerm ? "Perm Menu" : "Role Menu"
 								}](${menu.url
 								})!\nThe message may be too old to remove it automatically, you need to do it manually.\n\nError:\n${err}`
-							)
-						]
+							),
+						],
 					})
 					.catch(() => { });
 			}
@@ -215,13 +215,19 @@ async function execute(message, args, prefix) {
 		});
 		message.author
 			.send({ embeds: [newEmbed] })
-			.then(() => message.reply({ embeds: [kifo.embed("Check your DMs!")] }))
+			.then(() =>
+				message.reply({ embeds: [kifo.embed("Check your DMs!")] })
+			)
 			.catch(() => { });
 		return;
 	}
 	if (!args[1]) {
 		if (args[0].toLowerCase() === "list") {
-			if (!message.member.permissions.has(Discord.Permissions.FLAGS.MANAGE_GUILD)) {
+			if (
+				!message.member.permissions.has(
+					Discord.Permissions.FLAGS.MANAGE_GUILD
+				)
+			) {
 				if (
 					!message.member
 						.permissionsIn(message.channel)
@@ -232,8 +238,8 @@ async function execute(message, args, prefix) {
 							embeds: [
 								kifo.embed(
 									"You need `MANAGE_CHANNELS` permissions to see menus in this channel, or `MANAGE_GUILD` to see menus in entire server!"
-								)
-							]
+								),
+							],
 						})
 						.catch(() => { });
 				}
@@ -278,11 +284,15 @@ async function execute(message, args, prefix) {
 									})`
 								);
 							});
-							return message.reply({ embeds: [newEmbed] }).catch((err) => {
-								main.log(err);
-							});
+							return message
+								.reply({ embeds: [newEmbed] })
+								.catch((err) => {
+									main.log(err);
+								});
 						}
-						return message.reply({ embeds: [kifo.embed("No Perm Menus set!")] });
+						return message.reply({
+							embeds: [kifo.embed("No Perm Menus set!")],
+						});
 					}
 				);
 				//list role menus from this channel
@@ -326,12 +336,16 @@ async function execute(message, args, prefix) {
 									})`
 								);
 							});
-							return message.reply({ embeds: [newEmbed] }).catch((err) => {
-								main.log(err);
-							});
+							return message
+								.reply({ embeds: [newEmbed] })
+								.catch((err) => {
+									main.log(err);
+								});
 						}
 						return message
-							.reply({ embeds: [kifo.embed("No Role Menus set!")] })
+							.reply({
+								embeds: [kifo.embed("No Role Menus set!")],
+							})
 							.catch((err) => {
 								main.log(err);
 							});
@@ -382,9 +396,11 @@ async function execute(message, args, prefix) {
 								})`
 							);
 						});
-						return message.reply({ embeds: [newEmbed] }).catch((err) => {
-							main.log(err);
-						});
+						return message
+							.reply({ embeds: [newEmbed] })
+							.catch((err) => {
+								main.log(err);
+							});
 					}
 					return message
 						.reply({ embeds: [kifo.embed("No Perm Menus set!")] })
@@ -437,9 +453,11 @@ async function execute(message, args, prefix) {
 								})`
 							);
 						});
-						return message.reply({ embeds: [newEmbed] }).catch((err) => {
-							main.log(err);
-						});
+						return message
+							.reply({ embeds: [newEmbed] })
+							.catch((err) => {
+								main.log(err);
+							});
 					}
 					return message
 						.reply({ embed: [kifo.embed("No Role Menus set!")] })
@@ -454,8 +472,8 @@ async function execute(message, args, prefix) {
 				embeds: [
 					kifo.embed(
 						`Invalid syntax. Usage:\n- ${this.usage.join("\n- ")}`
-					)
-				]
+					),
+				],
 			});
 	} else {
 		//PERM CHECK
@@ -466,8 +484,8 @@ async function execute(message, args, prefix) {
 		)
 			return message.reply({
 				embeds: [
-				kifo.embed("You don't have `MANAGE_CHANNELS` permission!")
-				]
+					kifo.embed("You don't have `MANAGE_CHANNELS` permission!"),
+				],
 			});
 
 		if (
@@ -477,8 +495,8 @@ async function execute(message, args, prefix) {
 		)
 			return message.reply({
 				embeds: [
-				kifo.embed("I don't have `MANAGE_CHANNELS` permission!")
-				]
+					kifo.embed("I don't have `MANAGE_CHANNELS` permission!"),
+				],
 			});
 
 		if (
@@ -488,38 +506,44 @@ async function execute(message, args, prefix) {
 		)
 			return message.reply({
 				embeds: [
-				kifo.embed("I don't have `ADD_REACTIONS` permission!")
-				]
+					kifo.embed("I don't have `ADD_REACTIONS` permission!"),
+				],
 			});
 
 		let now = new Date(Date.now());
 		//!kifo menu role
 		if (args[0].toLowerCase() === "role") {
-			if (!message.member.permissions.has(Discord.Permissions.FLAGS.MANAGE_ROLES))
+			if (
+				!message.member.permissions.has(
+					Discord.Permissions.FLAGS.MANAGE_ROLES
+				)
+			)
 				return message.reply({
 					embeds: [
-					kifo.embed("You don't have `MANAGE_ROLES` permission!")
-					]
+						kifo.embed("You don't have `MANAGE_ROLES` permission!"),
+					],
 				});
 
-			if (!message.guild.me.permissions.has(Discord.Permissions.FLAGS.MANAGE_ROLES))
+			if (
+				!message.guild.me.permissions.has(
+					Discord.Permissions.FLAGS.MANAGE_ROLES
+				)
+			)
 				return message.reply({
 					embeds: [
-					kifo.embed("I don't have `MANAGE_ROLES` permission!")
-					]
+						kifo.embed("I don't have `MANAGE_ROLES` permission!"),
+					],
 				});
 			let time = null;
 			let role = undefined;
-			let roleResolvable = args[1];
-			if (roleResolvable.match(MessageMentions.ROLES_PATTERN)) {
-				role = message.guild.roles.resolve(roleResolvable.slice(3, -1));
-			} else {
-				role = message.guild.roles.resolve(roleResolvable);
-			}
+			let roleResolvable = kifo.mentionTrim(args[1]);
+			role = message.guild.roles.resolve(roleResolvable);
 			if (role == undefined) {
-				message.reply({ embeds: [kifo.embed("Invalid role!")] }).catch((err) => {
-					main.log(err);
-				});
+				message
+					.reply({ embeds: [kifo.embed("Invalid role!")] })
+					.catch((err) => {
+						main.log(err);
+					});
 			}
 			//!kifo menu role <role> <time_period>
 			if (args[2] != undefined) {
@@ -532,10 +556,10 @@ async function execute(message, args, prefix) {
 				if (time < 1000 * 60 || time > ms("1y"))
 					return message.reply({
 						embeds: [
-						kifo.embed(
-							"Invalid time period! Set it to between 1 minute and 1 year."
-						)
-						]
+							kifo.embed(
+								"Invalid time period! Set it to between 1 minute and 1 year."
+							),
+						],
 					});
 			}
 			const newEmbed = new Discord.MessageEmbed()
@@ -566,10 +590,10 @@ async function execute(message, args, prefix) {
 					} at ${now.toUTCString()}.`
 				);
 
-			message
-				.channel.send({ embeds: [newEmbed] })
+			message.channel
+				.send({ embeds: [newEmbed] })
 				.then((cbmsg) => {
-					message.delete().catch(() => { })
+					message.delete().catch(() => { });
 					con.query(
 						"INSERT INTO menu_roles (GuildId , ChannelId , CmdMsgId, CmdChId, MessageId , RoleId , EndDate , StartDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
 						[
@@ -601,7 +625,11 @@ async function execute(message, args, prefix) {
 				})
 				.catch((err) => {
 					message
-						.reply({ embeds: [kifo.embed(err, "Unable to create role menu!")] })
+						.reply({
+							embeds: [
+								kifo.embed(err, "Unable to create role menu!"),
+							],
+						})
 						.catch((err) => {
 							main.log(err);
 						});
@@ -613,38 +641,42 @@ async function execute(message, args, prefix) {
 			let time = null;
 			let alias = args[1].toLowerCase();
 			let channel = null;
-			let channelResolvable = args[2];
+			let channelResolvable = kifo.mentionTrim(args[2]);
 			if (channelResolvable == undefined)
 				return message
 					.reply({ embeds: [kifo.embed("Invalid syntax!")] })
 					.catch(() => { });
-			if (channelResolvable.match(MessageMentions.CHANNELS_PATTERN)) {
-				channel = message.guild.channels.resolve(
-					channelResolvable.slice(2, -1)
-				);
-			} else channel = message.guild.channels.resolve(channelResolvable);
+			channel = message.guild.channels.resolve(channelResolvable);
 			if (channel == null) {
 				return message
 					.reply({ embeds: [kifo.embed("Invalid channel!")] })
 					.catch(() => { });
 			}
 			//PERM CHECK
-			if (!message.member.permissionsIn(channel).has(Discord.Permissions.FLAGS.MANAGE_CHANNELS))
+			if (
+				!message.member
+					.permissionsIn(channel)
+					.has(Discord.Permissions.FLAGS.MANAGE_CHANNELS)
+			)
 				return message.reply({
 					embeds: [
-					kifo.embed(
-						`You don't have \`MANAGE_CHANNELS\` permission in <#${channel.id}>!`
-					)
-					]
+						kifo.embed(
+							`You don't have \`MANAGE_CHANNELS\` permission in <#${channel.id}>!`
+						),
+					],
 				});
 
-			if (!message.guild.me.permissionsIn(channel).has(Discord.Permissions.FLAGS.MANAGE_CHANNELS))
+			if (
+				!message.guild.me
+					.permissionsIn(channel)
+					.has(Discord.Permissions.FLAGS.MANAGE_CHANNELS)
+			)
 				return message.reply({
 					embeds: [
-					kifo.embed(
-						`I don't have \`MANAGE_CHANNELS\` permission in <#${channel.id}>!`
-					)
-					]
+						kifo.embed(
+							`I don't have \`MANAGE_CHANNELS\` permission in <#${channel.id}>!`
+						),
+					],
 				});
 			let perm = kifo.channelPerms.find(
 				(c) =>
@@ -669,10 +701,10 @@ async function execute(message, args, prefix) {
 				if (time < 1000 * 60 || time > ms("1y"))
 					return message.reply({
 						embeds: [
-						kifo.embed(
-							"Invalid time period! Set it to between 1 minute and 1 year."
-						)
-						]
+							kifo.embed(
+								"Invalid time period! Set it to between 1 minute and 1 year."
+							),
+						],
 					});
 			}
 			const newEmbed = new Discord.MessageEmbed()
@@ -703,8 +735,8 @@ async function execute(message, args, prefix) {
 					} at ${now.toUTCString()}.`
 				);
 
-			message
-				.channel.send({ embeds: [newEmbed] })
+			message.channel
+				.send({ embeds: [newEmbed] })
 				.then((cbmsg) => {
 					message.delete(() => { }).catch(() => { });
 					con.query(
@@ -742,7 +774,11 @@ async function execute(message, args, prefix) {
 				})
 				.catch((err) => {
 					message
-						.reply({ embeds: [kifo.embed(err, "Unable to create perm menu!")] })
+						.reply({
+							embeds: [
+								kifo.embed(err, "Unable to create perm menu!"),
+							],
+						})
 						.catch((err) => {
 							main.log(err);
 						});
@@ -797,7 +833,13 @@ async function execute(message, args, prefix) {
 									);
 								} else
 									return message
-										.reply({ embeds: [kifo.embed("Message not found!")] })
+										.reply({
+											embeds: [
+												kifo.embed(
+													"Message not found!"
+												),
+											],
+										})
 										.catch(() => { });
 							}
 						);
@@ -807,8 +849,10 @@ async function execute(message, args, prefix) {
 			return message
 				.reply({
 					embeds: [
-					kifo.embed(`Invalid syntax!\n- ${this.usage.join("\n- ")}`)
-					]
+						kifo.embed(
+							`Invalid syntax!\n- ${this.usage.join("\n- ")}`
+						),
+					],
 				})
 				.catch(() => { });
 	}
