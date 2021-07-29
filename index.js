@@ -1,6 +1,8 @@
 //libraries
 const Discord = require("discord.js");
 require("dotenv")?.config();
+require('events').EventEmitter.prototype._maxListeners = 100;
+require('events').defaultMaxListeners = 100;
 const fs = require("fs");
 const ms = require("ms");
 const kifo = require("kifo");
