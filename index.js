@@ -1694,7 +1694,23 @@ function updatePresence() {
 let reactreturn;
 
 client.on("interactionCreate", (interaction) => {
+	if (!interaction.inGuild()) {
+		interaction.reply({
+			embeds: [
+				kifo.embed(
+					"Currently interactions only work in guilds. Sorry!"
+				),
+			],
+		});
+	}
 	if (interaction.isCommand()) {
+		if (
+			client.user.id == "796447999747948584" &&
+			interaction.member?.roles.resolve("832194217493135400") == null
+		)
+			return interaction.reply({
+				embeds: [kifo.embed("Only testers can use this bot.")],
+			});
 		if (client.slash_commands.has(interaction.commandName)) {
 			client.slash_commands
 				.get(interaction.commandName)
@@ -1708,12 +1724,17 @@ client.on("interactionCreate", (interaction) => {
 				],
 			});
 		}
-	} else
-		clientapp.commands.cache.forEach((cmd) => {
-			if (interaction.customId.startsWith(`${cmd.name}_`)) {
-				client.slash_commands.get(cmd.name).execute(interaction);
-			}
-		});
+	}
+
+	//Each command should have interaction collector with time limit,
+	//instead of blind interaction listener, should be more efficient and reliable.
+
+	// else
+	// 	clientapp.commands.cache.forEach((cmd) => {
+	// 		if (interaction.customId.startsWith(`${cmd.name}_`)) {
+	// 			client.slash_commands.get(cmd.name).execute(interaction);
+	// 		}
+	// 	});
 });
 
 client.on("messageCreate", (message) => {

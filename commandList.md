@@ -209,7 +209,8 @@ Set up ticketing system in a channel.
 	- `on` - Turn on ticketing system.
 	- `off` - Turn off ticketing system.
 	- `list` - List all channels with ticketing system enabled.
+	- `help` - Send a link with very detailed information regarding ticketing system.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Thu, 29 Jul 2021 15:03:10 GMT*
+> - *Last update: Fri, 30 Jul 2021 14:00:36 GMT*

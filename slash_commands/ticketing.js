@@ -1,5 +1,7 @@
 const kifo = require("kifo");
 const Discord = require("discord.js");
+const { Permissions } = require("discord.js");
+const timer = (ms) => new Promise((res) => setTimeout(res, ms));
 
 module.exports = {
 	name: "ticketing",
@@ -19,11 +21,11 @@ module.exports = {
 					choices: [
 						{
 							name: "Public",
-							value: "Public",
+							value: "public",
 						},
 						{
 							name: "Private",
-							value: "Private",
+							value: "private",
 						},
 					],
 				},
@@ -75,23 +77,253 @@ module.exports = {
 			description: "List all channels with ticketing system enabled.",
 			type: "SUB_COMMAND",
 		},
+		{
+			name: "help",
+			description: "Send a link with very detailed information regarding ticketing system.",
+			type: "SUB_COMMAND",
+		}
 	],
 	defaultPermission: true,
 	perms: ["MANAGE_CHANNELS", "MANAGE_THREADS"],
 
 	//itr = interaction
 	async execute(itr) {
-		console.log(itr);
-		console.log("OPTIONS DATA -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=")
-		console.log(itr.options.data)
-		itr.reply({
-			embeds: [
-				kifo.embed(
-					"How's it going my brother? Welcome to the ticketing command lol"
-				),
-			],
-			ephemeral: true,
-		});
+		// console.log(itr);
+		// console.log(
+		// 	"OPTIONS DATA -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
+		// );
+		// console.log(itr.options.data);
+
+		let subcmd = itr.options.data.find((d) => d.name === "help");
+		if (subcmd !== undefined) {
+			let btnRow = new Discord.MessageActionRow().addComponents(
+				new Discord.MessageButton()
+					.setLabel("Ticketing Guide")
+					.setStyle("LINK")
+					.setURL("https://kifopl.github.io/kifo-clanker/guides/ticketing")
+			)
+			itr.reply({ components: [btnRow], embeds: [kifo.embed("Click the button to learn more about ticketing system.")], ephemeral: true }).catch(() => { })
+			return;
+		}
+
+		//PERM CHECK
+		if (
+			!itr.member
+				?.permissionsIn(itr.channel)
+				.has(Permissions.FLAGS.MANAGE_CHANNELS)
+		)
+			return itr.reply({
+				embeds: [
+					kifo.embed("You don't have `MANAGE_CHANNELS` permission!"),
+				], ephemeral: true
+			});
+		if (
+			!itr.member
+				?.permissionsIn(itr.channel)
+				.has(Permissions.FLAGS.MANAGE_THREADS)
+		)
+			return itr.reply({
+				embeds: [
+					kifo.embed("You don't have `MANAGE_THREADS` permission!"),
+				], ephemeral: true
+			});
+		if (
+			!itr.guild?.me
+				.permissionsIn(itr.channel)
+				.has(Permissions.FLAGS.MANAGE_THREADS)
+		)
+			return itr.reply({
+				embeds: [
+					kifo.embed("I don't have `MANAGE_THREADS` permission!"),
+				], ephemeral: true
+			});
+		if (
+			!itr.guild?.me
+				.permissionsIn(itr.channel)
+				.has(Permissions.FLAGS.MANAGE_CHANNELS)
+		)
+			return itr.reply({
+				embeds: [
+					kifo.embed("I don't have `MANAGE_CHANNELS` permission!"),
+				], ephemeral: true
+			});
+		subcmd = itr.options.data.find((d) => d.name === "on");
+		if (subcmd !== undefined) {
+			let options = subcmd.options;
+			let visibility = options.find((o) => o.name === "visibility").value;
+			let archiving = options.find((o) => o.name === "archiving").value;
+			let slowmode = options.find((o) => o.name === "slowmode")?.value;
+			let tier = itr.guild.premiumTier; //NONE | TIER_1 | TIER_2 | TIER_3
+
+			if (tier == "NONE") {
+				if (archiving == "3d" || archiving == "1w")
+					return itr.reply({
+						embeds: [
+							kifo.embed(
+								`${archiving == "3d"
+									? "The server must have at least `TIER_1` worth of boosts to archive after 3 days."
+									: "The server must have at least `TIER_2` worth of boosts to archive after a week."
+								}`
+							),
+						], ephemeral: true
+					});
+				if (visibility == "private")
+					return itr.reply({
+						embeds: [
+							kifo.embed(
+								"The server must have at least `TIER_2` worth of boosts to enable private tickets."
+							),
+						], ephemeral: true
+					});
+			} else if (tier == "TIER_1") {
+				if (archiving == "1w")
+					return itr.reply({
+						embeds: [
+							kifo.embed(
+								"The server must have at least `TIER_2` worth of boosts to archive after a week."
+							),
+						], ephemeral: true
+					});
+				if (visibility == "private")
+					return itr.reply({
+						embeds: [
+							kifo.embed(
+								"The server must have at least `TIER_2` worth of boosts to enable private tickets."
+							),
+						], ephemeral: true
+					});
+			}
+
+			let embedReply = kifo
+				.embed(
+					"Please make sure that the following settings are correct:",
+					"Ticketing settings:"
+				)
+				.addFields([
+					{
+						name: "Ticket visibility:",
+						value: visibility,
+						inline: true,
+					},
+					{
+						name: "Archiving:",
+						value: `After ${options.find((o) => o.name === "archiving").name} of inactivity.`,
+						inline: true,
+					},
+					{
+						name: "Slowmode:",
+						value: slowmode ?? "none",
+						inline: true,
+					},
+				]);
+
+			const replyComponents =
+				new Discord.MessageActionRow().addComponents(
+					new Discord.MessageButton()
+						.setCustomId("ticketing_on_yes")
+						.setLabel("Settings are correct")
+						.setStyle("PRIMARY"),
+					new Discord.MessageButton()
+						.setCustomId("ticketing_on_no")
+						.setLabel("Cancel Ticketing")
+						.setStyle("SECONDARY")
+				);
+			const yesComponents = new Discord.MessageActionRow().addComponents(
+				new Discord.MessageButton()
+					.setCustomId("ticketing_on_yes_msg_yes")
+					.setLabel("Yes please!")
+					.setStyle("PRIMARY"),
+				new Discord.MessageButton()
+					.setCustomId("ticketing_on_yes_msg_no")
+					.setLabel("I'll do it myself.")
+					.setStyle("SECONDARY")
+			);
+
+			itr.reply({
+				embeds: [embedReply],
+				components: [replyComponents],
+			}).then(async () => {
+				let itreply = await itr.fetchReply();
+				itreply
+					.awaitMessageComponent({ time: 15000 })
+					.then((btnItr) => {
+						if (btnItr.member !== itr.member) return;
+						if (btnItr.customId == "ticketing_on_yes") {
+							embedReply.setTitle("One last step!");
+							embedReply.setDescription(
+								"Would you mind if I post a message explaining ticket system, or will you do it yourself?"
+							);
+							btnItr.update({
+								embeds: [embedReply],
+								components: [yesComponents],
+							}).then(() => {
+								btnItr.message
+									.awaitMessageComponent({ time: 15000 })
+									.then((btnItrOnYes) => {
+										if (btnItrOnYes.member !== itr.member) return;
+										if (
+											btnItrOnYes.customId ==
+											"ticketing_on_yes_msg_yes"
+										) {
+											//Send a cool message regarding how the ticket system work
+
+										} else if (
+											btnItrOnYes.customId ==
+											"ticketing_on_yes_msg_no"
+										) {
+											throw new Error;
+										}
+									})
+									.catch(() => {
+										embedReply.setTitle("Ticketing system is turned on!")
+											.setDescription("*This message will be deleted in 30 seconds.*")
+										itr.editReply({ embeds: [embedReply], components: [] }).catch((err) => { console.error(err) });
+										timer(30000).then((_) => {
+											itr.deleteReply().catch(() => { });
+										});
+									})
+									.finally(() => {
+										//send ephemeral follow up message asking to check permissions for the channel,
+										//@everyone should have X SEND_MESSAGES and V USE_SLASH_COMMANDS and V USE_PRIVATE_THREADS or V USE_PUBLIC_THREADS
+									});
+							});
+						} else if (BtnItr.customId == "ticketing_on_no") {
+							let newEmbed = kifo.embed(
+								"Command safely canceled."
+							);
+							BtnItr.update({
+								embeds: [newEmbed],
+								components: [],
+								ephemeral: true
+							});
+						}
+					})
+					.catch(() => {
+						let newEmbed = kifo.embed(
+							"Command safely canceled."
+						);
+						itr.editReply({ embeds: [newEmbed], components: [], ephemeral: true });
+					});
+			});
+
+			//itr.reply({ embeds: [kifo.embed("Ticketing is now ON")] });
+		} else {
+			subcmd = itr.options.data.find((d) => d.name === "off");
+			if (subcmd !== undefined) {
+				itr.reply({ embeds: [kifo.embed("TICKETING IS OFF")] });
+			} else {
+				subcmd = itr.options.data.find((d) => d.name === "list");
+				if (subcmd !== undefined) {
+				} else
+					itr.reply({
+						embeds: [
+							kifo.embed(
+								"List of channels, where ticketing is active:"
+							),
+						],
+					});
+			}
+		}
 	},
 	async button(itr) {
 		itr.reply({ embeds: [kifo.embed("Hello there!")] });
