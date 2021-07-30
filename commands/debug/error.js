@@ -33,6 +33,7 @@ module.exports = {
 			reply +
 			` Link: https://discord.com/channels/${message.channel.guild.id}/${message.channel.id}/${message.id}`;
 		reply += " Kifo has been notified, he will reply soon™.";
+		if (!args[0]) message.reply({ embeds: [kifo.embed("Please provide a description to the error!")] })
 		if (args[0]) {
 			embedreply.addField(
 				"**" +

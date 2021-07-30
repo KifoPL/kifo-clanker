@@ -127,14 +127,16 @@ for (const folder of commandFolders) {
 i++;
 console.log(`Loaded ${i} commands!`);
 console.log("Loading / commands...");
-const cmdFiles = fs.readdirSync(`./slash_commands`).filter(file => file.endsWith(".js"))
+const cmdFiles = fs
+	.readdirSync(`./slash_commands`)
+	.filter((file) => file.endsWith(".js"));
 for (const file of cmdFiles) {
-	const command = require(`./slash_commands/${file}`)
+	const command = require(`./slash_commands/${file}`);
 	client.slash_commands.set(command.name, command);
 	console.log(`/ "${file.slice(0, -3)}"`);
 	j++;
 }
-console.log(`Loaded ${j} / commands!`)
+console.log(`Loaded ${j} / commands!`);
 command = require(`./help.js`);
 client.commands.set(command.name, command);
 
@@ -520,6 +522,10 @@ async function commands(message, prefix) {
 			new MessageButton()
 				.setCustomId("deploy_global")
 				.setLabel("Production")
+				.setStyle("SECONDARY"),
+			new MessageButton()
+				.setCustomId("undeploy")
+				.setLabel("DELETE ALL")
 				.setStyle("DANGER")
 		);
 		message.channel
@@ -535,9 +541,10 @@ async function commands(message, prefix) {
 				msg
 					.awaitMessageComponent({ time: 15000 })
 					.then((interaction) => {
-						if (interaction.customId == "deploy_guild") {
-							const commandFolders =
-								fs.readdirSync("./slash_commands").filter(file => file.endsWith(".js"));
+						if (interaction.customId.startsWith("deploy_")) {
+							const commandFolders = fs
+								.readdirSync("./slash_commands")
+								.filter((file) => file.endsWith(".js"));
 							console.log("Loading / commands...");
 							let i = 0;
 							let data = [];
@@ -553,7 +560,13 @@ async function commands(message, prefix) {
 								console.log(`/ "${cmd.slice(0, -3)}"`);
 								i++;
 							}
-							clientapp.commands.set(data, msg.guild.id);
+							if (interaction.customId == "deploy_guild") {
+								clientapp.commands.set(data, msg.guild.id);
+							} else if (
+								interaction.customId == "deploy_global"
+							) {
+								clientapp.commands.set(data);
+							}
 							console.log(`Deployed ${i} commands to test!`);
 
 							interaction.reply({
@@ -561,10 +574,15 @@ async function commands(message, prefix) {
 								ephemeral: true,
 							});
 						}
+						if (interaction.customId == "undeploy") {
+							clientapp.commands.cache.each((cmd) =>
+								cmd.delete()
+							);
+						}
 						msg.edit({ components: [] });
 					})
 					.catch((err) => {
-						main.log(err)
+						main.log(err);
 						msg.edit({ components: [] });
 					})
 			);
@@ -1060,7 +1078,9 @@ function setCommandList() {
 	let cmdListMD = `# List of text Commands (used with prefix):\n> Remember to add server prefix before command syntax.\n\n`;
 	const help = require("./help.js");
 	cmdListMD += `### ${help.name}\n${help.description
-		}\n- Usage:\n\t- ${help.usage.join("\n\t- ")}\n- Required user permissions: \`${command.perms.join("`, `")}\`\n`;
+		}\n- Usage:\n\t- ${help.usage.join(
+			"\n\t- "
+		)}\n- Required user permissions: \`${command.perms.join("`, `")}\`\n`;
 	cmdListJSON += `{\n`;
 	for (const folder of commandFolders) {
 		cmdListMD += `## ${folder.toUpperCase()}\n\n`;
@@ -1083,13 +1103,15 @@ function setCommandList() {
 			cmdListMD += `\n`;
 		}
 	}
-	cmdListMD += `# List of slash commands (used with \`/\`):\n`
+	cmdListMD += `# List of slash commands (used with \`/\`):\n`;
 	for (const cmd of cmdFiles) {
-		const command = require(`./slash_commands/${cmd}`)
+		const command = require(`./slash_commands/${cmd}`);
 		cmdListMD += `### ${command.name}\n`;
 		cmdListMD += `${command.description}\n`;
 		cmdListMD += `- Options:\n`;
-		cmdListMD += `\t- ${command.options.map(x => `\`${x.name}\` - ${x.description}`).join("\n\t- ")}\n`
+		cmdListMD += `\t- ${command.options
+			.map((x) => `\`${x.name}\` - ${x.description}`)
+			.join("\n\t- ")}\n`;
 	}
 	let now = new Date(Date.now());
 	cmdListJSON = cmdListJSON.slice(0, cmdListJSON.length - 2);
@@ -1674,17 +1696,24 @@ let reactreturn;
 client.on("interactionCreate", (interaction) => {
 	if (interaction.isCommand()) {
 		if (client.slash_commands.has(interaction.commandName)) {
-			client.slash_commands.get(interaction.commandName).execute(interaction)
+			client.slash_commands
+				.get(interaction.commandName)
+				.execute(interaction);
 		} else {
-			interaction.reply({ embeds: [kifo.embed("Unknown command! If this should not happen, please use `error` command and provide a description.")] })
+			interaction.reply({
+				embeds: [
+					kifo.embed(
+						"Unknown command! If this should not happen, please use `error` command and provide a description."
+					),
+				],
+			});
 		}
-	}
-	else
-		clientapp.commands.cache.forEach(cmd => {
-			if (interaction.customId.startsWith(cmd.name)) {
-				client.slash_commands.get(cmd.name).execute(interaction)
+	} else
+		clientapp.commands.cache.forEach((cmd) => {
+			if (interaction.customId.startsWith(`${cmd.name}_`)) {
+				client.slash_commands.get(cmd.name).execute(interaction);
 			}
-		})
+		});
 });
 
 client.on("messageCreate", (message) => {

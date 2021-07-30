@@ -10,25 +10,13 @@ module.exports = {
 			type: "STRING",
 			description: "The text to return.",
 		},
-		{
-			name: "role",
-			type: "ROLE",
-			description: "some random role",
-			required: false,
-		},
-		{
-			name: "mentionable",
-			description: "this is both user or role, cool",
-			type: "MENTIONABLE",
-			required: false,
-		},
 	],
 	defaultPermission: true,
 	perms: ["USE_SLASH_COMMANDS"],
 
 	//itr = interaction
 	async execute(itr) {
-		itr.reply({ embeds: [kifo.embed("How's it going my brother?")], ephemeral: true })
+		itr.reply({ embeds: [kifo.embed(`How's it going my brother?`)], ephemeral: true })
 	},
 	async button(itr) {
 		itr.reply({ embeds: [kifo.embed("Hello there!")] })

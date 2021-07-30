@@ -203,9 +203,13 @@ This command allows you to create a simple todo notes.
 test out if the `/` commands work properly.
 - Options:
 	- `input` - The text to return.
-	- `role` - some random role
-	- `mentionable` - this is both user or role, cool
+### ticketing
+Set up ticketing system in a channel.
+- Options:
+	- `on` - Turn on ticketing system.
+	- `off` - Turn off ticketing system.
+	- `list` - List all channels with ticketing system enabled.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Thu, 29 Jul 2021 11:54:38 GMT*
+> - *Last update: Thu, 29 Jul 2021 15:03:10 GMT*
