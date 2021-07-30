@@ -203,6 +203,16 @@ This command allows you to create a simple todo notes.
 test out if the `/` commands work properly.
 - Options:
 	- `input` - The text to return.
+### threads
+Manage threads in this channel.
+- Options:
+	- `archive` - Bulk archive oldest threads in this channel.
+	- `delete` - Bulk delete specified threads in this channel.
+### ticket
+Create a ticket
+- Options:
+	- `title` - The problem, or question you have.
+	- `description` - Provide any additional information about your question/problem
 ### ticketing
 Set up ticketing system in a channel.
 - Options:
@@ -213,4 +223,4 @@ Set up ticketing system in a channel.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Fri, 30 Jul 2021 14:00:36 GMT*
+> - *Last update: Fri, 30 Jul 2021 23:20:48 GMT*

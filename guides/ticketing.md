@@ -14,12 +14,13 @@ Although the intended use is to ask questions for moderators and receive answers
 
 ## Prerequisites for `/ticketing`
 
-You should have a channel with these permissions:
+Your channel should have these permissions:
 - `@everyone` (or the role that will be able to use `/ticket`):
-	- `ALLOW`: `VIEW_CHANNEL`, `USE_SLASH_COMMANDS`, `USE_PUBLIC_THREADS` or `USE_PRIVATE_THREADS` (more on that below)
-	- `DENY`: `SEND_MESSAGES`
+	- `ALLOW`: `VIEW_CHANNEL`, `USE_SLASH_COMMANDS`, `USE_PUBLIC_THREADS` or `USE_PRIVATE_THREADS` (see note below).
 - `Moderators` and `Kifo Clanker`:
-	- `ALLOW`: `SEND_MESSAGES`, `MANAGE_CHANNELS`, `MANAGE_THREADS`, `USE_SLASH_COMMANDS`
+	- `ALLOW`: `SEND_MESSAGES`, `MANAGE_CHANNELS`, `MANAGE_THREADS`, `USE_SLASH_COMMANDS`.
+
+**NOTE**: If you want to set `Public` visibility, users will need `USE_PUBLIC_THREADS`. For `Private` it's `USE_PRIVATE_THREADS`.
 
 ## Server prerequisities
 
@@ -36,13 +37,16 @@ Not all options are available to all servers. Because of the way threads are imp
 
 ## What `/ticketing` does and doesn't
 
-This command **does**:
+### This command **does**:
 - Enable usage of `/ticket` in a channel.
+- Automatically delete all messages that:
+	- Are not sent by `Kifo Clanker`.
+	- Author does not have `MANAGE_CHANNELS` and it's not a `/ticket` command.
 - Set visibility, archive and slowmode settings for every `/ticket`.
 - *(optional)* Send a message to the channel explaining how to use `/ticket`.
 - Send **you** a private message explaining how to set up permissions in this channel.
 
-This command **does not**:
+### This command **does not**:
 - Change permissions of any roles / members.
 - Change slowmode of the channel.
 - Auto-archive threads (this is done automatically by Discord itself).
@@ -51,3 +55,39 @@ This command **does not**:
 ## How to disable `/ticketing`
 
 Simply use `/ticketing off` command, provided you have the following permissions: `MANAGE_CHANNELS`, `MANAGE_THREADS`.
+
+## Miscellanous
+- To list all channels where `/ticketing` is enabled, simply run `/ticketing list`.
+- To get link to this site, run `/ticketing help`.
+
+## What should users know when entering `ticketing` channel?
+> *This is the message the bot pastes, should you choose that option.*
+
+**This channel has __`tickets`__ enabled**.
+1. If you have a question or a problem that needs solving, type `/ticket` to create a ticket.
+2. Then, in `title`, ask the question, or state the problem.
+3. If you need to provide additional details, that's what `description` is for!
+
+**Friendly tips:** *(not required, but they definitely help getting the answer you're looking for!)*
+- **Try to find an answer yourself** *(90% of the questions have their answer somewhere in the rules, or other generally accessible channels)*.
+- **Keep your `titles` brief** *(perfect title is straight to the point - people love answering simple questions, so try to make it look simple)*.
+- **Skip all unnecessary details** *(people often find it disappointing when a giant wall of text leads to small and easy question)*.
+- **Describe the origin of your problem/question** *(What topic/category brought you to this channel? Where did you expect to find an answer?)*.
+
+And most important one: __**Don't forget to thank the person for answering!**__ They didn't have to, yet they *chose* to help you. Share kindness everywhere you can.
+
+## If you want to change a few small details, here's a raw text (with Discord-ready formatting):
+```
+**This channel has __`tickets`__ enabled**.
+1. If you have a question or a problem that needs solving, type `/ticket` to create a ticket.
+2. Then, in `title`, ask the question, or state the problem.
+3. If you need to provide additional details, that's what `description` is for!
+
+**Friendly tips:** *(not required, but they definitely help getting the answer you're looking for!)*
+- **Try to find an answer yourself** *(90% of the questions have their answer somewhere in the rules, or other generally accessible channels)*.
+- **Keep your `titles` brief** *(perfect title is straight to the point - people love answering simple questions, so try to make it look simple)*.
+- **Skip all unnecessary details** *(people often find it disappointing when a giant wall of text leads to small and easy question)*.
+- **Describe the origin of your problem/question** *(What topic/category brought you to this channel? Where did you expect to find an answer?)*.
+
+And most important one: __**Don't forget to thank the person for answering!**__ They didn't have to, yet they *chose* to help you. Share kindness everywhere you can.
+```
