@@ -238,7 +238,7 @@ async function stats(message, args, prefix, isList = true) {
 			});
 
 			fs.writeFileSync(
-				`./${time.toUTCString().replace(" ", "_")}_list.txt`,
+				`./${time.toISOString().replace(":", "_")}_list.txt`,
 				fileContent,
 				() => { }
 			);
@@ -335,7 +335,7 @@ async function stats(message, args, prefix, isList = true) {
 			});
 
 			fs.writeFileSync(
-				`./${time.toUTCString().replace(" ", "_")}_list.txt`,
+				`./${time.toISOString().replace(":", "_")}_list.txt`,
 				fileContent,
 				() => { }
 			);
@@ -445,7 +445,7 @@ async function stats(message, args, prefix, isList = true) {
 			await message.guild.members.cache
 				.filter(
 					(member) =>
-						member.presence.status != "offline" && !member.user.bot
+						member.presence?.status != "offline" && !member.user.bot
 				)
 				.each(() => onlinecount++);
 
@@ -470,7 +470,7 @@ async function stats(message, args, prefix, isList = true) {
 
 			if (isList) {
 				fs.writeFileSync(
-					`./${time.toUTCString().replace(" ", "_")}_list.txt`,
+					`./${time.toISOString().replace(":", "_")}_list.txt`,
 					fileContent,
 					() => { }
 				);
@@ -629,8 +629,8 @@ async function stats(message, args, prefix, isList = true) {
 				let fileContent = `Role Id\tPosition\tRole name\n`;
 				let statusicon;
 				if (
-					entity.presence.status == "online" ||
-					entity.presence.status == "idle"
+					entity.presence?.status == "online" ||
+					entity.presence?.status == "idle"
 				)
 					statusicon = "<:online:823658022974521414>";
 				else statusicon = "<:offline:823658022957613076>";
@@ -668,7 +668,7 @@ async function stats(message, args, prefix, isList = true) {
 
 				if (isList) {
 					fs.writeFileSync(
-						`./${time.toUTCString().replace(" ", "_")}_list.txt`,
+						`./${time.toISOString().replace(":", "_")}_list.txt`,
 						fileContent,
 						() => { }
 					);
@@ -785,8 +785,8 @@ async function stats(message, args, prefix, isList = true) {
 				let statusicon;
 				let fileContent = `Role Id\tRole name\n`;
 				if (
-					entity.presence.status == "online" ||
-					entity.presence.status == "idle"
+					entity.presence?.status == "online" ||
+					entity.presence?.status == "idle"
 				)
 					statusicon = "<:online:823658022974521414>";
 				else statusicon = "<:offline:823658022957613076>";
@@ -819,7 +819,7 @@ async function stats(message, args, prefix, isList = true) {
 
 				if (isList) {
 					fs.writeFileSync(
-						`./${time.toUTCString().replace(" ", "_")}_list.txt`,
+						`./${time.toISOString().replace(":", "_")}_list.txt`,
 						fileContent,
 						() => { }
 					);
@@ -954,7 +954,7 @@ async function stats(message, args, prefix, isList = true) {
 
 				if (isList)
 					fs.writeFileSync(
-						`./${time.toUTCString().replace(" ", "_")}_list.txt`,
+						`./${time.toISOString().replace(":", "_")}_list.txt`,
 						fileContent,
 						() => { }
 					);
@@ -1193,7 +1193,7 @@ async function stats(message, args, prefix, isList = true) {
 							.join("\n\n\n");
 					}
 					fs.writeFileSync(
-						`./${time.toUTCString().replace(" ", "_")}_list.txt`,
+						`./${time.toISOString().replace(":", "_")}_list.txt`,
 						fileContent,
 						() => { }
 					);
@@ -1297,7 +1297,7 @@ async function stats(message, args, prefix, isList = true) {
 		await message
 			.reply({
 				embeds: [newEmbed],
-				files: [`./${time.toUTCString().replace(" ", "_")}_list.txt`],
+				files: [`./${time.toISOString().replace(":", "_")}_list.txt`],
 			})
 			.catch((err) => main.log(err));
 	else

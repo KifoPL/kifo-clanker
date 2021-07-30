@@ -9,7 +9,7 @@
 
 ## How to use `ticketing system`?
 
-**Ideally**, ticketing system is enabled in a `Text Channel`, where no one can send normal message (`SEND_MESSAGES` is set to `DENY` for `@everyone`) - ticket creation is done through `/ticket` command, that works only in channels with `/ticketing` enabled.<br/>
+**Ideally**, ticketing system is enabled in a `Text Channel`, where no one can send normal message (the bot auto-deletes messages from non-moderators) - ticket creation is done through `/ticket` command, that works only in channels with `/ticketing` enabled.<br/>
 Although the intended use is to ask questions for moderators and receive answers, this could be also a system for any `Q&A` channels, or other uses that require threadding.
 
 ## Prerequisites for `/ticketing`

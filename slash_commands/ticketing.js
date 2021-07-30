@@ -522,7 +522,7 @@ And most important one: __**Don't forget to thank the person for answering!**__ 
 						fieldArr.push({
 							name: itr.guild.channels.resolve(value.ChannelId)
 								.name,
-							value: `<#${itr.channelId}>, archives after ${ms(
+							value: `<#${value.ChannelId}>, archives after ${ms(
 								value.DefaultArchive,
 								{ long: true }
 							)}, ticket visibility: ${
