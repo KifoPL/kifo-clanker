@@ -2137,12 +2137,12 @@ client.on("guildMemberAdd", (member) => {
 						.catch(console.error);
 					SWInsiderInviteCount++;
 				}
-				//Shadow Republic MilSim
+				//Shadow Republic MilSim (sticky)
 				else if (
 					invites.find(
 						(invite) => invite.inviter?.id == "418938568543830033"
 					)?.uses ==
-					SWInsiderInviteCount + 1
+					ShadowInviteCount + 1
 				) {
 					member.roles
 						.add(
@@ -2151,7 +2151,7 @@ client.on("guildMemberAdd", (member) => {
 							)
 						)
 						.catch(console.error);
-					SWInsiderInviteCount++;
+					ShadowInviteCount++;
 				}
 				//NumeralJoker
 				else if (
