@@ -5,7 +5,7 @@ fail, run !kifo](https://i.imgur.com/hWkoxmm.jpg)
 ![GitHub](https://img.shields.io/github/license/kifopl/kifo-clanker)
 ![Made with Node.js](https://img.shields.io/badge/Made%20with-Node.js-1f425f.svg)
 
-# [Kifo Clanker: top-quality unorthodox Discord commands!](https://discord.com/oauth2/authorize?client_id=795638549730295820&permissions=2416299088&scope=bot)
+# [Kifo Clanker: top-quality unorthodox Discord commands!](https://discord.com/api/oauth2/authorize?client_id=795638549730295820&permissions=120528432320&scope=bot%20applications.commands)
 > *Click the text above to invite Kifo Clanker to your Discord server and try it yourself.*
 
 ## **This bot contains:**
@@ -23,7 +23,7 @@ fail, run !kifo](https://i.imgur.com/hWkoxmm.jpg)
 
 ## [List of Commands](/commandList.md)
 
-> The list is always up-to-date with latest release.
+> The list is always up-to-date with the latest release.
 
 # Showcase:
 
@@ -39,13 +39,13 @@ fail, run !kifo](https://i.imgur.com/hWkoxmm.jpg)
 # Useful links:
 
 ## [Discord Support Server](https://discord.com/invite/HxUFQCxPFp)
-> *Share your ideas, read changelog, test out new features before their release*. 
+> *Share your ideas, read the changelog, test out new features before their release*. 
 
 ## [Top.gg Bot Website](https://top.gg/bot/795638549730295820)
 > *Feel free to leave a vote and 5-star review!*
 
 ## [Donate for custom bot prefix](https://www.buymeacoffee.com/kifoPL)
-> *VPS, electricity and internet cost a lot of money, donations motivate me to continue my work developing this bot, plus you get a custom prefix for your server in return.*
+> *VPS, electricity and the internet cost a lot of money, donations motivate me to continue my work developing this bot, plus you get a custom prefix for your server in return.*
 
 # Self-promotion:
 

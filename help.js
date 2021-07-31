@@ -194,7 +194,7 @@ module.exports = {
 				`List of ${commandCount} commands in ${CategoryCount} categories, by KifoPL:`
 			)
 			.setDescription(
-				`**Click on the text above** for full and detailed list of commands.\nType \`${prefix}help <category>\` to get detailed list of commands within a category, or \`${prefix}help <command>\` to get help for that command.`
+				`**Click on the text above** for full and detailed list of commands.\nType \`${prefix}help <category>\` to get detailed list of commands within a category, or \`${prefix}help <command>\` to get help for that command.\n\n*Looking for \`/\` commands help? Run \`/help\`.*`
 			)
 			.setURL("https://kifopl.github.io/kifo-clanker/commandList")
 			.setFooter(

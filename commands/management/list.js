@@ -1152,6 +1152,8 @@ async function stats(message, args, prefix, isList = true) {
 			}
 			//MESSAGE STATS
 			else if (whatami == "message") {
+				return message.reply({embeds: [kifo.embed("Because of newest Discord API features, this command is broke. There will be a replacement `/` command soon™.")]})
+				//F for message stats
 				await entity.fetch().then((msg) => (entity = msg));
 				let topReaction = await entity.reactions.cache
 					.sort((a, b) => b.count - a.count)
@@ -1226,7 +1228,7 @@ async function stats(message, args, prefix, isList = true) {
 						},
 						{
 							name: `Content length:`,
-							value: `${entity.content.length}`,
+							value: `${entity.content?.length ?? "no content"}`,
 							inline: true,
 						},
 						{
@@ -1236,7 +1238,7 @@ async function stats(message, args, prefix, isList = true) {
 						},
 						{
 							name: `Type:`,
-							value: entity.type,
+							value: entity.type ?? "unknown",
 							inline: true,
 						},
 						{
@@ -1271,12 +1273,12 @@ async function stats(message, args, prefix, isList = true) {
 						},
 						{
 							name: `Is pinned?`,
-							value: entity.pinned,
+							value: entity.pinned ?? "false",
 							inline: true,
 						},
 						{
 							name: `Is system message (sent by Discord)?`,
-							value: entity.system,
+							value: entity.system ?? "false",
 							inline: true,
 						},
 						{
@@ -1306,9 +1308,7 @@ async function stats(message, args, prefix, isList = true) {
 		});
 	if (isList) {
 		try {
-			fs.unlink(`./${time.toUTCString().replace(" ", "_")}_list.txt`, () => { }).catch(
-				() => { }
-			);
-		} catch (err) { }
+			fs.unlink(`./${time.toISOString().replace(":", "_")}_list.txt`, (err) => { main.log(err)})
+		} catch (err) {main.log(err) }
 	}
 }

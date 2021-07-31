@@ -91,3 +91,6 @@ And most important one: __**Don't forget to thank the person for answering!**__ 
 
 And most important one: __**Don't forget to thank the person for answering!**__ They didn't have to, yet they *chose* to help you. Share kindness everywhere you can.
 ```
+<hr/>
+
+~by [KifoPL](https://bio.link/KifoPL)

@@ -23,6 +23,7 @@ module.exports = {
 
 	//itr = interaction
 	async execute(itr) {
+		const main = require(`../index.js`)
 		const { ticketings } = require(`../index.js`);
 		if (!ticketings.has(itr.channelId))
 			return itr.reply({

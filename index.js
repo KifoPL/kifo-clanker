@@ -184,7 +184,7 @@ async function hello(message, prefix) {
 			.setAuthor(
 				"Hello there (click for bot invite link)!",
 				null,
-				"https://discord.com/oauth2/authorize?client_id=795638549730295820&permissions=2416299088&scope=bot"
+				"https://discord.com/api/oauth2/authorize?client_id=795638549730295820&permissions=120528432320&scope=bot%20applications.commands"
 			)
 			.setColor("a039a0")
 			.setTitle(
@@ -1068,6 +1068,22 @@ async function onmessage(message) {
 					.has(Discord.Permissions.FLAGS.MANAGE_CHANNELS) &&
 				message.interaction?.type !== "APPLICATION_COMMAND"
 			) {
+				let actionRow = new Discord.MessageActionRow().addComponents(
+					new Discord.MessageButton()
+					.setStyle("LINK")
+					.setLabel("Guide")
+					.setURL("https://kifopl.github.io/kifo-clanker/guides/ticket")
+				)
+				message.author
+					.send({
+						embeds: [
+							kifo.embed(
+								"Hey, you're trying to send a message in a channel with **ticketing system**.\n> If you have a question/problem, please use `/ticket` command, to create a ticket.\n\n> If you're still confused, there is a detailed guide available, just click the button below."
+							),
+						],
+						components: [actionRow]
+					})
+					.catch(() => {});
 				message.delete().catch(() => {});
 				return;
 			}
@@ -1157,12 +1173,14 @@ function setCommandList() {
 	cmdListMD += `# List of slash commands (used with \`/\`):\n`;
 	for (const cmd of cmdFiles) {
 		const command = require(`./slash_commands/${cmd}`);
-		cmdListMD += `### ${command.name}\n`;
-		cmdListMD += `${command.description}\n`;
+		cmdListMD += `### ${command?.name}\n`;
+		cmdListMD += `${command?.description}\n`;
 		cmdListMD += `- Options:\n`;
-		cmdListMD += `\t- ${command.options
-			.map((x) => `\`${x.name}\` - ${x.description}`)
-			.join("\n\t- ")}\n`;
+		if (command.options != undefined) {
+			cmdListMD += `\t- ${command?.options
+				.map((x) => `\`${x.name}\` - ${x.description}`)
+				.join("\n\t- ")}\n`;
+		}
 	}
 	let now = new Date(Date.now());
 	cmdListJSON = cmdListJSON.slice(0, cmdListJSON.length - 2);
