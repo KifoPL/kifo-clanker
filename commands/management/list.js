@@ -121,13 +121,6 @@ async function stats(message, args, prefix, isList = true) {
 	//for debugging, uncomment to resolve paths
 	//const path = require("path");
 
-	function place(number) {
-		if (number % 10 == 1 && number % 100 != 11) return `st`;
-		if (number % 10 == 2 && number % 100 != 12) return "nd";
-		if (number % 10 == 3 && number % 100 != 13) return "rd";
-		else return "th";
-	}
-
 	//PRECHECKS
 	if (message.guild == null)
 		return message.reply({
@@ -739,7 +732,7 @@ async function stats(message, args, prefix, isList = true) {
 								} (${-entity.roles?.highest.comparePositionTo(
 									message.guild.roles.highest
 								) + 1
-								}${place(
+								}${kifo.place(
 									-entity.roles?.highest.comparePositionTo(
 										message.guild.roles.highest
 									) + 1
@@ -874,7 +867,7 @@ async function stats(message, args, prefix, isList = true) {
 								} (${-entity.roles?.highest.comparePositionTo(
 									message.guild.roles.highest
 								) + 1
-								}${place(
+								}${kifo.place(
 									-entity.roles?.highest.comparePositionTo(
 										message.guild.roles.highest
 									) + 1
@@ -1001,7 +994,7 @@ async function stats(message, args, prefix, isList = true) {
 							value: `${-entity.comparePositionTo(
 								message.guild.roles.highest
 							) + 1
-								}${place(
+								}${kifo.place(
 									-entity.comparePositionTo(
 										message.guild.roles.highest
 									) + 1
@@ -1108,7 +1101,7 @@ async function stats(message, args, prefix, isList = true) {
 								} (${-entity.roles?.highest.comparePositionTo(
 									message.guild.roles.highest
 								) + 1
-								}${place(
+								}${kifo.place(
 									-entity.roles?.highest.comparePositionTo(
 										message.guild.roles.highest
 									) + 1

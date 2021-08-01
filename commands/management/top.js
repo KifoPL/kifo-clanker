@@ -89,13 +89,6 @@ module.exports = {
 				]
 			});
 
-		function place(number) {
-			if (number % 10 == 1 && number % 100 != 11) return `st`;
-			if (number % 10 == 2 && number % 100 != 12) return "nd";
-			if (number % 10 == 3 && number % 100 != 13) return "rd";
-			else return "th";
-		}
-
 		let now = Date.now();
 		let whichchannel = message.channel.guild.channels.cache.find(
 			(channel) => channel.id == args[2].slice(2, 20)
@@ -261,7 +254,7 @@ module.exports = {
 
 				message.channel.sendTyping().catch();
 				newEmbed.setTitle(
-					`**${ii}${place(ii)}** place by **${chmessages[i].author.username}** with **${chmessages[i].reactions.resolve(key).count}** ${reaction}`
+					`**${ii}${kifo.place(ii)}** place by **${chmessages[i].author.username}** with **${chmessages[i].reactions.resolve(key).count}** ${reaction}`
 				);
 
 				if (chmessages[i].content.length > 0) {

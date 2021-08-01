@@ -76,6 +76,8 @@ Simply use `/ticketing off` command, provided you have the following permissions
 
 And most important one: __**Don't forget to thank the person for answering!**__ They didn't have to, yet they *chose* to help you. Share kindness everywhere you can.
 
+> *Still confused? Type `/guide Using /ticket` for even more details.*
+
 ## If you want to change a few small details, here's a raw text (with Discord-ready formatting):
 ```
 **This channel has __`tickets`__ enabled**.
@@ -90,6 +92,8 @@ And most important one: __**Don't forget to thank the person for answering!**__ 
 - **Describe the origin of your problem/question** *(What topic/category brought you to this channel? Where did you expect to find an answer?)*.
 
 And most important one: __**Don't forget to thank the person for answering!**__ They didn't have to, yet they *chose* to help you. Share kindness everywhere you can.
+
+> *Still confused? Type `/guide Using /ticket` for even more details.*
 ```
 <hr/>
 

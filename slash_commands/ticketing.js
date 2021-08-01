@@ -356,7 +356,7 @@ module.exports = {
 - **Skip all unnecessary details** *(people often find it disappointing when a giant wall of text leads to small and easy question)*.
 - **Describe the origin of your problem/question** *(What topic/category brought you to this channel? Where did you expect to find an answer?)*.
 
-And most important one: __**Don't forget to thank the person for answering!**__ They didn't have to, yet they *chose* to help you. Share kindness everywhere you can.`,
+And most important one: __**Don't forget to thank the person for answering!**__ They didn't have to, yet they *chose* to help you. Share kindness everywhere you can.\n\n> *Still confused? Type \`/guide Using /ticket\` for even more details.*`,
 													"How to use this channel?"
 												);
 												itr.channel.send({

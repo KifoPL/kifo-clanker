@@ -195,9 +195,10 @@ This command allows you to create a simple todo notes.
 - Required user permissions: `SEND_MESSAGES`
 
 # List of slash commands (used with `/`):
-### help
-Receive link for slash commands list.
+### guide
+Receive link for command list, or guide regarding speficic topic.
 - Options:
+	- `choice` - Select topic, which you want to learn about.
 ### ping
 ...pong?
 - Options:
@@ -206,6 +207,7 @@ Receive link for slash commands list.
 Create a poll.
 - Options:
 	- `question` - Ask the question or an opinion
+	- `timeout` - When do you want to calculate results? "0", if never.
 	- `one` - Option 1
 	- `two` - Option 2
 	- `three` - Option 3
@@ -240,4 +242,4 @@ Set up ticketing system in a channel.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Sat, 31 Jul 2021 01:17:08 GMT*
+> - *Last update: Sun, 01 Aug 2021 17:43:11 GMT*

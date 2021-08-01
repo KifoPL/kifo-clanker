@@ -1,5 +1,6 @@
 const kifo = require("kifo");
 const Discord = require("discord.js");
+const ms = require("ms");
 
 module.exports = {
 	name: "poll",
@@ -9,6 +10,13 @@ module.exports = {
 			name: "question",
 			type: "STRING",
 			description: "Ask the question or an opinion",
+			required: true,
+		},
+		{
+			name: "timeout",
+			type: "STRING",
+			description:
+				'When do you want to calculate results? "0", if never.',
 			required: true,
 		},
 		{
@@ -75,11 +83,12 @@ module.exports = {
 				.permissionsIn(itr.channel)
 				.has(Discord.Permissions.FLAGS.ADD_REACTIONS)
 		)
-			return itr.reply({
+			return itr.editReply({
 				embeds: [
 					kifo.embed("I don't have `ADD_REACTIONS` permission!"),
 				],
 			});
+		await itr.defer();
 		let reactions = [
 			"1️⃣",
 			"2️⃣",
@@ -94,26 +103,67 @@ module.exports = {
 		];
 		let options = itr.options.data.map((x) => x);
 		let question = options.shift();
+		let time = options.shift().value;
+		if (time != 0) {
+			if (isNaN(ms(time)))
+				return itr.editReply({
+					embeds: [
+						kifo.embed(
+							"Incorrect timeout! If you don't want any timeout, simply type `0`."
+						),
+					],
+					ephemeral: true,
+				});
+			if (ms(time) < 1000 * 60 || ms(time) > ms("1y"))
+				return itr.editReply({
+					embeds: [
+						kifo.embed(
+							"Incorrect timeout! Set it between `1 minute` and `1 year`."
+						),
+					],
+					ephemeral: true,
+				});
+		}
+		let now = new Date(Date.now());
+		let end;
+		if (time != 0) end = new Date(now.getTime() + ms(time));
+		else end = null;
 		let rEmbed = kifo.embed(
-			"React to the option you choose!",
+			`React to the option you choose!${
+				end != null
+					? `\nPoll ends at <t:${Math.floor(
+							end.getTime() / 1000
+					  )}>, <t:${Math.floor(end.getTime() / 1000)}:R>`
+					: ""
+			}`,
 			question.value
 		);
 		for (i = 0; i < options.length; i++) {
 			rEmbed.addField(options[i].value, `React with ${reactions[i]}!`);
 		}
-		itr.reply({
+		itr.editReply({
 			embeds: [rEmbed],
 		}).catch((err) => {
-			itr.reply({ embeds: [kifo.embed(err)] }).catch(() => {});
+			itr.editReply({ embeds: [kifo.embed(err)] }).catch(() => {});
 		});
+
 		await itr.fetchReply().then((itreply) => {
+			if (end != null) {
+				main.con.query(
+					"INSERT INTO polls (GuildId, ChannelId, MessageId, EndTime)  VALUES (?, ?, ?, ?)",
+					[itr.guildId, itr.channelId, itreply.id, end],
+					function (err) {
+						if (err) throw err;
+					}
+				);
+			}
 			for (i = 0; i < options.length; i++) {
 				itreply.react(reactions[i]).catch(() => {});
 			}
 		});
 	},
 	async button(itr) {
-		itr.reply({ embeds: [kifo.embed("Hello there!")] });
+		itr.editReply({ embeds: [kifo.embed("Hello there!")] });
 	},
 	async selectMenu(itr) {},
 };

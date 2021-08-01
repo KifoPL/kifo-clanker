@@ -3,8 +3,6 @@
 
 It is sometimes hard to find a question within rules, or even find a relevant channel, and that's when this command comes in - it's a neat and organized way to ask questions and receive answers.
 
-
-
 ## How to use `tickets`?
 1. If you have a question or a problem that needs solving, type `/ticket` to create a ticket.
 2. Then, in `title`, ask the question, or state the problem.

@@ -540,7 +540,7 @@ async function commands(message, prefix) {
 		return;
 	}
 	if (command == "deploy" && message.author == Owner) {
-		const btnRow = new MessageActionRow().addComponents(
+		const btnRow1 = new MessageActionRow().addComponents(
 			new MessageButton()
 				.setCustomId("deploy_guild")
 				.setLabel("Test")
@@ -548,10 +548,20 @@ async function commands(message, prefix) {
 			new MessageButton()
 				.setCustomId("deploy_global")
 				.setLabel("Production")
-				.setStyle("SECONDARY"),
+				.setStyle("SECONDARY")
+		);
+		const btnRow2 = new MessageActionRow().addComponents(
 			new MessageButton()
-				.setCustomId("undeploy")
-				.setLabel("DELETE ALL")
+				.setCustomId("undeploy_guild")
+				.setLabel("Delete Test")
+				.setStyle("DANGER"),
+			new MessageButton()
+				.setCustomId("undeploy_global")
+				.setLabel("Delete Production")
+				.setStyle("DANGER"),
+			new MessageButton()
+				.setCustomId("undeploy_all")
+				.setLabel("Delete Both")
 				.setStyle("DANGER")
 		);
 		message.channel
@@ -561,13 +571,13 @@ async function commands(message, prefix) {
 						"Where would you like to deploy all `/ commands?"
 					),
 				],
-				components: [btnRow],
+				components: [btnRow1, btnRow2],
 			})
 			.then((msg) =>
 				msg
 					.awaitMessageComponent({ time: 15000 })
-					.then((interaction) => {
-						if (interaction.customId.startsWith("deploy_")) {
+					.then((btnItr) => {
+						if (btnItr.customId.startsWith("deploy_")) {
 							const commandFolders = fs
 								.readdirSync("./slash_commands")
 								.filter((file) => file.endsWith(".js"));
@@ -586,24 +596,80 @@ async function commands(message, prefix) {
 								console.log(`/ "${cmd.slice(0, -3)}"`);
 								i++;
 							}
-							if (interaction.customId == "deploy_guild") {
+							if (btnItr.customId == "deploy_guild") {
 								clientapp.commands.set(data, msg.guild.id);
-							} else if (
-								interaction.customId == "deploy_global"
-							) {
+								btnItr.reply({
+									embeds: [kifo.embed("DEPLOYED to Test!")],
+								});
+								console.log(`Deployed ${i} commands to test!`);
+							} else if (btnItr.customId == "deploy_global") {
 								clientapp.commands.set(data);
+								btnItr.reply({
+									embeds: [
+										kifo.embed(
+											"DEPLOYED to Production (will take up to an hour)!"
+										),
+									],
+								});
+								console.log(
+									`Deployed ${i} commands to production!`
+								);
 							}
-							console.log(`Deployed ${i} commands to test!`);
-
-							interaction.reply({
-								embeds: [kifo.embed("DEPLOYED!")],
-								ephemeral: true,
+						}
+						if (btnItr.customId == "undeploy_guild") {
+							clientapp.commands
+								.fetch({ guildId: btnItr.guildId })
+								.then((cmds) => {
+									cmds.each((cmd) => {
+										console.log(cmd.name);
+										cmd.delete();
+									});
+								});
+							btnItr.reply({
+								embeds: [kifo.embed("DELETED from test!")],
 							});
 						}
-						if (interaction.customId == "undeploy") {
-							clientapp.commands.cache.each((cmd) =>
-								cmd.delete()
+						if (btnItr.customId == "undeploy_global") {
+							clientapp.commands.fetch().then((cmds) =>
+								cmds.each((cmd) => {
+									if (cmd.guildId == null) {
+										console.log(cmd.name);
+										cmd.delete();
+									}
+								})
 							);
+							btnItr.reply({
+								embeds: [
+									kifo.embed(
+										"DELETED from production (will take up to an hour)!"
+									),
+								],
+							});
+						}
+						if (btnItr.customId == "undeploy_both") {
+							clientapp.commands.fetch().then((cmds) =>
+								cmds.each((cmd) => {
+									console.log(cmd.name);
+									cmd.delete();
+								})
+							);
+							clientapp.commands
+								.fetch({
+									guildId: btnItr.guildId,
+								})
+								.then((cmds) => {
+									cmds.each((cmd) => {
+										console.log(cmd.name);
+										cmd.delete();
+									});
+								});
+							btnItr.reply({
+								embeds: [
+									kifo.embed(
+										"DELETED from production (will take up to an hour) and test!"
+									),
+								],
+							});
 						}
 						msg.edit({ components: [] });
 					})
@@ -612,6 +678,35 @@ async function commands(message, prefix) {
 						msg.edit({ components: [] });
 					})
 			);
+		return;
+	}
+	if (command == "cmdlist" && message.author == Owner) {
+		let reply = kifo.embed("", "/ Command list:");
+		clientapp.commands
+			.fetch({ guildId: `${message.guild.id}` })
+			.then((cmds) => {
+				cmds.each((cmd) => {
+					reply.addField(
+						`${cmd.name}`,
+						`Guild: ${cmd.guildId}\nOptions: ${cmd.options
+							.map((o) => `${o.name}`)
+							.join(", ")}`
+					);
+				});
+				console.log("test");
+				clientapp.commands.fetch().then((cmds1) => {
+					console.log("test");
+					cmds1.each((cmd) => {
+						reply.addField(
+							`${cmd.name}`,
+							`Guild: ${cmd.guildId}\nOptions: ${cmd.options
+								.map((o) => `${o.name}`)
+								.join(", ")}`
+						);
+					});
+					message.reply({ embeds: [reply] });
+				});
+			});
 		return;
 	}
 
@@ -1070,10 +1165,12 @@ async function onmessage(message) {
 			) {
 				let actionRow = new Discord.MessageActionRow().addComponents(
 					new Discord.MessageButton()
-					.setStyle("LINK")
-					.setLabel("Guide")
-					.setURL("https://kifopl.github.io/kifo-clanker/guides/ticket")
-				)
+						.setStyle("LINK")
+						.setLabel("Guide")
+						.setURL(
+							"https://kifopl.github.io/kifo-clanker/guides/ticket"
+						)
+				);
 				message.author
 					.send({
 						embeds: [
@@ -1081,7 +1178,7 @@ async function onmessage(message) {
 								"Hey, you're trying to send a message in a channel with **ticketing system**.\n> If you have a question/problem, please use `/ticket` command, to create a ticket.\n\n> If you're still confused, there is a detailed guide available, just click the button below."
 							),
 						],
-						components: [actionRow]
+						components: [actionRow],
 					})
 					.catch(() => {});
 				message.delete().catch(() => {});
@@ -1198,11 +1295,37 @@ function setCommandList() {
 	console.log(`Created commandList.json file!`);
 	console.log(`Created commandList.md file!`);
 }
+function setGuideList() {
+	let now = new Date(Date.now());
+	let guideList = "# List of available guides:\n\n";
+	const guides = fs
+		.readdirSync(`./guides`)
+		.filter((file) => file.endsWith(".md"));
+	guides.forEach((guide) => {
+		const data = fs
+			.readFileSync(`./guides/${guide}`, { encoding: `utf8`, flag: `r` })
+			.split("\n")
+			.shift();
+		console.log(data);
+		guideList += `### [${data.slice(2,-1)}](./guides/${guide.slice(
+			0,
+			-3
+		)})\n\n`;
+	});
+	guideList += `<hr/>*Last update: ${now.toUTCString()}.*\n`
+	guideList += "\n~by [KifoPL](https://bio.link/KifoPL)";
+
+	fs.writeFile(`guideList.md`, guideList, () => {
+		return;
+	})
+	console.log("Created guideList.md file!")
+}
 
 client.once("ready", () => {
 	console.log("Kifo Clanker™ is online!");
 	loadowner();
 	setCommandList();
+	setGuideList();
 	debug = false;
 	module.exports.client = client;
 
@@ -1220,6 +1343,8 @@ client.once("ready", () => {
 	setInterval(permsCheck, 1000 * 60);
 	menusCheck();
 	setInterval(menusCheck, 1000 * 60);
+	pollsCheck();
+	setInterval(pollsCheck, 1000 * 60);
 
 	con.query("SELECT * FROM menu_perms", [], function (err, result) {
 		if (err) throw err;
@@ -1533,13 +1658,13 @@ function permsCheck() {
 					let Current = client.guilds
 						.resolve(row.GuildId)
 						?.channels.resolve(row.ChannelId)
-						?.permissionOverwrites.get(row.PermId)
+						?.permissionOverwrites.resolve(row.PermId)
 						?.allow.has(row.PermFlag)
 						? "allow"
 						: client.guilds
 								.resolve(row.GuildId)
 								?.channels.resolve(row.ChannelId)
-								?.permissionOverwrites.get(row.PermId)
+								?.permissionOverwrites.resolve(row.PermId)
 								?.deny.has(row.PermFlag)
 						? "deny"
 						: "neutral";
@@ -1550,7 +1675,7 @@ function permsCheck() {
 					client.guilds
 						.resolve(row.GuildId)
 						?.channels.resolve(row.ChannelId)
-						?.updateOverwrite(row.PermId, {
+						?.permissionOverwrites.edit(row.PermId, {
 							[row.PermFlag]:
 								row.Command == "add"
 									? true
@@ -1692,6 +1817,53 @@ function menusCheck() {
 						);
 				});
 				main.log(`${result.length} role menus found!`);
+			}
+		}
+	);
+}
+
+function pollsCheck() {
+	con.query(
+		"SELECT Id, GuildId, ChannelId, MessageId, EndTime FROM polls WHERE EndTime <= NOW()",
+		[],
+		function (err, result) {
+			if (err) throw err;
+			if (result.length > 0) {
+				main.log(`${result.length} role menus found!`);
+				result.forEach(async (row) => {
+					//fetch message, then show results of reactions desc, paste link to the original message
+					let msg = await client.guilds
+						.resolve(row.GuildId)
+						.channels?.resolve(row.ChannelId)
+						.messages.fetch(row.MessageId);
+
+					let questionEmbed = msg.embeds[0];
+
+					let resultEmbed = kifo
+						.embed("", "Poll results")
+						.setURL(msg.url);
+					await msg.fetch();
+					let pos = 1;
+					msg.reactions.cache
+						.sort((a, b) => b.count - a.count)
+						.each((r) => {
+							resultEmbed.addField(
+								`${kifo.place(pos)} place:`,
+								`${r.emoji} - ${r.count} votes`
+							);
+							pos++;
+						});
+					msg.reply({ embeds: [questionEmbed, resultEmbed] }).catch(
+						() => {}
+					);
+				});
+				con.query(
+					"DELETE FROM polls WHERE EndTime <= NOW()",
+					[],
+					function (err) {
+						if (err) throw err;
+					}
+				);
 			}
 		}
 	);
@@ -1987,7 +2159,7 @@ client.on("messageReactionRemove", async (msgReaction, user) => {
 		}
 	}
 });
-	
+
 //kifo-advanced-logs
 client.on("guildCreate", async (guild) => {
 	let date = new Date(Date.now());
