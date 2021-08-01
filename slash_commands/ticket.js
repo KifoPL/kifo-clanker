@@ -88,7 +88,7 @@ module.exports = {
 				itr.channel
 					.send({
 						embeds: [
-							kifo.embed(err, "ERROR while creating a ticket"),
+							kifo.embed(`${err} ${err.stack}`, "ERROR while creating a ticket"),
 						],
 					})
 					.catch(() => {});
