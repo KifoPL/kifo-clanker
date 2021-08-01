@@ -85,6 +85,7 @@ module.exports = {
 					embeds: [kifo.embed("Could not create a ticket!")],
 					ephemeral: false,
 				});
+				main.log(err);
 				itr.channel
 					.send({
 						embeds: [
