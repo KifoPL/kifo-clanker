@@ -17,8 +17,7 @@ module.exports = {
 				`https://discord.gg/HxUFQCxPFp`
 			)
 			.setTitle(
-				`Command "${this.name.toUpperCase()}" issued by ${
-					message.author.tag
+				`Command "${this.name.toUpperCase()}" issued by ${message.author.tag
 				}`
 			);
 
@@ -29,7 +28,7 @@ module.exports = {
 		if (args[1] != undefined) {
 			embedreply.setTitle("Error:");
 			embedreply.setDescription("Too many arguments!");
-			return message.reply(embedreply);
+			return message.reply({ embeds: [embedreply] });
 		}
 		if (args[0]) {
 			if (message.mentions.users.firstKey() != undefined) {
@@ -44,12 +43,12 @@ module.exports = {
 						.setImage(
 							`https://media1.tenor.com/images/72623e4b02895f3c7b623f2222268908/tenor.gif`
 						);
-					return message.reply(embedreply);
+					return message.reply({ embeds: [embedreply] });
 				}
 				userping = `${args[0]}`;
 			} else if (!isNaN(args[0])) {
 				if (!message.guild.members.resolve(args[0]))
-					return message.reply(kifo.embed("user not found."));
+					return message.reply({ embeds: [kifo.embed("user not found.")] });
 				else {
 					if (
 						args[0] == 289119054130839552 ||
@@ -62,13 +61,13 @@ module.exports = {
 							.setImage(
 								`https://media1.tenor.com/images/72623e4b02895f3c7b623f2222268908/tenor.gif`
 							);
-						return message.reply(embedreply);
+						return message.reply({ embeds: [embedreply] });
 					}
 					userping = "<@" + args[0] + ">\n";
 				}
 			}
 		}
 		embedreply.setDescription(reply);
-		message.channel.send(userping, embedreply).catch(() => {});
+		message.channel.send({ content: userping, embeds: [embedreply] }).catch(() => { });
 	},
 };

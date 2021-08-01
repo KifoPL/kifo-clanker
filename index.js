@@ -1,5 +1,6 @@
 //libraries
 const Discord = require("discord.js");
+const { MessageButton, MessageActionRow } = require("discord.js");
 require("dotenv")?.config();
 require('events').EventEmitter.prototype._maxListeners = 100;
 require('events').defaultMaxListeners = 100;
@@ -11,11 +12,26 @@ const main = require(`./index.js`);
 //client login
 const client = new Discord.Client({
 	partials: [`MESSAGE`, `CHANNEL`, `REACTION`],
+	intents: [
+		Discord.Intents.FLAGS.GUILDS,
+		Discord.Intents.FLAGS.GUILD_MEMBERS,
+		Discord.Intents.FLAGS.GUILD_INTEGRATIONS,
+		Discord.Intents.FLAGS.GUILD_WEBHOOKS,
+		Discord.Intents.FLAGS.GUILD_INVITES,
+		Discord.Intents.FLAGS.GUILD_PRESENCES,
+		Discord.Intents.FLAGS.GUILD_MESSAGES,
+		Discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
+		Discord.Intents.FLAGS.GUILD_MESSAGE_TYPING,
+		Discord.Intents.FLAGS.DIRECT_MESSAGES,
+		Discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
+		Discord.Intents.FLAGS.DIRECT_MESSAGE_TYPING,
+	],
 });
 
 //Owner is Discord User @KifoPL#3358 - <@289119054130839552>
 async function loadowner() {
-	clientapp = await client.fetchApplication().catch(() => { });
+	clientapp = await client.application.fetch();
+	clientapp.commands.fetch().then(() => console.log("Fetched / commands!"));
 	Owner = clientapp.owner;
 	console.log("Bot owner object loaded!");
 }
@@ -39,7 +55,18 @@ const prefixes = new Map();
 }
  */
 const menus = new Map();
+/**
+ * @example
+ * ticketing = {
+	ChannelId: "",
+	ArePublic: true || false,
+	DefaultArchive: "3h" || "1d" || "3d" || "1w",
+	DefaultSlowmode: "10s" || "1m" || "...",
+}
+ */
+const ticketings = new Map();
 module.exports.menus = menus;
+module.exports.ticketings = ticketings;
 // var reactMap = new Map();
 // var superslowMap = new Map();
 var dbconfig = {
@@ -47,6 +74,21 @@ var dbconfig = {
 	user: process.env.USER,
 	password: process.env.PASSWORD,
 	database: "kifo_clanker_db",
+	//totally not from stack overflow, but works beautifully
+	typeCast: function castField(field, useDefaultTypeCasting) {
+		// We only want to cast bit fields that have a single-bit in them. If the field
+		// has more than one bit, then we cannot assume it is supposed to be a Boolean.
+		if (field.type === "BIT" && field.length === 1) {
+			var bytes = field.buffer();
+
+			// A Buffer in Node represents a collection of 8-bit unsigned integers.
+			// Therefore, our single "bit field" comes back as the bits '0000 0001',
+			// which is equivalent to the number 1.
+			return bytes[0] === 1;
+		}
+
+		return useDefaultTypeCasting();
+	},
 };
 var con;
 function dbReconnect() {
@@ -54,7 +96,9 @@ function dbReconnect() {
 	con.connect(async function (err) {
 		if (err) {
 			main.log(err);
-			Owner?.send(kifo.embed(err, "Error:")).catch(() => { });
+			Owner?.send({ embeds: [kifo.embed(err, "Error:")] }).catch(
+				() => {}
+			);
 			setTimeout(dbReconnect, 3000);
 		}
 		console.log(`Connected to ${process.env.HOST} MySQL DB!`);
@@ -76,13 +120,13 @@ function dbReconnect() {
 
 	con.on("error", function (err) {
 		main.log(err);
-		Owner?.send(kifo.embed(err, "Error:")).catch(() => { });
+		Owner?.send({ embeds: [kifo.embed(err, "Error:")] }).catch(() => {});
 		if (err.code === "PROTOCOL_CONNECTION_LOST") {
 			dbReconnect();
 		} else {
-			Owner?.send(kifo.embed(err, "Error BOT IS SHUT DOWN:")).catch(
-				() => { }
-			);
+			Owner?.send({
+				embeds: [kifo.embed(err, "Error BOT IS SHUT DOWN:")],
+			}).catch(() => {});
 			throw err;
 		}
 	});
@@ -91,10 +135,12 @@ function dbReconnect() {
 dbReconnect();
 
 client.commands = new Discord.Collection();
+client.slash_commands = new Discord.Collection();
 
 const commandFolders = fs.readdirSync("./commands");
 console.log("Loading commands...");
 let i = 0;
+let j = 0;
 for (const folder of commandFolders) {
 	const commandFiles = fs
 		.readdirSync(`./commands/${folder}`)
@@ -106,7 +152,19 @@ for (const folder of commandFolders) {
 		i++;
 	}
 }
+i++;
 console.log(`Loaded ${i} commands!`);
+console.log("Loading / commands...");
+const cmdFiles = fs
+	.readdirSync(`./slash_commands`)
+	.filter((file) => file.endsWith(".js"));
+for (const file of cmdFiles) {
+	const command = require(`./slash_commands/${file}`);
+	client.slash_commands.set(command.name, command);
+	console.log(`/ "${file.slice(0, -3)}"`);
+	j++;
+}
+console.log(`Loaded ${j} / commands!`);
 command = require(`./help.js`);
 client.commands.set(command.name, command);
 
@@ -115,7 +173,7 @@ async function hello(message, prefix) {
 	//I have to do it here too
 	if (message.content.toLowerCase().trim() == prefix.toLowerCase().trim()) {
 		if (message.deleted) return;
-		message.channel.startTyping().catch(() => { });
+		message.channel.sendTyping().catch(() => {});
 		const event = new Date(Date.now());
 		main.log(
 			message.author.tag,
@@ -128,7 +186,7 @@ async function hello(message, prefix) {
 			.setAuthor(
 				"Hello there (click for bot invite link)!",
 				null,
-				"https://discord.com/oauth2/authorize?client_id=795638549730295820&permissions=2416299088&scope=bot"
+				"https://discord.com/api/oauth2/authorize?client_id=795638549730295820&permissions=120528432320&scope=bot%20applications.commands"
 			)
 			.setColor("a039a0")
 			.setTitle(
@@ -158,17 +216,13 @@ async function hello(message, prefix) {
 				"\u200B",
 				"This bot is developed by [KifoPL](https://bio.link/kifopl)."
 			);
-		message.channel.send(helloEmbed).catch(() => { });
-		message.channel.stopTyping(true);
+		message.reply({ embeds: [helloEmbed] }).catch(() => {});
 		return;
 	}
 }
-//can be useful at some point in the future
-function sleep(ms) {
-	return new Promise((resolve) => {
-		setTimeout(resolve, ms);
-	});
-}
+//Superior way to delay stuff using promises like a pro I am
+const timer = (ms) => new Promise((res) => setTimeout(res, ms));
+//timer(500).then(_ => {})
 
 //IF CORRECT CHANNEL, REACT
 async function react(message, prefix) {
@@ -188,26 +242,28 @@ async function react(message, prefix) {
 					if (
 						!message.guild.me
 							.permissionsIn(message.channel)
-							.has("ADD_REACTIONS")
+							.has(Discord.Permissions.FLAGS.ADD_REACTIONS)
 					) {
-						return message.reply(
-							kifo.embed(
-								"Missing `ADD_REACTIONS` permission. Please turn off `react` module in this channel, or enable `ADD_REACTIONS` for me."
-							)
-						);
+						return message.reply({
+							embeds: [
+								kifo.embed(
+									"Missing `ADD_REACTIONS` permission. Please turn off `react` module in this channel, or enable `ADD_REACTIONS` for me."
+								),
+							],
+						});
 					}
 					var eventRT = new Date(Date.now());
 					result.forEach((row) => {
 						if (message.deleted) return;
-						message.react(row.emote).catch(() => { });
+						message.react(row.emote).catch(() => {});
 					});
 					main.log(
 						"Reacted in " +
-						message.guild.name +
-						", " +
-						message.channel.name +
-						" at " +
-						eventRT.toUTCString()
+							message.guild.name +
+							", " +
+							message.channel.name +
+							" at " +
+							eventRT.toUTCString()
 					);
 				}
 			}
@@ -225,7 +281,7 @@ async function superslow(message, prefix) {
 				if (
 					!message.guild.me
 						.permissionsIn(message.channel)
-						.has("MANAGE_CHANNELS")
+						.has(Discord.Permissions.FLAGS.MANAGE_CHANNELS)
 				) {
 					const embedreply = new Discord.MessageEmbed();
 					embedreply
@@ -238,12 +294,12 @@ async function superslow(message, prefix) {
 						.setTitle(
 							"Missing `MANAGE_CHANNELS` permission. Please turn off `superslow` module in this channel, or enable `MANAGE_CHANNELS` for me."
 						);
-					return message.reply(embedreply);
+					return message.reply({ embeds: [embedreply] });
 				}
 				if (
 					!message.guild.me
 						.permissionsIn(message.channel)
-						.has("MANAGE_MESSAGES")
+						.has(Discord.Permissions.FLAGS.MANAGE_MESSAGES)
 				) {
 					const embedreply = new Discord.MessageEmbed();
 					embedreply
@@ -256,12 +312,12 @@ async function superslow(message, prefix) {
 						.setTitle(
 							"Missing `MANAGE_MESSAGES` permission. Please turn off `superslow` module in this channel, or enable `MANAGE_MESSAGES` for me."
 						);
-					return message.reply(embedreply);
+					return message.reply({ embeds: [embedreply] });
 				}
 				if (
 					!message.member
 						.permissionsIn(message.channel)
-						.has("MANAGE_MESSAGES")
+						.has(Discord.Permissions.FLAGS.MANAGE_MESSAGES)
 				) {
 					let slowmode = result[0].Time;
 					con.query(
@@ -280,18 +336,23 @@ async function superslow(message, prefix) {
 										message.content.trim() == prefix.trim()
 									) {
 										message.author
-											.send(
-												`You can't talk in ${message.channel.name
-												} yet, please wait another ${ms(
-													slowmode -
-													(message.createdTimestamp -
-														result2[0]
-															.timestamp),
-													{ long: true }
-												)}.`
-											)
-											.catch(() => { });
-										await message.delete().catch(() => { });
+											.send({
+												embeds: [
+													kifo.embed(
+														`You can't talk in ${
+															message.channel.name
+														} yet, please wait another ${ms(
+															slowmode -
+																(message.createdTimestamp -
+																	result2[0]
+																		.timestamp),
+															{ long: true }
+														)}.`
+													),
+												],
+											})
+											.catch(() => {});
+										await message.delete().catch(() => {});
 										return;
 									} else {
 										//I'm not kidding this msg works, because apparently subtraction forces integer type ¯\_(ツ)_/¯
@@ -301,8 +362,8 @@ async function superslow(message, prefix) {
 											" for **" +
 											ms(
 												slowmode -
-												(message.createdTimestamp -
-													result2[0].timestamp),
+													(message.createdTimestamp -
+														result2[0].timestamp),
 												{
 													long: true,
 												}
@@ -310,19 +371,19 @@ async function superslow(message, prefix) {
 											"**. You can check, if you can talk (without risking waiting another **" +
 											ms(
 												slowmode -
-												(message.createdTimestamp -
-													result2[0].timestamp) +
-												(message.createdTimestamp -
-													result2[0].timestamp),
+													(message.createdTimestamp -
+														result2[0].timestamp) +
+													(message.createdTimestamp -
+														result2[0].timestamp),
 												{ long: true }
 											) +
 											"**), by typing `" +
 											prefix.trim() +
 											"`.";
 										message.author
-											.send(msg)
-											.catch(() => { });
-										await message.delete().catch(() => { });
+											.send({ embeds: [kifo.embed(msg)] })
+											.catch(() => {});
+										await message.delete().catch(() => {});
 										return;
 									}
 								} else {
@@ -330,11 +391,15 @@ async function superslow(message, prefix) {
 										message.content.trim() == prefix.trim()
 									) {
 										message.author
-											.send(
-												`You can already talk in #${message.channel.name}.`
-											)
-											.catch(() => { });
-										await message.delete().catch(() => { });
+											.send({
+												embeds: [
+													kifo.embed(
+														`You can already talk in #${message.channel.name}.`
+													),
+												],
+											})
+											.catch(() => {});
+										await message.delete().catch(() => {});
 										return;
 									} else {
 										con.query(
@@ -353,11 +418,15 @@ async function superslow(message, prefix) {
 							} else {
 								if (message.content.trim() == prefix.trim()) {
 									message.author
-										.send(
-											`You can already talk in #${message.channel.name}.`
-										)
-										.catch(() => { });
-									await message.delete().catch(() => { });
+										.send({
+											embeds: [
+												kifo.embed(
+													`You can already talk in #${message.channel.name}.`
+												),
+											],
+										})
+										.catch(() => {});
+									await message.delete().catch(() => {});
 									return;
 								} else
 									con.query(
@@ -376,7 +445,7 @@ async function superslow(message, prefix) {
 					);
 				}
 			} else {
-				await hello(message, prefix).catch(() => { });
+				await hello(message, prefix).catch(() => {});
 			}
 		}
 	);
@@ -399,13 +468,21 @@ function checks(message, prefix) {
 			) == undefined
 		) {
 			main.log(`msg: ${message.content}`);
-			message.reply(
-				kifo.embed("Only KifoPL#3358 and testers can use this bot.")
-			);
+			message.reply({
+				embeds: [
+					kifo.embed(
+						"Only KifoPL#3358 and testers can use this bot."
+					),
+				],
+			});
 			return false;
 		}
 
-	if (!message.guild?.me.permissionsIn(message.channel).has("SEND_MESSAGES"))
+	if (
+		!message.guild?.me
+			.permissionsIn(message.channel)
+			.has(Discord.Permissions.FLAGS.SEND_MESSAGES)
+	)
 		return false;
 
 	return true;
@@ -416,7 +493,6 @@ async function commands(message, prefix) {
 	let command = args.shift().toLowerCase();
 
 	if (command == "serverlist" && message.author == Owner) {
-		main.log("run SERVERLIST command");
 		let channel = client.guilds
 			.resolve("822800862581751848")
 			.channels?.resolve("864178555457372191");
@@ -424,14 +500,17 @@ async function commands(message, prefix) {
 		let serverembed = new Discord.MessageEmbed();
 		await message.client.guilds.cache
 			.sort((a, b) => b.memberCount - a.memberCount)
-			.each((guild) => {
+			.each(async (guild) => {
+				let owner = await guild.fetchOwner();
 				serversarr.push({
 					name: `${guild.id}\t${guild.name}\t`,
-					value: `<:owner:823658022785908737> <@${guild.ownerID}> ${guild.owner.user.tag
-						}, ${guild.memberCount} members. ${guild.available
+					value: `<:owner:823658022785908737> <@${guild.ownerId}> ${
+						owner.user.tag
+					}, ${guild.memberCount} members. ${
+						guild.available
 							? "<:online:823658022974521414>"
 							: "<:offline:823658022957613076> OUTAGE!"
-						}`,
+					}`,
 				});
 			});
 		serverembed
@@ -447,18 +526,189 @@ async function commands(message, prefix) {
 			fs.writeFileSync(
 				`./serverlist.txt`,
 				serversarr.map((x) => `${x.name}\n${x.value}`).join(`\n\n`),
-				() => { }
+				() => {}
 			);
-			await serverembed.attachFiles(`./serverlist.txt`, `serverlist.txt`);
+			channel
+				.send({ embeds: [serverembed], files: ["./serverlist.txt"] })
+				.then(() => {
+					try {
+						fs.unlink(`./serverlist.txt`, () => {});
+					} catch {}
+				})
+				.catch(() => {});
+		} else {
+			channel.send({ embeds: [serverembed] }).catch(() => {});
 		}
-		channel
-			.send(serverembed)
-			.then(() => {
-				try {
-					fs.unlink(`./serverlist.txt`, () => { });
-				} catch { }
+		return;
+	}
+	if (command == "deploy" && message.author == Owner) {
+		const btnRow1 = new MessageActionRow().addComponents(
+			new MessageButton()
+				.setCustomId("deploy_guild")
+				.setLabel("Test")
+				.setStyle("PRIMARY"),
+			new MessageButton()
+				.setCustomId("deploy_global")
+				.setLabel("Production")
+				.setStyle("SECONDARY")
+		);
+		const btnRow2 = new MessageActionRow().addComponents(
+			new MessageButton()
+				.setCustomId("undeploy_guild")
+				.setLabel("Delete Test")
+				.setStyle("DANGER"),
+			new MessageButton()
+				.setCustomId("undeploy_global")
+				.setLabel("Delete Production")
+				.setStyle("DANGER"),
+			new MessageButton()
+				.setCustomId("undeploy_all")
+				.setLabel("Delete Both")
+				.setStyle("DANGER")
+		);
+		message.channel
+			.send({
+				embeds: [
+					kifo.embed(
+						"Where would you like to deploy all `/ commands?"
+					),
+				],
+				components: [btnRow1, btnRow2],
 			})
-			.catch(() => { });
+			.then((msg) =>
+				msg
+					.awaitMessageComponent({ time: 15000 })
+					.then((btnItr) => {
+						if (btnItr.customId.startsWith("deploy_")) {
+							const commandFolders = fs
+								.readdirSync("./slash_commands")
+								.filter((file) => file.endsWith(".js"));
+							console.log("Loading / commands...");
+							let i = 0;
+							let data = [];
+							for (const cmd of commandFolders) {
+								const command = require(`./slash_commands/${cmd}`);
+								data.push({
+									name: command.name,
+									description: command.description,
+									options: command.options,
+									defaultPermission:
+										command.defaultPermission,
+								});
+								console.log(`/ "${cmd.slice(0, -3)}"`);
+								i++;
+							}
+							if (btnItr.customId == "deploy_guild") {
+								clientapp.commands.set(data, msg.guild.id);
+								btnItr.reply({
+									embeds: [kifo.embed("DEPLOYED to Test!")],
+								});
+								console.log(`Deployed ${i} commands to test!`);
+							} else if (btnItr.customId == "deploy_global") {
+								clientapp.commands.set(data);
+								btnItr.reply({
+									embeds: [
+										kifo.embed(
+											"DEPLOYED to Production (will take up to an hour)!"
+										),
+									],
+								});
+								console.log(
+									`Deployed ${i} commands to production!`
+								);
+							}
+						}
+						if (btnItr.customId == "undeploy_guild") {
+							clientapp.commands
+								.fetch({ guildId: btnItr.guildId })
+								.then((cmds) => {
+									cmds.each((cmd) => {
+										console.log(cmd.name);
+										cmd.delete();
+									});
+								});
+							btnItr.reply({
+								embeds: [kifo.embed("DELETED from test!")],
+							});
+						}
+						if (btnItr.customId == "undeploy_global") {
+							clientapp.commands.fetch().then((cmds) =>
+								cmds.each((cmd) => {
+									if (cmd.guildId == null) {
+										console.log(cmd.name);
+										cmd.delete();
+									}
+								})
+							);
+							btnItr.reply({
+								embeds: [
+									kifo.embed(
+										"DELETED from production (will take up to an hour)!"
+									),
+								],
+							});
+						}
+						if (btnItr.customId == "undeploy_both") {
+							clientapp.commands.fetch().then((cmds) =>
+								cmds.each((cmd) => {
+									console.log(cmd.name);
+									cmd.delete();
+								})
+							);
+							clientapp.commands
+								.fetch({
+									guildId: btnItr.guildId,
+								})
+								.then((cmds) => {
+									cmds.each((cmd) => {
+										console.log(cmd.name);
+										cmd.delete();
+									});
+								});
+							btnItr.reply({
+								embeds: [
+									kifo.embed(
+										"DELETED from production (will take up to an hour) and test!"
+									),
+								],
+							});
+						}
+						msg.edit({ components: [] });
+					})
+					.catch((err) => {
+						main.log(err);
+						msg.edit({ components: [] });
+					})
+			);
+		return;
+	}
+	if (command == "cmdlist" && message.author == Owner) {
+		let reply = kifo.embed("", "/ Command list:");
+		clientapp.commands
+			.fetch({ guildId: `${message.guild.id}` })
+			.then((cmds) => {
+				cmds.each((cmd) => {
+					reply.addField(
+						`${cmd.name}`,
+						`Guild: ${cmd.guildId}\nOptions: ${cmd.options
+							.map((o) => `${o.name}`)
+							.join(", ")}`
+					);
+				});
+				console.log("test");
+				clientapp.commands.fetch().then((cmds1) => {
+					console.log("test");
+					cmds1.each((cmd) => {
+						reply.addField(
+							`${cmd.name}`,
+							`Guild: ${cmd.guildId}\nOptions: ${cmd.options
+								.map((o) => `${o.name}`)
+								.join(", ")}`
+						);
+					});
+					message.reply({ embeds: [reply] });
+				});
+			});
 		return;
 	}
 
@@ -476,7 +726,7 @@ async function commands(message, prefix) {
 				`Run \`${prefix}help\` to get list of available commands.`,
 				`If you have a suggestion for a new command, please reach out to KifoPL#3358 - <@289119054130839552>`
 			);
-		return message.channel.send(embedreply).catch(() => { });
+		return message.reply({ embeds: [embedreply] }).catch(() => {});
 	}
 
 	const contents = fs.readFileSync(`./commandList.json`);
@@ -492,21 +742,23 @@ async function commands(message, prefix) {
 		if (command == "help") {
 			const event = new Date(Date.now());
 			main.log(
-				`[Here](${message.url}) <@${message.author.id}> ${message.author.tag
-				} issued \`${prefix}${command}\` in #${message.channel.name
+				`[Here](${message.url}) <@${message.author.id}> ${
+					message.author.tag
+				} issued \`${prefix}${command}\` in #${
+					message.channel.name
 				} at <t:${Math.floor(event.getTime() / 1000)}>, <t:${Math.floor(
 					event.getTime() / 1000
 				)}:R>.`
 			);
-			client.commands
-				.get(command)
-				.execute(message, args, prefix);
+			client.commands.get(command).execute(message, args, prefix);
 			return;
 		} else if (command == "error") {
 			const event = new Date(Date.now());
 			main.log(
-				`[Here](${message.url}) <@${message.author.id}> ${message.author.tag
-				} issued \`${prefix}${command}\` in #${message.channel.name
+				`[Here](${message.url}) <@${message.author.id}> ${
+					message.author.tag
+				} issued \`${prefix}${command}\` in #${
+					message.channel.name
 				} at <t:${Math.floor(event.getTime() / 1000)}>, <t:${Math.floor(
 					event.getTime() / 1000
 				)}:R>.`
@@ -526,17 +778,22 @@ async function commands(message, prefix) {
 					`https://discord.gg/HxUFQCxPFp`
 				)
 				.setTitle(
-					`Command "${command.toUpperCase()}" issued by ${message.author.tag
+					`Command "${command.toUpperCase()}" issued by ${
+						message.author.tag
 					}`
 				);
 			if (
 				!message.member
 					.permissionsIn(message.channel)
-					.has("MANAGE_CHANNELS")
+					.has(Discord.Permissions.FLAGS.MANAGE_CHANNELS)
 			)
-				return message.reply(
-					kifo.embed("You do not have `MANAGE_CHANNELS` permissions.")
-				);
+				return message.reply({
+					embeds: [
+						kifo.embed(
+							"You do not have `MANAGE_CHANNELS` permissions."
+						),
+					],
+				});
 			if (!args[0]) {
 				con.query(
 					"SELECT * FROM react WHERE ChannelId = ?",
@@ -548,13 +805,13 @@ async function commands(message, prefix) {
 								"Warning:",
 								"React is already **ON**!"
 							);
-							return message.reply(embedreactreply);
+							return message.reply({ embeds: [embedreactreply] });
 						} else {
 							embedreactreply.addField(
 								"React is **Off**.",
 								`Syntax:\n${command2.usage.join("\n")}`
 							);
-							return message.reply(embedreactreply);
+							return message.reply({ embeds: [embedreactreply] });
 						}
 					}
 				);
@@ -562,8 +819,10 @@ async function commands(message, prefix) {
 			}
 			const event = new Date(Date.now());
 			main.log(
-				`[Here](${message.url}) <@${message.author.id}> ${message.author.tag
-				} issued \`${prefix}${command}\` in #${message.channel.name
+				`[Here](${message.url}) <@${message.author.id}> ${
+					message.author.tag
+				} issued \`${prefix}${command}\` in #${
+					message.channel.name
 				} at <t:${Math.floor(event.getTime() / 1000)}>, <t:${Math.floor(
 					event.getTime() / 1000
 				)}:R>.`
@@ -609,7 +868,9 @@ async function commands(message, prefix) {
 								`\`react\` is not enabled on your server yet.`
 							);
 						}
-						return message.reply(newReactChannelsEmbed);
+						return message.reply({
+							embeds: [newReactChannelsEmbed],
+						});
 					}
 				);
 				return;
@@ -633,9 +894,9 @@ async function commands(message, prefix) {
 
 				main.log(
 					"I will now react in " +
-					message.channel.name +
-					" with " +
-					arrout.map((e) => e[1]).join(", ")
+						message.channel.name +
+						" with " +
+						arrout.map((e) => e[1]).join(", ")
 				);
 			} else if (reactreturn[0] == "OFF") {
 				con.query(
@@ -657,7 +918,8 @@ async function commands(message, prefix) {
 					`https://discord.gg/HxUFQCxPFp`
 				)
 				.setTitle(
-					`Command "${command.toUpperCase()}" issued by ${message.author.tag
+					`Command "${command.toUpperCase()}" issued by ${
+						message.author.tag
 					}`
 				);
 
@@ -665,11 +927,15 @@ async function commands(message, prefix) {
 			if (
 				!message.member
 					.permissionsIn(message.channel)
-					.has("MANAGE_CHANNELS")
+					.has(Discord.Permissions.FLAGS.MANAGE_CHANNELS)
 			)
-				return message.reply(
-					kifo.embed("You do not have `MANAGE_CHANNELS` permissions.")
-				);
+				return message.reply({
+					embeds: [
+						kifo.embed(
+							"You do not have `MANAGE_CHANNELS` permissions."
+						),
+					],
+				});
 			if (!args[0]) {
 				con.query(
 					"SELECT ChannelId, Time FROM superslow WHERE ChannelId = ?",
@@ -681,9 +947,11 @@ async function commands(message, prefix) {
 								.setTitle("Result:")
 								.setDescription(
 									"Super slow-mode is already set here to " +
-									ms(ms(result[0].Time, { long: true }))
+										ms(ms(result[0].Time, { long: true }))
 								);
-							return message.reply(embedsuperslowreply);
+							return message.reply({
+								embeds: [embedsuperslowreply],
+							});
 						} else {
 							embedsuperslowreply
 								.setTitle(
@@ -692,7 +960,9 @@ async function commands(message, prefix) {
 								.setDescription(
 									"Syntax:\n" + commandfile.usage.join("\n")
 								);
-							return message.reply(embedsuperslowreply);
+							return message.reply({
+								embeds: [embedsuperslowreply],
+							});
 						}
 					}
 				);
@@ -701,8 +971,10 @@ async function commands(message, prefix) {
 			}
 			const event = new Date(Date.now());
 			main.log(
-				`[Here](${message.url}) <@${message.author.id}> ${message.author.tag
-				} issued \`${prefix}${command}\` in #${message.channel.name
+				`[Here](${message.url}) <@${message.author.id}> ${
+					message.author.tag
+				} issued \`${prefix}${command}\` in #${
+					message.channel.name
 				} at <t:${Math.floor(event.getTime() / 1000)}>, <t:${Math.floor(
 					event.getTime() / 1000
 				)}:R>.`
@@ -746,7 +1018,9 @@ async function commands(message, prefix) {
 								`\`superslow\` is not enabled on your server yet.`
 							);
 						}
-						return message.reply(newSuperslowChannelsEmbed);
+						return message.reply({
+							embeds: [newSuperslowChannelsEmbed],
+						});
 					}
 				);
 				return;
@@ -771,12 +1045,14 @@ async function commands(message, prefix) {
 									.setTitle("Result:")
 									.setDescription(
 										"it's already set to " +
-										ms(superslowreturn[1], {
-											long: true,
-										}) +
-										"!"
+											ms(superslowreturn[1], {
+												long: true,
+											}) +
+											"!"
 									);
-								return message.reply(embedsuperslowreply);
+								return message.reply({
+									embeds: [embedsuperslowreply],
+								});
 							}
 							con.query(
 								"UPDATE superslow SET ChannelId = ?, Time = ? WHERE ChannelId = ?",
@@ -791,11 +1067,13 @@ async function commands(message, prefix) {
 										.setTitle("Result:")
 										.setDescription(
 											"Super slow-mode was already activated. It is now set to " +
-											ms(superslowreturn[1], {
-												long: true,
-											})
+												ms(superslowreturn[1], {
+													long: true,
+												})
 										);
-									return message.reply(embedsuperslowreply);
+									return message.reply({
+										embeds: [embedsuperslowreply],
+									});
 								}
 							);
 						} else {
@@ -808,12 +1086,14 @@ async function commands(message, prefix) {
 										.setTitle("Result:")
 										.setDescription(
 											"set Super slow-mode to " +
-											ms(superslowreturn[1], {
-												long: true,
-											}) +
-											"."
+												ms(superslowreturn[1], {
+													long: true,
+												}) +
+												"."
 										);
-									message.reply(embedsuperslowreply);
+									message.reply({
+										embeds: [embedsuperslowreply],
+									});
 									//This is to notify users of Super slow-mode active in the channel.
 									message.channel.setRateLimitPerUser(10);
 									return;
@@ -838,7 +1118,9 @@ async function commands(message, prefix) {
 									.setDescription(
 										"Super slow-mode is successfully disabled."
 									);
-								message.reply(embedsuperslowreply);
+								message.reply({
+									embeds: [embedsuperslowreply],
+								});
 								message.channel.setRateLimitPerUser(0);
 								return;
 							}
@@ -850,8 +1132,10 @@ async function commands(message, prefix) {
 		} else {
 			const event = new Date(Date.now());
 			main.log(
-				`[Here](${message.url}) <@${message.author.id}> ${message.author.tag
-				} issued \`${prefix}${command}\` in #${message.channel.name
+				`[Here](${message.url}) <@${message.author.id}> ${
+					message.author.tag
+				} issued \`${prefix}${command}\` in #${
+					message.channel.name
 				} at <t:${Math.floor(event.getTime() / 1000)}>, <t:${Math.floor(
 					event.getTime() / 1000
 				)}:R>.`
@@ -861,25 +1145,70 @@ async function commands(message, prefix) {
 					.get(command)
 					.execute(message, args, prefix);
 			} catch (error) {
-				message.reply(kifo.embed(error, "Error!"));
+				message.reply({ embeds: [kifo.embed(error, "Error!")] });
 				main.log(error);
 			}
 			return;
 		}
 	} catch (err) {
-		message.reply(kifo.embed(err, "Error!"));
+		message.reply({ embeds: [kifo.embed(err, "Error!")] });
 		main.log(err);
 	}
 }
 async function onmessage(message) {
 	const prefix = await main.prefix(message.guild?.id);
-	react(message, prefix).catch(() => { });
-	await superslow(message, prefix).catch(() => { });
+	if (ticketings.has(message.channel.id)) {
+		if (message.author.id !== message.client.user.id)
+			if (
+				!message.member
+					.permissionsIn(message.channel)
+					.has(Discord.Permissions.FLAGS.MANAGE_CHANNELS) &&
+				message.interaction?.type !== "APPLICATION_COMMAND"
+			) {
+				let actionRow = new Discord.MessageActionRow().addComponents(
+					new Discord.MessageButton()
+						.setStyle("LINK")
+						.setLabel("Guide")
+						.setURL(
+							"https://kifopl.github.io/kifo-clanker/guides/ticket"
+						)
+				);
+				message.author
+					.send({
+						embeds: [
+							kifo.embed(
+								"Hey, you're trying to send a message in a channel with **ticketing system**.\n> If you have a question/problem, please use `/ticket` command, to create a ticket.\n\n> If you're still confused, there is a detailed guide available, just click the button below."
+							),
+						],
+						components: [actionRow],
+					})
+					.catch(() => {});
+				message.delete().catch(() => {});
+				return;
+			}
+	}
+	react(message, prefix).catch(() => {});
+	await superslow(message, prefix).catch(() => {});
 
 	if (message.deleted) return;
 
-	if (message.content === `<@!${client.user.id}>` || message.content === `<@${client.user.id}>`) {
-		return message.reply(kifo.embed(`<:KifoClanker:863793928377729065> My prefix is: \`${prefix}\`\n\n<:online:823658022974521414> I'm online for **${ms(client.uptime, { long: true })}**.`, "Hello there!")).catch(() => { });
+	if (
+		message.content === `<@!${client.user.id}>` ||
+		message.content === `<@${client.user.id}>`
+	) {
+		return message
+			.reply({
+				embeds: [
+					kifo.embed(
+						`<:KifoClanker:863793928377729065> My prefix is: \`${prefix}\`\n\n<:online:823658022974521414> I'm online for **${ms(
+							client.uptime,
+							{ long: true }
+						)}**.`,
+						"Hello there!"
+					),
+				],
+			})
+			.catch(() => {});
 	}
 
 	speakcheck = checks(message, prefix);
@@ -898,7 +1227,6 @@ async function onmessage(message) {
 			message.content.length > prefix.length
 		) {
 			commands(message, prefix);
-			message.channel.stopTyping(true);
 		}
 	}
 }
@@ -912,10 +1240,13 @@ const guildIdTest = "822800862581751848";
 
 function setCommandList() {
 	let cmdListJSON = "";
-	let cmdListMD = `# List of Commands:\n> Remember to add server prefix before command syntax.\n\n`;
+	let cmdListMD = `# List of text Commands (used with prefix):\n> Remember to add server prefix before command syntax.\n\n`;
 	const help = require("./help.js");
-	cmdListMD += `### ${help.name}\n\n- ${help.description
-		}\n- Usage:\n- ${help.usage.join("\n- ")}\n`;
+	cmdListMD += `### ${help.name}\n${
+		help.description
+	}\n- Usage:\n\t- ${help.usage.join(
+		"\n\t- "
+	)}\n- Required user permissions: \`${command.perms.join("`, `")}\`\n`;
 	cmdListJSON += `{\n`;
 	for (const folder of commandFolders) {
 		cmdListMD += `## ${folder.toUpperCase()}\n\n`;
@@ -929,13 +1260,25 @@ function setCommandList() {
 			cmdListJSON += `\t"relativepath": "../${folder}/${file}"\n\t},\n`;
 
 			const command = require(`./commands/${folder}/${file}`);
-			cmdListMD += `### ${command.name}\n\n`;
-			cmdListMD += `- ${command.description}\n`;
+			cmdListMD += `### ${command.name}\n`;
+			cmdListMD += `${command.description}\n`;
 			cmdListMD += `- Usage:\n\t- ${command.usage.join("\n\t- ")}\n`;
 			cmdListMD += `- Required user permissions: \`${command.perms.join(
 				"`, `"
 			)}\`\n`;
 			cmdListMD += `\n`;
+		}
+	}
+	cmdListMD += `# List of slash commands (used with \`/\`):\n`;
+	for (const cmd of cmdFiles) {
+		const command = require(`./slash_commands/${cmd}`);
+		cmdListMD += `### ${command?.name}\n`;
+		cmdListMD += `${command?.description}\n`;
+		cmdListMD += `- Options:\n`;
+		if (command.options != undefined) {
+			cmdListMD += `\t- ${command?.options
+				.map((x) => `\`${x.name}\` - ${x.description}`)
+				.join("\n\t- ")}\n`;
 		}
 	}
 	let now = new Date(Date.now());
@@ -954,11 +1297,37 @@ function setCommandList() {
 	console.log(`Created commandList.json file!`);
 	console.log(`Created commandList.md file!`);
 }
+function setGuideList() {
+	let now = new Date(Date.now());
+	let guideList = "# List of available guides:\n\n";
+	const guides = fs
+		.readdirSync(`./guides`)
+		.filter((file) => file.endsWith(".md"));
+	guides.forEach((guide) => {
+		const data = fs
+			.readFileSync(`./guides/${guide}`, { encoding: `utf8`, flag: `r` })
+			.split("\n")
+			.shift();
+		console.log(data);
+		guideList += `### [${data.slice(2,-1)}](./guides/${guide.slice(
+			0,
+			-3
+		)})\n\n`;
+	});
+	guideList += `<hr/>*Last update: ${now.toUTCString()}.*\n`
+	guideList += "\n~by [KifoPL](https://bio.link/KifoPL)";
+
+	fs.writeFile(`guideList.md`, guideList, () => {
+		return;
+	})
+	console.log("Created guideList.md file!")
+}
 
 client.once("ready", () => {
 	console.log("Kifo Clanker™ is online!");
 	loadowner();
 	setCommandList();
+	setGuideList();
 	debug = false;
 	module.exports.client = client;
 
@@ -976,86 +1345,9 @@ client.once("ready", () => {
 	setInterval(permsCheck, 1000 * 60);
 	menusCheck();
 	setInterval(menusCheck, 1000 * 60);
+	pollsCheck();
+	setInterval(pollsCheck, 1000 * 60);
 
-	try {
-		//for WoofWoofWolffe feature
-		client.guilds
-			.fetch("698075892974354482")
-			.then((guild) => {
-				guild
-					.fetchInvites()
-					.then((invites) => {
-						WoofInviteCount = invites.find(
-							(invite) =>
-								invite.inviter.id == "376956266293231628"
-						).uses;
-					})
-					.catch(() => { });
-			})
-			.catch(() => { });
-		//for HaberJordan feature
-		client.guilds
-			.fetch("698075892974354482")
-			.then((guild) => {
-				guild
-					.fetchInvites()
-					.then((invites) => {
-						HaberInviteCount = invites.find(
-							(invite) =>
-								invite.inviter.id == "221771499843878912"
-						).uses;
-					})
-					.catch(() => { });
-			})
-			.catch(() => { });
-		//for NumeralJoker feature
-		client.guilds
-			.fetch("698075892974354482")
-			.then((guild) => {
-				guild
-					.fetchInvites()
-					.then((invites) => {
-						NumeralJokerCount = invites.find(
-							(invite) =>
-								invite.inviter.id == "285906871393452043"
-						).uses;
-					})
-					.catch(() => { });
-			})
-			.catch(() => { });
-		//for SWInsider feature
-		client.guilds
-			.fetch("698075892974354482")
-			.then((guild) => {
-				guild
-					.fetchInvites()
-					.then((invites) => {
-						SWInsiderInviteCount = invites.find(
-							(invite) =>
-								invite.inviter.id == "813613441448804354"
-						).uses;
-					})
-					.catch(() => { });
-			})
-			.catch(() => { });
-		//for Shadow MilSim feature
-		client.guilds
-			.fetch("698075892974354482")
-			.then((guild) => {
-				guild
-					.fetchInvites()
-					.then((invites) => {
-						ShadowInviteCount = invites.find(
-							(invite) =>
-								invite.inviter.id == "418938568543830033"
-						).uses;
-					})
-					.catch(() => { });
-			})
-			.catch(() => { });
-	} catch (err) {
-		main.log(err);
-	}
 	con.query("SELECT * FROM menu_perms", [], function (err, result) {
 		if (err) throw err;
 		if (result.length > 0) {
@@ -1087,6 +1379,25 @@ client.once("ready", () => {
 		}
 		console.log(`Mapped ${result.length} Role Menus!`);
 	});
+	con.query(
+		"SELECT Id, GuildId, ChannelId, ArePublic, DefaultSlowmode, DefaultArchive FROM ticketing",
+		[],
+		function (err, result) {
+			if (err) throw err;
+			if (result.length > 0) {
+				result.forEach((row) => {
+					ticketings.set(row.ChannelId, {
+						ChannelId: row.ChannelId,
+						GuildId: row.GuildId,
+						ArePublic: row.ArePublic,
+						DefaultSlowmode: row.DefaultSlowmode,
+						DefaultArchive: row.DefaultArchive,
+					});
+				});
+			}
+			console.log(`Loaded ${result.length} ticketings!`);
+		}
+	);
 });
 
 function giveawayCheck() {
@@ -1098,7 +1409,8 @@ function giveawayCheck() {
 			if (err) throw err;
 			if (result.length > 0) {
 				main.log(
-					`${result.length} giveaway${result.length > 1 ? "s have" : " has"
+					`${result.length} giveaway${
+						result.length > 1 ? "s have" : " has"
 					} ended!`
 				);
 				result.forEach(async (row) => {
@@ -1112,9 +1424,13 @@ function giveawayCheck() {
 							msg = msgs.get(row.MessageId);
 						});
 					if (msg == null)
-						Owner.send(
-							kifo.embed(`WARNING: ${link} giveaway not fetched.`)
-						).catch((err) => {
+						Owner.send({
+							embeds: [
+								kifo.embed(
+									`WARNING: ${link} giveaway not fetched.`
+								),
+							],
+						}).catch((err) => {
 							main.log(err);
 						});
 					if (msg.partial) {
@@ -1141,9 +1457,10 @@ function giveawayCheck() {
 					let authorM = `<@!${row.UserId}>`;
 					await winners.forEach((winner) => {
 						if (winner != undefined) {
-							output += `\n- <@${winner?.id ??
+							output += `\n- <@${
+								winner?.id ??
 								" `not enough reactions to conclude, if that's not the case notify Kifo` <@289119054130839552> "
-								}>`;
+							}>`;
 						}
 						if (winner === null) main.log(winners);
 					});
@@ -1174,47 +1491,47 @@ function giveawayCheck() {
 						fs.writeFileSync(
 							`./${row.MessageId}.txt`,
 							output,
-							() => { }
+							() => {}
 						);
-						giveEmbed
-							.attachFiles([
-								{
-									attachment: `./${row.MessageId}.txt`,
-									name: `${row.MessageId}.txt`,
-								},
-							])
-							.setDescription("Results are in .txt file!");
+						giveEmbed.setDescription("Results are in .txt file!");
 					} else giveEmbed.setDescription(output);
+					let msgOptions = {
+						content: authorM,
+						embeds: [giveEmbed],
+						files: [],
+					};
+					if (row.Winners > 25)
+						msgOptions.files = [`./${row.MessageId}.txt`];
 					await client.channels
 						.resolve(row.ChannelId)
-						.send(authorM, giveEmbed)
+						.send(msgOptions)
 						.catch(async () => {
 							await client.guilds
-								.resolve(row.GuildID)
+								.resolve(row.GuildId)
 								.members.resolve(row.UserId)
-								.send(
-									`${authorM} couldn't send results in <#${row.ChannelId}>!`,
-									giveEmbed
-								)
+								.send(msgOptions)
 								.catch(async () => {
-									await Owner.send(
-										`Can't send giveaway info at Server ${client.guilds.resolve(row.GuildID)
-											.name
-										}, Channel ${client.channels.resolve(
-											row.ChannelId
-										).name
-										}. Server owner: <@${client.guilds.resolve(row.GuildID)
-											.ownerID
+									await Owner.send({
+										content: `Can't send giveaway info at Server ${
+											client.guilds.resolve(row.GuildId)
+												.name
+										}, Channel ${
+											client.channels.resolve(
+												row.ChannelId
+											).name
+										}. Server owner: <@${
+											client.guilds.resolve(row.GuildId)
+												.ownerId
 										}>`,
-										giveEmbed
-									).catch((err) => {
+										embeds: [giveEmbed],
+									}).catch((err) => {
 										main.log(err);
 									});
 								});
 						});
 					try {
-						fs.unlink(`./${row.MessageId}.txt`, () => { });
-					} catch (err) { }
+						fs.unlink(`./${row.MessageId}.txt`, () => {});
+					} catch (err) {}
 				});
 				con.query(
 					"DELETE FROM giveaway WHERE EndTime <= ?",
@@ -1237,7 +1554,8 @@ function removeCheck() {
 			if (err) throw err;
 			if (result.length > 0) {
 				main.log(
-					`${result.length} remove${result.length > 1 ? "s" : ""
+					`${result.length} remove${
+						result.length > 1 ? "s" : ""
 					} found!`
 				);
 				result.forEach(async (row) => {
@@ -1256,47 +1574,55 @@ function removeCheck() {
 						.add(row.RoleId)
 						.then(() => {
 							channel
-								.send(
-									`<@!${member.id}>, <@!${row.PerpetratorId}>`,
-									kifo.embed(
-										`Issued by: <@!${row.PerpetratorId}>\nRole added: <@&${row.RoleId}>\nTo: <@!${member.id}>`,
-										`Role remove command (role readded)`
-									)
-								)
+								.send({
+									content: `<@!${member.id}>, <@!${row.PerpetratorId}>`,
+									embeds: [
+										kifo.embed(
+											`Issued by: <@!${row.PerpetratorId}>\nRole added: <@&${row.RoleId}>\nTo: <@!${member.id}>`,
+											`Role remove command (role readded)`
+										),
+									],
+								})
 								.catch((err1) => {
 									client.guilds
 										.resolve(row.GuildId)
 										.members.resolve(row.PerpetratorId)
-										.send(
-											kifo.embed(
-												`Issued by: <@!${row.PerpetratorId}>\nRole added: <@&${row.RoleId}>\nTo: <@!${member.id}>`,
-												`Role remove command (role readded)`
-											)
-										)
-										.catch(() => { });
+										.send({
+											embeds: [
+												kifo.embed(
+													`Issued by: <@!${row.PerpetratorId}>\nRole added: <@&${row.RoleId}>\nTo: <@!${member.id}>`,
+													`Role remove command (role readded)`
+												),
+											],
+										})
+										.catch(() => {});
 									main.log(err1);
 								});
 						})
 						.catch((err1) => {
 							channel
-								.send(
-									`<@!${member.id}>, <@!${row.PerpetratorId}>`,
-									kifo.embed(
-										`Issued by: <@!${row.PerpetratorId}>\nRole added: <@&${row.RoleId}>\nTo: <@!${member.id}>`,
-										`UNABLE TO ADD ROLE BACK`
-									)
-								)
+								.send({
+									embeds: [
+										`<@!${member.id}>, <@!${row.PerpetratorId}>`,
+										kifo.embed(
+											`Issued by: <@!${row.PerpetratorId}>\nRole added: <@&${row.RoleId}>\nTo: <@!${member.id}>`,
+											`UNABLE TO ADD ROLE BACK`
+										),
+									],
+								})
 								.catch((err2) => {
 									client.guilds
 										.resolve(row.GuildId)
 										.members.resolve(row.PerpetratorId)
-										.send(
-											kifo.embed(
-												`Issued by: <@!${row.PerpetratorId}>\nRole added: <@&${row.RoleId}>\nTo: <@!${member.id}>`,
-												`UNABLE TO ADD ROLE BACK`
-											)
-										)
-										.catch(() => { });
+										.send({
+											embeds: [
+												kifo.embed(
+													`Issued by: <@!${row.PerpetratorId}>\nRole added: <@&${row.RoleId}>\nTo: <@!${member.id}>`,
+													`UNABLE TO ADD ROLE BACK`
+												),
+											],
+										})
+										.catch(() => {});
 									main.log(err2);
 								});
 							main.log(err1);
@@ -1323,7 +1649,8 @@ function permsCheck() {
 			if (err) throw err;
 			if (result.length > 0) {
 				main.log(
-					`${result.length} perm${result.length > 1 ? "s" : ""
+					`${result.length} perm${
+						result.length > 1 ? "s" : ""
 					} found!`
 				);
 				let previousMap = new Map();
@@ -1333,16 +1660,16 @@ function permsCheck() {
 					let Current = client.guilds
 						.resolve(row.GuildId)
 						?.channels.resolve(row.ChannelId)
-						?.permissionOverwrites.get(row.PermId)
+						?.permissionOverwrites.resolve(row.PermId)
 						?.allow.has(row.PermFlag)
 						? "allow"
 						: client.guilds
-							.resolve(row.GuildId)
-							?.channels.resolve(row.ChannelId)
-							?.permissionOverwrites.get(row.PermId)
-							?.deny.has(row.PermFlag)
-							? "deny"
-							: "neutral";
+								.resolve(row.GuildId)
+								?.channels.resolve(row.ChannelId)
+								?.permissionOverwrites.resolve(row.PermId)
+								?.deny.has(row.PermFlag)
+						? "deny"
+						: "neutral";
 					//a map for output message for each message (cmd)
 					if (!previousMap.has(row.MessageId)) {
 						previousMap.set(row.MessageId, Current);
@@ -1350,13 +1677,13 @@ function permsCheck() {
 					client.guilds
 						.resolve(row.GuildId)
 						?.channels.resolve(row.ChannelId)
-						?.updateOverwrite(row.PermId, {
+						?.permissionOverwrites.edit(row.PermId, {
 							[row.PermFlag]:
 								row.Command == "add"
 									? true
 									: row.Command == "rm"
-										? null
-										: false,
+									? null
+									: false,
 						})
 						// .then(() => {
 						// 	//client.channels.resolve(row.ChannelId)?.send(kifo.embed(`Changed ${row.PermFlag} from ${Current} to ${row.Command} for ${client.guilds.resolve(row.GuildId)?.members.resolve(row.PermId) != null ? "<@!" : "<@&"}${row.PermId}>.`, "Changed back perms")).catch((err) => {main.log(err)})
@@ -1365,13 +1692,15 @@ function permsCheck() {
 							failureMap.set(row.MessageId, true);
 							client.channels
 								.resolve(row.ChannelId)
-								?.send(
-									`<@!${row.PerpetratorId}>`,
-									kifo.embed(
-										err,
-										"Could not revert perms command!"
-									)
-								)
+								?.send({
+									content: `<@!${row.PerpetratorId}>`,
+									embeds: [
+										kifo.embed(
+											err,
+											"Could not revert perms command!"
+										),
+									],
+								})
 								.catch((err) => {
 									main.log(err);
 								});
@@ -1382,33 +1711,37 @@ function permsCheck() {
 					if (failureMap.has(key)) return;
 					let Output = result.filter((row) => row.MessageId == key);
 					let r = Output[0];
-					let Title = `Changed ${r.PermFlag} from ${value} to ${r.Command == "add"
-						? "allow"
-						: r.Command == "rm"
+					let Title = `Changed ${r.PermFlag} from ${value} to ${
+						r.Command == "add"
+							? "allow"
+							: r.Command == "rm"
 							? "neutral"
 							: "deny"
-						} for:\n`;
+					} for:\n`;
 					let Description = "";
 					Output.forEach((rr) => {
-						Description += `- <@${client.guilds
-							.resolve(rr.GuildId)
-							?.members.resolve(rr.PermId) != null
-							? "!"
-							: "&"
-							}${rr.PermId}>\n`;
+						Description += `- <@${
+							client.guilds
+								.resolve(rr.GuildId)
+								?.members.resolve(rr.PermId) != null
+								? "!"
+								: "&"
+						}${rr.PermId}>\n`;
 					});
 					client.channels
 						.resolve(r.ChannelId)
-						?.send(
-							`<@!${r.PerpetratorId}>`,
-							kifo.embed(Description, Title)
-						)
+						?.send({
+							content: `<@!${r.PerpetratorId}>`,
+							embeds: [kifo.embed(Description, Title)],
+						})
 						.catch((err) => {
 							main.log(err);
 							client.guilds
 								.resolve(r.GuildId)
 								?.members.resolve(r.PerpetratorId)
-								?.send(kifo.embed(Description, Title))
+								?.send({
+									embeds: [kifo.embed(Description, Title)],
+								})
 								.catch((err) => {
 									main.log(err);
 								});
@@ -1491,6 +1824,53 @@ function menusCheck() {
 	);
 }
 
+function pollsCheck() {
+	con.query(
+		"SELECT Id, GuildId, ChannelId, MessageId, EndTime FROM polls WHERE EndTime <= NOW()",
+		[],
+		function (err, result) {
+			if (err) throw err;
+			if (result.length > 0) {
+				main.log(`${result.length} role menus found!`);
+				result.forEach(async (row) => {
+					//fetch message, then show results of reactions desc, paste link to the original message
+					let msg = await client.guilds
+						.resolve(row.GuildId)
+						.channels?.resolve(row.ChannelId)
+						.messages.fetch(row.MessageId);
+
+					let questionEmbed = msg.embeds[0];
+
+					let resultEmbed = kifo
+						.embed("", "Poll results")
+						.setURL(msg.url);
+					await msg.fetch();
+					let pos = 1;
+					msg.reactions.cache
+						.sort((a, b) => b.count - a.count)
+						.each((r) => {
+							resultEmbed.addField(
+								`${kifo.place(pos)} place:`,
+								`${r.emoji} - ${r.count} votes`
+							);
+							pos++;
+						});
+					msg.reply({ embeds: [questionEmbed, resultEmbed] }).catch(
+						() => {}
+					);
+				});
+				con.query(
+					"DELETE FROM polls WHERE EndTime <= NOW()",
+					[],
+					function (err) {
+						if (err) throw err;
+					}
+				);
+			}
+		}
+	);
+}
+
 function updatePresence() {
 	client.user.setStatus("online");
 	client.user.setActivity({
@@ -1505,7 +1885,60 @@ function updatePresence() {
 //USED BY REACT COMMAND
 let reactreturn;
 
-client.on("message", (message) => {
+client.on("interactionCreate", (interaction) => {
+	let now = new Date(Date.now());
+	if (!interaction.inGuild()) {
+		interaction.reply({
+			embeds: [
+				kifo.embed(
+					"Currently interactions only work in guilds. Sorry!"
+				),
+			],
+		});
+	}
+	if (interaction.isCommand()) {
+		main.log(
+			`${interaction.user.tag} issued \`/${
+				interaction.commandName
+			}\` with these options:\n${interaction.options.data
+				.map((o) => {
+					if (o.type === "SUB_COMMAND") {
+						return `${o.name}: ${o.options
+							?.map((subo) => `**${subo.name}** - ${subo.value}`)
+							.join(", ")}`;
+					} else {
+						return `- **${o.name}**: ${o.value}`;
+					}
+					//remember to add handling SUB_COMMAND_GROUP when I ever start using that
+				})
+				.join("\n")}\n*at <t:${Math.floor(
+				now.getTime() / 1000
+			)}>, <t:${Math.floor(now.getTime() / 1000)}:R>*.`
+		);
+		if (
+			client.user.id == "796447999747948584" &&
+			interaction.member?.roles.resolve("832194217493135400") == null
+		)
+			return interaction.reply({
+				embeds: [kifo.embed("Only testers can use this bot.")],
+			});
+		if (client.slash_commands.has(interaction.commandName)) {
+			client.slash_commands
+				.get(interaction.commandName)
+				.execute(interaction);
+		} else {
+			interaction.reply({
+				embeds: [
+					kifo.embed(
+						"Unknown command! If this should not happen, please use `error` command and provide a description."
+					),
+				],
+			});
+		}
+	}
+});
+
+client.on("messageCreate", (message) => {
 	//this allows me to 1. catch stuff and 2. use async
 	onmessage(message).catch((err) => {
 		main.log(err);
@@ -1516,49 +1949,84 @@ client.on("messageDelete", (message) => {
 	try {
 		if (menus.has(message.id)) {
 			if (menus.get(message.id).isPerm) {
-				client.commands.get("menu")
-					.revert(message, message, menus.get(message.id).isPerm, message.guild.channels.resolve(menus.get(message.id).DestinationChannelId), menus.get(message.id).PermName)
-			}
-			else {
-				client.commands.get("menu").revert(message, message, menus.get(message.id).isPerm, message.guild.roles.resolve(menus.get(message.id).RoleId))
+				client.commands
+					.get("menu")
+					.revert(
+						message,
+						message,
+						menus.get(message.id).isPerm,
+						message.guild.channels.resolve(
+							menus.get(message.id).DestinationChannelId
+						),
+						menus.get(message.id).PermName
+					);
+			} else {
+				client.commands
+					.get("menu")
+					.revert(
+						message,
+						message,
+						menus.get(message.id).isPerm,
+						message.guild.roles.resolve(
+							menus.get(message.id).RoleId
+						)
+					);
 			}
 		}
 	} catch (error) {
-		main.log(error)
+		main.log(error);
 	}
-
-})
+});
 
 client.on("messageDeleteBulk", (messages) => {
-	messages.filter(msg => menus.has(msg.id)).each(message => {
-		if (menus.has(message.id)) {
-			if (menus.get(message.id).isPerm) {
-				client.commands.get("menu")
-					.revert(message, message, menus.get(message.id).isPerm, message.guild.channels.resolve(menus.get(message.id).DestinationChannelId), menus.get(message.id).PermName)
+	messages
+		.filter((msg) => menus.has(msg.id))
+		.each((message) => {
+			if (menus.has(message.id)) {
+				if (menus.get(message.id).isPerm) {
+					client.commands
+						.get("menu")
+						.revert(
+							message,
+							message,
+							menus.get(message.id).isPerm,
+							message.guild.channels.resolve(
+								menus.get(message.id).DestinationChannelId
+							),
+							menus.get(message.id).PermName
+						);
+				} else {
+					client.commands
+						.get("menu")
+						.revert(
+							message,
+							message,
+							menus.get(message.id).isPerm,
+							message.guild.roles.resolve(
+								menus.get(message.id).RoleId
+							)
+						);
+				}
 			}
-			else {
-				client.commands.get("menu").revert(message, message, menus.get(message.id).isPerm, message.guild.roles.resolve(menus.get(message.id).RoleId))
-			}
-		}
-	})
-})
+		});
+});
 
 //USED BY TODO COMMAND
 client.on("messageReactionAdd", async (msgReaction, user) => {
 	let msg = msgReaction.message;
 	if (msg.partial) {
-		await msg.fetch().catch(() => { });
+		await msg.fetch().catch(() => {});
 	}
 	if (user.partial) {
-		await user.fetch().catch(() => { });
+		await user.fetch().catch(() => {});
 	}
 	if (
-		msg.channel.type == "dm" &&
+		msg.channel.type == "DM" &&
 		msg.author.bot &&
 		!msgReaction.me &&
 		msg.embeds[0]?.author?.name == `TODO`
 	) {
-		msg.delete().catch(() => { });
+		msg.delete().catch(() => {});
 	} else if (menus.has(msg.id) && !user.bot) {
 		let menu = menus.get(msg.id);
 		if (menu.isPerm) {
@@ -1566,25 +2034,34 @@ client.on("messageReactionAdd", async (msgReaction, user) => {
 				menu.DestinationChannelId
 			);
 			//If someone has specifically denied perms, they shouldn't be able to use the menu
-			if (channel.permissionOverwrites.get(user.id)?.deny.has(menu.PermName)) return;
+			if (
+				channel.permissionOverwrites
+					.get(user.id)
+					?.deny.has(menu.PermName)
+			)
+				return;
 			channel
 				.updateOverwrite(user.id, {
 					[menu.PermName]: true,
 				})
 				.then(() => {
-					user.send(
-						kifo.embed(
-							`You now have <:GreenCheck:857976926941478923> \`${menu.PermName}\` in <#${menu.DestinationChannelId}>!`
-						)
-					).catch(() => { });
+					user.send({
+						embeds: [
+							kifo.embed(
+								`You now have <:GreenCheck:857976926941478923> \`${menu.PermName}\` in <#${menu.DestinationChannelId}>!`
+							),
+						],
+					}).catch(() => {});
 				})
 				.catch((err) => {
 					main.log(err);
-					msg.reply(
-						kifo.embed(
-							`Could not give \`${menu.PermName}\` for <@!${user.id}>!\n${err.message}`
-						)
-					);
+					msg.reply({
+						embeds: [
+							kifo.embed(
+								`Could not give \`${menu.PermName}\` for <@!${user.id}>!\n${err.message}`
+							),
+						],
+					});
 				});
 		} else {
 			let role = msg.guild?.roles.resolve(menu.RoleId);
@@ -1594,19 +2071,23 @@ client.on("messageReactionAdd", async (msgReaction, user) => {
 					.add(menu.RoleId, "Used Role Menu!")
 					.then(() =>
 						member
-							.send(
-								kifo.embed(
-									`Gave you ${role.name} role! (ID: ${menu.RoleId})`
-								)
-							)
-							.catch(() => { })
+							.send({
+								embeds: [
+									kifo.embed(
+										`Gave you ${role.name} role! (Id: ${menu.RoleId})`
+									),
+								],
+							})
+							.catch(() => {})
 					)
 					.catch((err) => {
-						msg.reply(
-							kifo.embed(
-								`Could not give <@&${menu.RoleId}> to <@!${user.id}>!\n${err.message}`
-							)
-						).catch(() => { });
+						msg.reply({
+							embeds: [
+								kifo.embed(
+									`Could not give <@&${menu.RoleId}> to <@!${user.id}>!\n${err.message}`
+								),
+							],
+						}).catch(() => {});
 					});
 			}
 		}
@@ -1616,10 +2097,10 @@ client.on("messageReactionAdd", async (msgReaction, user) => {
 client.on("messageReactionRemove", async (msgReaction, user) => {
 	let msg = msgReaction.message;
 	if (msg.partial) {
-		await msg.fetch().catch(() => { });
+		await msg.fetch().catch(() => {});
 	}
 	if (user.partial) {
-		await user.fetch().catch(() => { });
+		await user.fetch().catch(() => {});
 	}
 	if (menus.has(msg.id) && !user.bot) {
 		let menu = menus.get(msg.id);
@@ -1632,19 +2113,23 @@ client.on("messageReactionRemove", async (msgReaction, user) => {
 					[menu.PermName]: null,
 				})
 				.then(() => {
-					user.send(
-						kifo.embed(
-							`Set <:GreySlash:857976926445502505> \`${menu.PermName}\` in <#${menu.DestinationChannelId}>!`
-						)
-					).catch(() => { });
+					user.send({
+						embeds: [
+							kifo.embed(
+								`Set <:GreySlash:857976926445502505> \`${menu.PermName}\` in <#${menu.DestinationChannelId}>!`
+							),
+						],
+					}).catch(() => {});
 				})
 				.catch((err) => {
 					main.log(err);
-					msg.reply(
-						kifo.embed(
-							`Could not remove \`${menu.PermName}\` for <@!${user.id}>!\n${err.message}`
-						)
-					);
+					msg.reply({
+						embeds: [
+							kifo.embed(
+								`Could not remove \`${menu.PermName}\` for <@!${user.id}>!\n${err.message}`
+							),
+						],
+					});
 				});
 		} else {
 			let role = msg.guild?.roles.resolve(menu.RoleId);
@@ -1654,143 +2139,29 @@ client.on("messageReactionRemove", async (msgReaction, user) => {
 					.remove(menu.RoleId, "Used Role Menu!")
 					.then(() =>
 						member
-							.send(
-								kifo.embed(
-									`Removed ${role.name} role! (ID: ${menu.RoleId})`
-								)
-							)
-							.catch(() => { })
+							.send({
+								embeds: [
+									kifo.embed(
+										`Removed ${role.name} role! (Id: ${menu.RoleId})`
+									),
+								],
+							})
+							.catch(() => {})
 					)
 					.catch((err) => {
-						msg.reply(
-							kifo.embed(
-								`Could not remove <@&${menu.RoleId}> from <@!${user.id}>!\n${err.message}`
-							)
-						).catch(() => { });
+						msg.reply({
+							embeds: [
+								kifo.embed(
+									`Could not remove <@&${menu.RoleId}> from <@!${user.id}>!\n${err.message}`
+								),
+							],
+						}).catch(() => {});
 					});
 			}
 		}
 	}
 });
 
-//Code for adding special roles for ppl invited by partners
-let WoofInviteCount;
-let HaberInviteCount;
-let NumeralJokerCount;
-let SWInsiderInviteCount;
-let ShadowInviteCount;
-
-client.on("guildMemberAdd", (member) => {
-	if (member.guild.id == "698075892974354482")
-		member.guild
-			.fetchInvites()
-			.then((invites) => {
-				//WoofWoof
-				if (
-					invites.find(
-						(invite) => invite.inviter?.id == "376956266293231628"
-					)?.uses ==
-					WoofInviteCount + 1
-				) {
-					member.roles
-						.add(
-							member.guild.roles.cache.find(
-								(role) => role.id == "746558695139180625"
-							)
-						)
-						.catch(console.error);
-					WoofInviteCount++;
-				}
-				//HaberJordan
-				else if (
-					invites.find(
-						(invite) => invite.inviter?.id == "221771499843878912"
-					)?.uses ==
-					HaberInviteCount + 1
-				) {
-					member.roles
-						.add(
-							member.guild.roles.cache.find(
-								(role) => role.id == "744082967307092039"
-							)
-						)
-						.catch(console.error);
-					HaberInviteCount++;
-				}
-				//SW Insider
-				else if (
-					invites.find(
-						(invite) => invite.inviter?.id == "813613441448804354"
-					)?.uses ==
-					SWInsiderInviteCount + 1
-				) {
-					member.roles
-						.add(
-							member.guild.roles.cache.find(
-								(role) => role.id == "858056136045756486"
-							)
-						)
-						.catch(console.error);
-					SWInsiderInviteCount++;
-				}
-				//Shadow Republic MilSim
-				else if (
-					invites.find(
-						(invite) => invite.inviter?.id == "418938568543830033"
-					)?.uses ==
-					SWInsiderInviteCount + 1
-				) {
-					member.roles
-						.add(
-							member.guild.roles.cache.find(
-								(role) => role.id == "867145484191399956"
-							)
-						)
-						.catch(console.error);
-					SWInsiderInviteCount++;
-				}
-				//NumeralJoker
-				else if (
-					invites.find(
-						(invite) => invite.inviter?.id == "285906871393452043"
-					)?.uses ==
-					NumeralJokerCount + 1
-				) {
-					member.roles
-						.add(
-							member.guild.roles.cache.find(
-								(role) => role.id == "844594877885972480"
-							)
-						)
-						.catch(console.error);
-					NumeralJokerCount++;
-
-					let msg = `Welcome <@${member.id}>! Fill out this form to gain access to all of **NumeralJoker's <@285906871393452043> edits!!** in <#844667201888714813>\n\
-				[https://forms.google.com/](https://forms.gle/3FkJQxMijEE32Eot9)\n\n\
-				**__Once you are granted access__** you can find them via this link: https://drive.google.com/drive/shared-drives`;
-
-					member.user
-						.send(
-							kifo.embed(
-								msg,
-								"Start your journey to find the Trove:"
-							)
-						)
-						.catch(() => {
-							member.guild.channels
-								.resolve("844667201888714813")
-								.send(
-									`<@${member.id}>`,
-									kifo.embed(
-										msg,
-										"Start your journey to find the Trove:"
-									)
-								);
-						});
-				}
-			})
-			.catch((err) => { main.log(err) });
-});
 //kifo-advanced-logs
 client.on("guildCreate", async (guild) => {
 	let date = new Date(Date.now());
@@ -1802,12 +2173,12 @@ client.on("guildCreate", async (guild) => {
 		.setThumbnail(guild.iconURL({ dynamic: true }))
 		.setTitle("New Server!")
 		.addField("Server Name", guild.name, true)
-		.addField("Server ID", guild.id, true)
-		.addField("Owner", `<@${guild.ownerID}>`, true)
+		.addField("Server Id", guild.id, true)
+		.addField("Owner", `<@${guild.ownerId}>`, true)
 		.addField("Member Count", guild.memberCount, true)
 		.setFooter("Joined at: " + date.toUTCString());
 
-	channel.send(embed).catch((err) => {
+	channel.send({ embeds: [embed] }).catch((err) => {
 		main.log(err);
 	});
 });
@@ -1822,12 +2193,12 @@ client.on("guildDelete", (guild) => {
 		.setThumbnail(guild.iconURL({ dynamic: true }))
 		.setTitle("Removed from a server :(")
 		.addField("Server Name", guild.name, true)
-		.addField("Server ID", guild.id, true)
-		.addField("Owner", `<@${guild.ownerID}>`, true)
+		.addField("Server Id", guild.id, true)
+		.addField("Owner", `<@${guild.ownerId}>`, true)
 		.addField("Member Count", guild.memberCount, true)
 		.setFooter("Left at: " + date.toUTCString());
 
-	channel.send(embed).catch((err) => {
+	channel.send({ embeds: [embed] }).catch((err) => {
 		main.log(err);
 	});
 });
@@ -1840,21 +2211,26 @@ client.on("warn", (info) => {
 	let channel = client.guilds
 		.resolve("822800862581751848")
 		.channels?.resolve("864112365896466432");
-	return channel.send(kifo.embed(`${info}`, "WARNING")).catch((err) => {
-		main.log(err);
-	});
+	return channel
+		.send({ embeds: [kifo.embed(`${info}`, "WARNING")] })
+		.catch((err) => {
+			main.log(err);
+		});
 });
 //kifo-advanced-logs
-client.on("guildUnavailable", (guild) => {
+client.on("guildUnavailable", async (guild) => {
 	let channel = client.guilds
 		.resolve("822800862581751848")
 		.channels("863769411700785152");
+	let owner = guild.fetchOwner();
 	channel
-		.send(
-			kifo.embed(
-				`A guild "${guild.name}", ID ${guild.id}, Owner: <@${guild.ownerID}>, ${guild.owner.tag} has become unavailable!`
-			)
-		)
+		.send({
+			embeds: [
+				kifo.embed(
+					`A guild "${guild.name}", Id ${guild.id}, Owner: <@${guild.ownerId}>, ${owner.tag} has become unavailable!`
+				),
+			],
+		})
 		.catch((err) => {
 			main.log(err);
 		});
@@ -1862,12 +2238,12 @@ client.on("guildUnavailable", (guild) => {
 
 /**
  *
- * @param {string} guildID the ID of the guild you want to get prefix for.
+ * @param {string} guildId the Id of the guild you want to get prefix for.
  * @returns prefix for the guild (default "!kifo ")
  */
-exports.prefix = async function (guildID) {
+exports.prefix = async function (guildId) {
 	if (client.user.id == "796447999747948584") return "!ktest ";
-	if (prefixes.has(guildID)) return prefixes.get(guildID);
+	if (prefixes.has(guildId)) return prefixes.get(guildId);
 	return "!kifo ";
 };
 
@@ -1884,21 +2260,23 @@ exports.log = function (log, ...args) {
 	if (log instanceof Error) {
 		const now = new Date(Date.now());
 		return channel
-			.send(
-				`<@!289119054130839552>`,
-				kifo.embed(
-					`${log.stack}\n\nAt <t:${Math.floor(
-						now.getTime() / 1000
-					)}>, <t:${Math.floor(
-						now.getTime() / 1000
-					)}:R>\nOther args: ${args.join(" ")}`,
-					`CRITICAL ERROR`
-				)
-			)
+			.send({
+				content: `<@!289119054130839552>`,
+				embeds: [
+					kifo.embed(
+						`${log.stack}\n\nAt <t:${Math.floor(
+							now.getTime() / 1000
+						)}>, <t:${Math.floor(
+							now.getTime() / 1000
+						)}:R>\nOther args: ${args.join(" ")}`,
+						`CRITICAL ERROR`
+					),
+				],
+			})
 			.catch((err) => console.log(err));
 	}
 	return channel
-		.send(kifo.embed(`${log} ${args.join(" ")}`, "LOG"))
+		.send({ embeds: [kifo.embed(`${log} ${args.join(" ")}`, "LOG")] })
 		.catch((err) => {
 			main.log(err);
 		});
@@ -1906,7 +2284,7 @@ exports.log = function (log, ...args) {
 
 client.login(process.env.LOGIN_TOKEN);
 
-process.on('uncaughtException', async (err) => {
+process.on("uncaughtException", async (err) => {
 	console.error(err);
 	console.log(err);
 	await main.log(err);

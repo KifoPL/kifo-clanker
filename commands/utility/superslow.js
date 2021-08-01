@@ -15,47 +15,58 @@ module.exports = {
 		const kifo = require("kifo");
 		let shortest = ms("6h");
 		let longest = ms("1y");
-		if (!args[0]) return message.reply(`Usage: ${this.usage.join("\n")}`);
+		if (!args[0]) return message.reply({ embeds: [kifo.embed(`Usage: ${this.usage.join("\n")}`)] });
 		if (message.guild == null)
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed("you can only run this command on the server.")
-			);
+				]
+			});
 		if (
 			!message.guild.me
 				.permissionsIn(message.channel)
-				.has("MANAGE_CHANNELS")
+				.has(Discord.Permissions.FLAGS.MANAGE_CHANNELS)
 		)
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed(
 					"This command need `MANAGE_CHANNELS` permissions to work properly."
 				)
-			);
+				]
+			});
 
 		if (
 			!message.guild.me
 				.permissionsIn(message.channel)
-				.has("MANAGE_MESSAGES")
+				.has(Discord.Permissions.FLAGS.MANAGE_MESSAGES)
 		)
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed(
 					"This command need `MANAGE_MESSAGES` permissions to work properly."
 				)
-			);
+				]
+			});
 
 		if (isNaN(ms(args[0])))
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed(
 					"incorrect time period. Please specify correct time period (Set to `0s` to turn it off)."
 				)
-			);
+				]
+			});
 		if (ms(args[0]) < shortest && ms(args[0]) != 0)
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed(
 					"just use normal Discord slow-mode, no need to waste my bot's resources."
 				)
-			);
+				]
+			});
 		if (ms(args[0]) > longest)
-			return message.reply(
+			return message.reply({
+				embeds: [
 				kifo.embed(
 					"incorrect amount of time. For the command to work, please input period of time that is between " +
 						ms(shortest, { long: true }) +
@@ -63,7 +74,8 @@ module.exports = {
 						ms(longest, { long: true }) +
 						"."
 				)
-			);
+				]
+			});
 		let isOff = false;
 		if (ms(args[0]) == 0) isOff = true;
 		let params = [isOff, ms(args[0])];

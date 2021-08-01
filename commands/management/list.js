@@ -2,7 +2,7 @@ const limit = 1000;
 const kifo = require("kifo");
 const main = require(`../../index.js`);
 const Discord = require("discord.js");
-const api = require("axios")
+const api = require("axios");
 module.exports = {
 	name: "list",
 	description: `Lists all users in the server, or users having certain role.\nTo list more than ${limit} users you need \`MANAGE_GUILD\` perms.\nIf the bot doesn't see some channels, lists ~~may~~ will be incorrect.`,
@@ -10,7 +10,7 @@ module.exports = {
 		"`list` - lists all users in the server",
 		"`list <user>` - lists roles of specified user.",
 		"`list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.",
-		"`list <channel/\"here\"> <role> <optional_role2> <optional_role_n> - lists users with specified roles in specified channel.",
+		'`list <channel/"here"> <role> <optional_role2> <optional_role_n> - lists users with specified roles in specified channel.',
 		"`list <message_id>` - pastes raw message content *(with formatting, works with embeds and all types of messages)*.",
 	],
 	adminonly: false,
@@ -38,9 +38,7 @@ async function whatamifunc(message, args, callback) {
 				if (!message.guild.roles.resolve(args[0])) {
 					if (!message.guild.channels.resolve(args[0])) {
 						await message.guild.channels.cache
-							.filter(
-								(ch) => ch.type === "news" || ch.type === "text"
-							)
+							.filter((ch) => ch.isText())
 							.each(async (ch) => {
 								await ch.messages
 									.fetch(args[0])
@@ -63,7 +61,7 @@ async function whatamifunc(message, args, callback) {
 							callback({ entity: entity, whatami: whatami });
 							// return message.reply(
 							// 	kifo.embed(
-							// 		"this ID is neither a role nor a channel, nor a user, nor a message. Please provide valid ID."
+							// 		"this Id is neither a role nor a channel, nor a user, nor a message. Please provide valid Id."
 							// 	)
 							// );
 							return;
@@ -108,19 +106,12 @@ async function whatamifunc(message, args, callback) {
 				whatami = "not found";
 				callback({ entity: entity, whatami: whatami });
 				return;
-				// return message.reply(
-				// 	kifo.embed(
-				// 		"your message must contain a mention of user, channel, or an ID of user, channel, or role in order to work (remember not to ping role!)."
-				// 	)
-				// );
 			}
 		}
 	}
 }
 
-
 async function stats(message, args, prefix, isList = true) {
-
 	//If you're reading this, good luck understanding wtf is happening here :)
 
 	//This is for timestamps
@@ -130,95 +121,126 @@ async function stats(message, args, prefix, isList = true) {
 	//for debugging, uncomment to resolve paths
 	//const path = require("path");
 
-	function place(number) {
-		if (number % 10 == 1 && number % 100 != 11) return `st`;
-		if (number % 10 == 2 && number % 100 != 12) return "nd";
-		if (number % 10 == 3 && number % 100 != 13) return "rd";
-		else return "th";
-	}
-
 	//PRECHECKS
 	if (message.guild == null)
-		return message.reply(
-			kifo.embed("you can only run this command on the server.")
-		);
-	if (!message.guild.me.permissionsIn(message.channel).has("ATTACH_FILES"))
-		return message.reply(
-			kifo.embed(
-				"I do not have `ATTACH_FILES` permissions in this channel."
-			)
-		);
-	message.channel.startTyping().catch(() => { });
+		return message.reply({
+			embeds: [
+				kifo.embed("you can only run this command on the server."),
+			],
+		});
+	if (
+		isList &&
+		!message.guild.me
+			.permissionsIn(message.channel)
+			.has(Discord.Permissions.FLAGS.ATTACH_FILES)
+	)
+		return message.reply({
+			embeds: [
+				kifo.embed(
+					"I do not have `ATTACH_FILES` permissions in this channel."
+				),
+			],
+		});
+	message.channel.sendTyping().catch(() => { });
 	const newEmbed = new Discord.MessageEmbed();
 	let time = new Date(Date.now());
 
-	//if you provide multiple role IDs you get a list of members with these roles
+	//if you provide multiple role Ids you get a list of members with these roles
 	if (args[1] != undefined) {
-		if (args[0].toLowerCase() == "here" || message.guild.channels.resolve(args[0]) || args[0].match(Discord.MessageMentions.CHANNELS_PATTERN)) {
-			if (!isList) return message.reply(kifo.embed("Too many arguments! If you want to make role filter, use `list`.")).catch(() => { })
+		if (
+			args[0].toLowerCase() == "here" ||
+			message.guild.channels.resolve(args[0]) ||
+			args[0].match(Discord.MessageMentions.CHANNELS_PATTERN)
+		) {
+			if (!isList)
+				return message
+					.reply({
+						embeds: [
+							kifo.embed(
+								"Too many arguments! If you want to make role filter, use `list`."
+							),
+						],
+					})
+					.catch(() => { });
 			let thisChannel = null;
 			if (args[0].toLowerCase() == "here") thisChannel = message.channel;
-			else if (message.guild.channels.resolve(args[0]) != undefined) {
+			else if (
+				message.guild.channels.resolve(kifo.mentionTrim(args[0])) !=
+				undefined
+			) {
 				thisChannel = message.guild.channels.resolve(args[0]);
-			} else if (args[0].match(Discord.MessageMentions.CHANNELS_PATTERN)) {
-				thisChannel = message.guild.channels.resolve(args[0].slice(2, -1));
 			}
-			if (thisChannel == null) return message.reply(kifo.embed("Invalid channel!"))
-			let roleIDs = [];
+			if (thisChannel == null)
+				return message.reply({
+					embeds: [kifo.embed("Invalid channel!")],
+				});
+			let roleIds = [];
 			i = 0;
 			args.shift();
 			while (args[i] != undefined) {
 				if (
-					message.guild.roles.resolve(args[i]) !=
+					message.guild.roles.resolve(kifo.mentionTrim(args[i])) !=
 					undefined
 				) {
-					roleIDs.push(args[i]);
-				} else if (message.guild.roles.resolve(args[i].slice(3, -1)) != undefined) {
-					roleIDs.push(args[i].slice(3, -1));
-					args[i] = args[i].slice(3, -1);
+					roleIds.push(args[i]);
 				} else
-					return message.reply(
-						kifo.embed(`${args[i]} is not a valid role!`)
-					);
+					return message.reply({
+						embeds: [kifo.embed(`${args[i]} is not a valid role!`)],
+					});
 				i++;
 			}
-			let memberList = await message.guild.members.cache.filter((member) =>
-				member.roles.cache.has(roleIDs[0])
+			let memberList = await message.guild.members.cache.filter(
+				(member) => member.roles.cache.has(roleIds[0])
 			);
-			for (i = 1; i < roleIDs.length; i++) {
+			for (i = 1; i < roleIds.length; i++) {
 				memberList = await memberList.filter((member) =>
-					member.roles.cache.has(roleIDs[i])
+					member.roles.cache.has(roleIds[i])
 				);
 			}
 
-			memberList = await memberList.filter((member) => member.permissionsIn(thisChannel).has("VIEW_CHANNEL"))
+			memberList = await memberList.filter((member) =>
+				member
+					.permissionsIn(thisChannel)
+					.has(Discord.Permissions.FLAGS.VIEW_CHANNEL)
+			);
 
-			var fileContent = `User ID\tPosition\tUser name\tNickname\n`;
+			var fileContent = `User Id\tPosition\tUser name\tNickname\n`;
 
 			var Count = 0;
 
 			await memberList.each(() => Count++);
-			if (Count > limit && !message.member.permissions.has("MANAGE_GUILD") && isList) {
-				message.channel.stopTyping(true);
-				return message.reply(
-					kifo.embed(
-						`The output has ${Count} records, you need \`MANAGE_GUILD\` to create a file this large.`
-					)
-				);
+			if (
+				Count > limit &&
+				!message.member.permissions.has(
+					Discord.Permissions.FLAGS.MANAGE_GUILD
+				) &&
+				isList
+			) {
+				return message.reply({
+					embeds: [
+						kifo.embed(
+							`The output has ${Count} records, you need \`MANAGE_GUILD\` to create a file this large.`
+						),
+					],
+				});
 			}
 
-			await memberList
-				.each((member) => {
-					fileContent += `${member.id}\t${member.roles.highest.rawPosition
-						}\t${member.user.username}\t${member.nickname ?? ""}\n`;
-				});
+			await memberList.each((member) => {
+				fileContent += `${member.id}\t${member.roles.highest.rawPosition
+					}\t${member.user.username}\t${member.nickname ?? ""}\n`;
+			});
 
-			fs.writeFileSync(`./${args[0]}ETCmembers.txt`, fileContent, () => { });
+			fs.writeFileSync(
+				`./${time.toISOString().replace(":", "_")}_list.txt`,
+				fileContent,
+				() => { }
+			);
 
 			var roleList = "";
-			for (i = 0; i < roleIDs.length; i++) {
-				roleList += `${roleIDs[i]} - ${message.guild.roles.cache.find((role) => role.id == roleIDs[i])
-					.name
+			for (i = 0; i < roleIds.length; i++) {
+				roleList += `${roleIds[i]} - ${message.guild.roles.cache.find(
+					(role) => role.id == roleIds[i]
+				).name
 					}\n`;
 			}
 
@@ -241,7 +263,7 @@ async function stats(message, args, prefix, isList = true) {
 				.addFields(
 					{
 						name: `${thisChannel.name}`,
-						value: `Showing people who are in <#${thisChannel.id}>.`
+						value: `Showing people who are in <#${thisChannel.id}>.`,
 					},
 					{
 						name: `Role filter (${i} role${i > 1 ? "s" : ""}):`,
@@ -252,68 +274,70 @@ async function stats(message, args, prefix, isList = true) {
 						name: "More",
 						value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 					}
-				)
-				.attachFiles([
-					{
-						attachment: `./${args[0]}ETCmembers.txt`,
-						name: `${args[0]}ETCmembers.txt`,
-					},
-				]);
-		}
-		else if (isList) {
-			let roleIDs = [];
+			);
+		} else if (isList) {
+			let roleIds = [];
 			i = 0;
 			while (args[i] != undefined) {
 				if (
-					message.guild.roles.resolve(args[i]) !=
+					message.guild.roles.resolve(kifo.mentionTrim(args[i])) !=
 					undefined
 				) {
-					roleIDs.push(args[i]);
-				} else if (message.guild.roles.resolve(args[i].slice(3, -1)) != undefined) {
-					roleIDs.push(args[i].slice(3, -1))
-					args[i] = args[i].slice(3, -1);
+					roleIds.push(args[i]);
+					args[i] = kifo.mentionTrim(args[i]);
 				} else
-					return message.reply(
-						kifo.embed(`${args[i]} is not a valid role!`)
-					);
+					return message.reply({
+						embeds: [kifo.embed(`${args[i]} is not a valid role!`)],
+					});
 				i++;
 			}
 
-			let memberList = await message.guild.members.cache.filter((member) =>
-				member.roles.cache.has(roleIDs[0])
+			let memberList = await message.guild.members.cache.filter(
+				(member) => member.roles.cache.has(roleIds[0])
 			);
-			for (i = 1; i < roleIDs.length; i++) {
+			for (i = 1; i < roleIds.length; i++) {
 				memberList = await memberList.filter((member) =>
-					member.roles.cache.has(roleIDs[i])
+					member.roles.cache.has(roleIds[i])
 				);
 			}
 
-			var fileContent = `User ID\tPosition\tUser name\tNickname\n`;
+			var fileContent = `User Id\tPosition\tUser name\tNickname\n`;
 
 			var Count = 0;
 
 			await memberList.each(() => Count++);
-			if (Count > limit && !message.member.permissions.has("MANAGE_GUILD") && isList) {
-				message.channel.stopTyping(true);
-				return message.reply(
-					kifo.embed(
-						`The output has ${Count} records, you need \`MANAGE_GUILD\` to create a file this large.`
-					)
-				);
+			if (
+				Count > limit &&
+				!message.member.permissions.has(
+					Discord.Permissions.FLAGS.MANAGE_GUILD
+				) &&
+				isList
+			) {
+				return message.reply({
+					embeds: [
+						kifo.embed(
+							`The output has ${Count} records, you need \`MANAGE_GUILD\` to create a file this large.`
+						),
+					],
+				});
 			}
 
-			await memberList
-				.each((member) => {
-					fileContent += `${member.id}\t${member.roles.highest.rawPosition
-						}\t${member.user.username}\t${member.nickname ?? ""}\n`;
-				});
+			await memberList.each((member) => {
+				fileContent += `${member.id}\t${member.roles.highest.rawPosition
+					}\t${member.user.username}\t${member.nickname ?? ""}\n`;
+			});
 
-			fs.writeFileSync(`./${args[0]}ETCmembers.txt`, fileContent, () => { });
+			fs.writeFileSync(
+				`./${time.toISOString().replace(":", "_")}_list.txt`,
+				fileContent,
+				() => { }
+			);
 
 			var roleList = "";
-			for (i = 0; i < roleIDs.length; i++) {
-				roleList += `${roleIDs[i]} - ${message.guild.roles.cache.find((role) => role.id == roleIDs[i])
-					.name
+			for (i = 0; i < roleIds.length; i++) {
+				roleList += `${roleIds[i]} - ${message.guild.roles.cache.find(
+					(role) => role.id == roleIds[i]
+				).name
 					}\n`;
 			}
 
@@ -342,16 +366,17 @@ async function stats(message, args, prefix, isList = true) {
 						name: "More",
 						value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 					}
-				)
-				.attachFiles([
-					{
-						attachment: `./${args[0]}ETCmembers.txt`,
-						name: `${args[0]}ETCmembers.txt`,
-					},
-				]);
-
+			);
 		} else {
-			return message.reply(kifo.embed("Too many arguments! If you want to make role filter, use `list`.")).catch(() => { })
+			return message
+				.reply({
+					embeds: [
+						kifo.embed(
+							"Too many arguments! If you want to make role filter, use `list`."
+						),
+					],
+				})
+				.catch(() => { });
 		}
 	}
 	let guildcount = 0;
@@ -367,50 +392,53 @@ async function stats(message, args, prefix, isList = true) {
 	if (args[1] == undefined) {
 		//SERVER STATS
 		if (args[0] == undefined) {
-			let owner = message.guild.owner;
+			let owner = await message.guild.fetchOwner();
 			let botcount = 0;
 			let onlinecount = 0;
 			let boostcount = 0;
 
 			let channelcount = 0;
 			let channelvoicecount = 0;
+			let channelstagecount = 0;
 			let channeltextcount = 0;
 			let channelcategorycount = 0;
 			let channelnewscount = 0;
 
-			var fileContent = `User ID\tPosition\tUser name\tNickname\n`;
+			var fileContent = `User Id\tPosition\tUser name\tNickname\n`;
 			var Count = 0;
 
 			await message.guild.members.cache.each(() => Count++);
 			if (
 				Count > limit &&
-				!message.member.permissions.has("MANAGE_GUILD") && isList
+				!message.member.permissions.has(
+					Discord.Permissions.FLAGS.MANAGE_GUILD
+				) &&
+				isList
 			) {
-				message.channel.stopTyping(true);
-				return message.reply(
-					kifo.embed(
-						`The output has ${Count} records, you need \`MANAGE_GUILD\` to create a file this large.`
-					)
-				);
+				return message.reply({
+					embeds: [
+						kifo.embed(
+							`The output has ${Count} records, you need \`MANAGE_GUILD\` to create a file this large.`
+						),
+					],
+				});
 			}
 
 			if (isList) {
-				await message.guild.members.cache
-					.each((member) => {
-						fileContent += `${member.id}\t${member.roles.highest.rawPosition
-							}\t${member.user.username}\t${member.nickname ?? ""}\n`;
-					});
-			}
-			await message.guild.members.cache
-				.each((member) => {
-					if (member.user.bot) botcount++;
-					if (member.premiumSinceTimestamp != undefined) boostcount++;
+				await message.guild.members.cache.each((member) => {
+					fileContent += `${member.id}\t${member.roles.highest.rawPosition
+						}\t${member.user.username}\t${member.nickname ?? ""}\n`;
 				});
+			}
+			await message.guild.members.cache.each((member) => {
+				if (member.user.bot) botcount++;
+				if (member.premiumSinceTimestamp != undefined) boostcount++;
+			});
 
 			await message.guild.members.cache
 				.filter(
 					(member) =>
-						member.presence.status != "offline" && !member.user.bot
+						member.presence?.status != "offline" && !member.user.bot
 				)
 				.each(() => onlinecount++);
 
@@ -418,21 +446,24 @@ async function stats(message, args, prefix, isList = true) {
 				channelcount++;
 			});
 			await message.guild.channels.cache
-				.filter((channel) => channel.type == "voice")
+				.filter((channel) => channel.type == "GUILD_VOICE")
 				.each(() => channelvoicecount++);
 			await message.guild.channels.cache
-				.filter((channel) => channel.type == "text")
+				.filter((channel) => channel.type == "GUILD_STAGE_VOICE")
+				.each(() => channelstagecount++);
+			await message.guild.channels.cache
+				.filter((channel) => channel.type == "GUILD_TEXT")
 				.each(() => channeltextcount++);
 			await message.guild.channels.cache
-				.filter((channel) => channel.type == "category")
+				.filter((channel) => channel.type == "GUILD_CATEGORY")
 				.each(() => channelcategorycount++);
 			await message.guild.channels.cache
-				.filter((channel) => channel.type == "news")
+				.filter((channel) => channel.type == "GUILD_NEWS")
 				.each(() => channelnewscount++);
 
 			if (isList) {
 				fs.writeFileSync(
-					`./${message.guild.id} members.txt`,
+					`./${time.toISOString().replace(":", "_")}_list.txt`,
 					fileContent,
 					() => { }
 				);
@@ -511,6 +542,7 @@ async function stats(message, args, prefix, isList = true) {
 					{
 						name: `Channels`,
 						value: `<:voice:823658022684721164> ${channelvoicecount} voice channel${channelvoicecount != 1 ? "s" : ""
+							}, <:stage:842672130541617152> ${channelstagecount} stage channels${channelstagecount != 1 ? "s" : ""
 							}, <:textchannel:823658022849085512> ${channeltextcount} text channel${channeltextcount != 1 ? "s" : ""
 							}, <:categoryNEW:842672130420506625> ${channelcategorycount} categor${channelcategorycount != 1 ? "ies" : "y"
 							}, <:announcement:842672130587754506> ${channelnewscount} news channel${channelnewscount != 1 ? "s" : ""
@@ -521,16 +553,7 @@ async function stats(message, args, prefix, isList = true) {
 						name: "More",
 						value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 					}
-				)
-			if (isList) {
-				newEmbed
-					.attachFiles([
-						{
-							attachment: `./${message.guild.id} members.txt`,
-							name: `${message.guild.name} members.txt`,
-						},
-					]);
-			}
+			);
 		} else {
 			//NOT SERVER STATS (user, bot, role, channel, message)
 
@@ -544,35 +567,41 @@ async function stats(message, args, prefix, isList = true) {
 
 			if (whatami == "not found") {
 				return message
-					.reply(
-						kifo.embed(
-							"Unknown entity! Command supports `server`, `user`, `channel` and `message`.\n**Note:** Messages are a bit glitchy, so if you're trying to get `message` by its ID, try this command **twice**."
-						)
-					)
+					.reply({
+						embeds: [
+							kifo.embed(
+								"Unknown entity! Command supports `server`, `user`, `channel` and `message`.\n**Note:** Messages are a bit glitchy, so if you're trying to get `message` by its Id, try this command **twice**."
+							),
+						],
+					})
 					.catch(() => { });
 			}
 
 			if (whatami == undefined) {
 				main.log("SOMETHING BROKE IN LIST COMMAND");
 				return message
-					.reply(
-						kifo.embed(
-							"Uknown error has occured when trying to execute the command. Please use `error` command to notify bot author.",
-							"Error!"
-						)
-					)
+					.reply({
+						embeds: [
+							kifo.embed(
+								"Uknown error has occured when trying to execute the command. Please use `error` command to notify bot author.",
+								"Error!"
+							),
+						],
+					})
 					.catch(() => { });
 			}
 
 			if (entity == undefined) {
 				main.log("SOMETHING BROKE IN LIST COMMAND");
 				return message
-					.reply(
-						kifo.embed(
-							"Uknown error has occured when trying to execute the command. Please use `error` command to notify bot author.",
-							"Error!"
-						)
-					)
+					.reply({
+						embeds: [
+							kifo.embed(
+								"Uknown error has occured when trying to execute the command. Please use `error` command to notify bot author.",
+								"Error!"
+							),
+						],
+					})
 					.catch(() => { });
 			}
 
@@ -590,11 +619,11 @@ async function stats(message, args, prefix, isList = true) {
 				let usertime = time.getTime() - entity.user.createdAt.getTime();
 				let membertime = time.getTime() - entity.joinedAt.getTime();
 				let rolecount = 0;
-				let fileContent = `Role ID\tPosition\tRole name\n`;
+				let fileContent = `Role Id\tPosition\tRole name\n`;
 				let statusicon;
 				if (
-					entity.presence.status == "online" ||
-					entity.presence.status == "idle"
+					entity.presence?.status == "online" ||
+					entity.presence?.status == "idle"
 				)
 					statusicon = "<:online:823658022974521414>";
 				else statusicon = "<:offline:823658022957613076>";
@@ -606,7 +635,9 @@ async function stats(message, args, prefix, isList = true) {
 						rolecount++;
 					});
 				if (isList) {
-					entity.roles.cache.each((role) => { fileContent += `${role.id}\t${role.rawPosition}\t${role.name}\n`; })
+					entity.roles.cache.each((role) => {
+						fileContent += `${role.id}\t${role.rawPosition}\t${role.name}\n`;
+					});
 				}
 
 				const ppfield = await ppcmd.execute(
@@ -630,7 +661,7 @@ async function stats(message, args, prefix, isList = true) {
 
 				if (isList) {
 					fs.writeFileSync(
-						`./${entity.id} roles.txt`,
+						`./${time.toISOString().replace(":", "_")}_list.txt`,
 						fileContent,
 						() => { }
 					);
@@ -701,7 +732,7 @@ async function stats(message, args, prefix, isList = true) {
 								} (${-entity.roles?.highest.comparePositionTo(
 									message.guild.roles.highest
 								) + 1
-								}${place(
+								}${kifo.place(
 									-entity.roles?.highest.comparePositionTo(
 										message.guild.roles.highest
 									) + 1
@@ -737,14 +768,7 @@ async function stats(message, args, prefix, isList = true) {
 							name: "More",
 							value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 						}
-					)
-				if (isList) newEmbed
-					.attachFiles([
-						{
-							attachment: `./${entity.id} roles.txt`,
-							name: `${entity.id} roles.txt`,
-						},
-					]);
+				);
 			}
 			//BOT STATS
 			else if (whatami == "bot") {
@@ -752,22 +776,20 @@ async function stats(message, args, prefix, isList = true) {
 				let membertime = time.getTime() - entity.joinedAt.getTime();
 				let rolecount = 0;
 				let statusicon;
-				let fileContent = `Role ID\tRole name\n`;
+				let fileContent = `Role Id\tRole name\n`;
 				if (
-					entity.presence.status == "online" ||
-					entity.presence.status == "idle"
+					entity.presence?.status == "online" ||
+					entity.presence?.status == "idle"
 				)
 					statusicon = "<:online:823658022974521414>";
 				else statusicon = "<:offline:823658022957613076>";
-				await entity.roles.cache
-					.each((role) => {
-						rolecount++;
-					});
+				await entity.roles.cache.each((role) => {
+					rolecount++;
+				});
 				if (isList) {
-					await entity.roles.cache
-						.each((role) => {
-							fileContent += `${role.id}\t${role.name}\n`;
-						});
+					await entity.roles.cache.each((role) => {
+						fileContent += `${role.id}\t${role.name}\n`;
+					});
 				}
 				const ppfield = await ppcmd.execute(
 					message,
@@ -790,7 +812,7 @@ async function stats(message, args, prefix, isList = true) {
 
 				if (isList) {
 					fs.writeFileSync(
-						`./${entity.id} roles.txt`,
+						`./${time.toISOString().replace(":", "_")}_list.txt`,
 						fileContent,
 						() => { }
 					);
@@ -845,7 +867,7 @@ async function stats(message, args, prefix, isList = true) {
 								} (${-entity.roles?.highest.comparePositionTo(
 									message.guild.roles.highest
 								) + 1
-								}${place(
+								}${kifo.place(
 									-entity.roles?.highest.comparePositionTo(
 										message.guild.roles.highest
 									) + 1
@@ -885,13 +907,7 @@ async function stats(message, args, prefix, isList = true) {
 							name: "More",
 							value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 						}
-					)
-				if (isList) newEmbed.attachFiles([
-					{
-						attachment: `./${entity.id} roles.txt`,
-						name: `${entity.id} roles.txt`,
-					},
-				]);
+				);
 			}
 			//ROLE STATS
 			else if (whatami == "role") {
@@ -899,45 +915,52 @@ async function stats(message, args, prefix, isList = true) {
 					time.getTime() - entity.createdAt.getTime();
 				let perms = entity.permissions;
 				let membercount = 0;
-				var fileContent = `User ID\tPosition\tUser name\tNickname\n`;
+				var fileContent = `User Id\tPosition\tUser name\tNickname\n`;
 				var Count = 0;
-				await entity.members
-					.each(() => {
-						membercount++;
-						Count++;
-					});
-				if (isList) await entity.members
-					.each((member) => {
+				await entity.members.each(() => {
+					membercount++;
+					Count++;
+				});
+				if (isList)
+					await entity.members.each((member) => {
 						fileContent += `${member.id}\t${member.roles.highest.rawPosition
 							}\t${member.user.username}\t${member.nickname ?? ""}\n`;
 					});
 				if (
 					Count > 1000 &&
-					!message.member.permissions.has("MANAGE_ROLES") && isList
+					!message.member.permissions.has(
+						Discord.Permissions.FLAGS.MANAGE_ROLES
+					) &&
+					isList
 				)
-					return message.reply(
-						kifo.embed(
-							`The output has ${Count} records, you need \`MANAGE_ROLES\` to create a file this large.`
-						)
-					);
+					return message.reply({
+						embeds: [
+							kifo.embed(
+								`The output has ${Count} records, you need \`MANAGE_ROLES\` to create a file this large.`
+							),
+						],
+					});
 				let strperms = "";
 				await perms.toArray().forEach(function (item, index, array) {
 					strperms += `${item}\n`;
 				});
 
-				if (isList) fs.writeFileSync(
-					`./${entity.id} members.txt`,
-					fileContent,
-					() => { }
-				);
+				if (isList)
+					fs.writeFileSync(
+						`./${time.toISOString().replace(":", "_")}_list.txt`,
+						fileContent,
+						() => { }
+					);
 
-				let colour = await api.get(`http://www.thecolorapi.com/id`, { params: { hex: entity.hexColor.slice(1) } })
+				let colour = await api.get(`http://www.thecolorapi.com/id`, {
+					params: { hex: entity.hexColor.slice(1) },
+				});
 
 				newEmbed
 					.setColor("a039a0")
 					.setTitle(`${entity.name} stats:`)
 					.setDescription(
-						`<:hoist:823907804141322311> <@&${entity.id}>, ID ${entity.id}`
+						`<:hoist:823907804141322311> <@&${entity.id}>, Id ${entity.id}`
 					)
 					.setAuthor(
 						"Kifo Clanker™, by KifoPL#3358",
@@ -960,7 +983,10 @@ async function stats(message, args, prefix, isList = true) {
 					.addFields(
 						{
 							name: `Colour:`,
-							value: `${entity.hexColor}${colour.status === 200 ? `\n${colour.data.name.value}` : ``}`,
+							value: `${entity.hexColor}${colour.status === 200
+								? `\n${colour.data.name.value}`
+								: ``
+								}`,
 							inline: true,
 						},
 						{
@@ -968,7 +994,7 @@ async function stats(message, args, prefix, isList = true) {
 							value: `${-entity.comparePositionTo(
 								message.guild.roles.highest
 							) + 1
-								}${place(
+								}${kifo.place(
 									-entity.comparePositionTo(
 										message.guild.roles.highest
 									) + 1
@@ -1009,20 +1035,17 @@ async function stats(message, args, prefix, isList = true) {
 							name: "More",
 							value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 						}
-					)
-				if (isList) newEmbed.attachFiles([
-					{
-						attachment: `./${entity.id} members.txt`,
-						name: `${message.id} members.txt`,
-					},
-				]);
+				);
 			}
 			//CHANNEL STATS --- NOT YET IMPLEMENTED
 			else if (whatami == "channel") {
-				message.channel.stopTyping(true);
-				return message.reply(
-					kifo.embed("channel stats will be implemented one day.")
-				);
+				return message.reply({
+					embeds: [
+						kifo.embed(
+							"channel stats will be implemented one day."
+						),
+					],
+				});
 
 				//TODO FINISH THIS
 				type = entity.type;
@@ -1034,11 +1057,13 @@ async function stats(message, args, prefix, isList = true) {
 				else if (type == "news")
 					emote = `<:announcement:842672130587754506>`;
 				else
-					return message.reply(
-						kifo.embed(
-							"unsupported channel type! Reach out to KifoPL#3358 to notify him of the error."
-						)
-					);
+					return message.reply({
+						embeds: [
+							kifo.embed(
+								"unsupported channel type! Reach out to KifoPL#3358 to notify him of the error."
+							),
+						],
+					});
 
 				let channelage = time.getTime() - entity.createdAt.getTime();
 
@@ -1076,7 +1101,7 @@ async function stats(message, args, prefix, isList = true) {
 								} (${-entity.roles?.highest.comparePositionTo(
 									message.guild.roles.highest
 								) + 1
-								}${place(
+								}${kifo.place(
 									-entity.roles?.highest.comparePositionTo(
 										message.guild.roles.highest
 									) + 1
@@ -1120,6 +1145,8 @@ async function stats(message, args, prefix, isList = true) {
 			}
 			//MESSAGE STATS
 			else if (whatami == "message") {
+				return message.reply({embeds: [kifo.embed("Because of newest Discord API features, this command is broke. There will be a replacement `/` command soon™.")]})
+				//F for message stats
 				await entity.fetch().then((msg) => (entity = msg));
 				let topReaction = await entity.reactions.cache
 					.sort((a, b) => b.count - a.count)
@@ -1131,7 +1158,7 @@ async function stats(message, args, prefix, isList = true) {
 				let fileContent = "Message content with formatting:\n\n";
 				let activity = entity.activity;
 				if (activity != null)
-					activity = `Type: ${entity.activity.type}, party ID: ${entity.activity.partyID}`;
+					activity = `Type: ${entity.activity.type}, party Id: ${entity.activity.partyId}`;
 				let attachments = [];
 				await entity.attachments.each((am) => {
 					attachments.push(am);
@@ -1161,7 +1188,7 @@ async function stats(message, args, prefix, isList = true) {
 							.join("\n\n\n");
 					}
 					fs.writeFileSync(
-						`./${entity.id} message.txt`,
+						`./${time.toISOString().replace(":", "_")}_list.txt`,
 						fileContent,
 						() => { }
 					);
@@ -1194,7 +1221,7 @@ async function stats(message, args, prefix, isList = true) {
 						},
 						{
 							name: `Content length:`,
-							value: `${entity.content.length}`,
+							value: `${entity.content?.length ?? "no content"}`,
 							inline: true,
 						},
 						{
@@ -1204,7 +1231,7 @@ async function stats(message, args, prefix, isList = true) {
 						},
 						{
 							name: `Type:`,
-							value: entity.type,
+							value: entity.type ?? "unknown",
 							inline: true,
 						},
 						{
@@ -1239,12 +1266,12 @@ async function stats(message, args, prefix, isList = true) {
 						},
 						{
 							name: `Is pinned?`,
-							value: entity.pinned,
+							value: entity.pinned ?? "false",
 							inline: true,
 						},
 						{
 							name: `Is system message (sent by Discord)?`,
-							value: entity.system,
+							value: entity.system ?? "false",
 							inline: true,
 						},
 						{
@@ -1257,37 +1284,24 @@ async function stats(message, args, prefix, isList = true) {
 							name: "More",
 							value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 						}
-					)
-				if (isList) newEmbed.attachFiles([
-					{
-						attachment: `./${entity.id} message.txt`,
-						name: `${entity.id} message.txt`,
-					},
-				]);
+				);
 			}
 		}
 	}
-	await message.channel.send(newEmbed).catch((err) => {
-		console.error(err);
-	});
-	message.channel.stopTyping(true);
+	if (isList)
+		await message
+			.reply({
+				embeds: [newEmbed],
+				files: [`./${time.toISOString().replace(":", "_")}_list.txt`],
+			})
+			.catch((err) => main.log(err));
+	else
+		await message.reply({ embeds: [newEmbed] }).catch((err) => {
+			main.log(err);
+		});
 	if (isList) {
 		try {
-			fs.unlink(`./${message.guild.id} members.txt`, () => { }).catch(
-				() => { }
-			);
-		} catch (err) { }
-		try {
-			fs.unlink(`./${entity.id} members.txt`, () => { }).catch(() => { });
-		} catch (err) { }
-		try {
-			fs.unlink(`./${entity.id} roles.txt`, () => { }).catch(() => { });
-		} catch (err) { }
-		try {
-			fs.unlink(`./${args[0]}ETCmembers.txt`, () => { }).catch(() => { });
-		} catch (err) { }
-		try {
-			fs.unlink(`./${entity.id} message.txt`, () => { }).catch(() => { });
-		} catch (err) { }
+			fs.unlink(`./${time.toISOString().replace(":", "_")}_list.txt`, (err) => { main.log(err)})
+		} catch (err) {main.log(err) }
 	}
 }

@@ -5,14 +5,14 @@ module.exports = {
 	usage: ["`iq <optional_user>` - A quick and reliable IQ test."],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
-	execute(message, args, isStats = false, userID = 0) {
+	execute(message, args, isStats = false, userId = 0) {
 		const kifo = require("kifo");
 		let userid = args[0] ?? message.author.id;
 		let iq = 0;
 		let reply = "";
 		let comment = "";
 		let Troll = false;
-		if (userID != 0) userid = userID;
+		if (userId != 0) userid = userId;
 		if (userid) {
 			if (!isNaN(userid)) {
 				//console.log(message.guild.members.resolve(args[0]));
@@ -22,7 +22,7 @@ module.exports = {
 				) {
 					Troll = true;
 				} else if (!message.guild.members.resolve(userid))
-					return message.reply(kifo.embed("user not found."));
+					return message.reply({ embeds: [kifo.embed("user not found.")] });
 				userid = userid;
 			} else {
 				if (message.mentions.users.firstKey() != undefined) {
@@ -31,18 +31,20 @@ module.exports = {
 							message.mentions.users.firstKey()
 						)
 					)
-						return message.reply(kifo.embed("user not found."));
+						return message.reply({ embeds: [kifo.embed("user not found.")] });
 					if (
 						message.mentions.users.firstKey() ==
-							289119054130839552 ||
+						289119054130839552 ||
 						message.mentions.users.firstKey() == 795638549730295820
 					)
 						Troll = true;
 					userid = message.mentions.users.firstKey();
 				} else
-					return message.reply(
-						kifo.embed("Either tag or provide user's ID.")
-					);
+					return message.reply({
+						embeds: [
+							kifo.embed("Either tag or provide user's Id.")
+						]
+					});
 			}
 		} else {
 			userid = message.author.id;
@@ -88,6 +90,6 @@ module.exports = {
 			newEmbed.setImage(
 				`https://media1.tenor.com/images/8ac74d59bf920c9588c8f7f00229cb78/tenor.gif`
 			);
-		message.channel.send(newEmbed).catch();
+		message.reply({ embeds: [newEmbed] }).catch();
 	},
 };
