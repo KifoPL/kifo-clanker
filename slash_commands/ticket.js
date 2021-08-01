@@ -23,7 +23,7 @@ module.exports = {
 
 	//itr = interaction
 	async execute(itr) {
-		const main = require(`../index.js`)
+		const main = require(`../index.js`);
 		const { ticketings } = require(`../index.js`);
 		if (!ticketings.has(itr.channelId))
 			return itr.reply({
@@ -41,23 +41,28 @@ module.exports = {
 		let description = options.find((o) => o.name === "description")?.value;
 		let ticket = kifo
 			.embed(description ?? "", title)
-			.setAuthor(`${itr.member.displayName}, ${itr.user.tag}`, itr.user.avatarURL({dynamic: true}))
+			.setAuthor(
+				`${itr.member.displayName}, ${itr.user.tag}`,
+				itr.user.avatarURL({ dynamic: true })
+			)
 			.setFooter(`asked by ${itr.user.tag} at ${now.toUTCString()}.`);
 		itr.channel
-			.send({content: `<@!${itr.member.id}>`, embeds: [ticket] })
+			.send({ content: `<@!${itr.member.id}>`, embeds: [ticket] })
 			.then((msg) => {
-				msg.startThread(
-					thtitle,
-					ticketing.DefaultArchive / 60 / 1000,
-					"new ticket"
-				)
+				msg.startThread({
+					name: thtitle,
+					autoArchiveDuration: ticketing.DefaultArchive / 60 / 1000,
+					reason: "new ticket",
+				})
 					.then((thread) => {
 						if (ticketing.DefaultSlowmode != 0)
 							thread
 								.setRateLimitPerUser(
 									ticketing.DefaultSlowmode / 1000
 								)
-								.catch((err) => {main.log(err)});
+								.catch((err) => {
+									main.log(err);
+								});
 						itr.editReply({
 							embeds: [kifo.embed("Created a new ticket!")],
 							ephemeral: true,
@@ -89,7 +94,10 @@ module.exports = {
 				itr.channel
 					.send({
 						embeds: [
-							kifo.embed(`${err} ${err.stack}`, "ERROR while creating a ticket"),
+							kifo.embed(
+								`${err} ${err.stack}`,
+								"ERROR while creating a ticket"
+							),
 						],
 					})
 					.catch(() => {});
