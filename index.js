@@ -2,8 +2,8 @@
 const Discord = require("discord.js");
 const { MessageButton, MessageActionRow } = require("discord.js");
 require("dotenv")?.config();
-require('events').EventEmitter.prototype._maxListeners = 100;
-require('events').defaultMaxListeners = 100;
+require("events").EventEmitter.prototype._maxListeners = 100;
+require("events").defaultMaxListeners = 100;
 const fs = require("fs");
 const ms = require("ms");
 const kifo = require("kifo");
@@ -1309,18 +1309,18 @@ function setGuideList() {
 			.split("\n")
 			.shift();
 		console.log(data);
-		guideList += `### [${data.slice(2,-1)}](./guides/${guide.slice(
+		guideList += `### [${data.slice(2, -1)}](./guides/${guide.slice(
 			0,
 			-3
 		)})\n\n`;
 	});
-	guideList += `<hr/>*Last update: ${now.toUTCString()}.*\n`
+	guideList += `<hr/>*Last update: ${now.toUTCString()}.*\n`;
 	guideList += "\n~by [KifoPL](https://bio.link/KifoPL)";
 
 	fs.writeFile(`guideList.md`, guideList, () => {
 		return;
-	})
-	console.log("Created guideList.md file!")
+	});
+	console.log("Created guideList.md file!");
 }
 
 client.once("ready", () => {
@@ -1923,9 +1923,13 @@ client.on("interactionCreate", (interaction) => {
 				embeds: [kifo.embed("Only testers can use this bot.")],
 			});
 		if (client.slash_commands.has(interaction.commandName)) {
-			client.slash_commands
-				.get(interaction.commandName)
-				.execute(interaction);
+			try {
+				client.slash_commands
+					.get(interaction.commandName)
+					.execute(interaction);
+			} catch (error) {
+				main.log(error);
+			}
 		} else {
 			interaction.reply({
 				embeds: [
