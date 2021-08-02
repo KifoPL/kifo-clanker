@@ -29,6 +29,11 @@ async function whatamifunc(message, args, callback) {
 
 	if (args[0].toUpperCase() == "ME") {
 		entity = message.member;
+		entity = await message.guild.members.fetch({
+			user: [entity.id],
+			withPresences: true,
+		});
+		entity = entity.first();
 		whatami = "user";
 		callback({ entity: entity, whatami: whatami });
 		return;
@@ -43,7 +48,6 @@ async function whatamifunc(message, args, callback) {
 								await ch.messages
 									.fetch(args[0])
 									.then((msg) => {
-										//console.log(msg);
 										entity = msg;
 										whatami = "message";
 										callback({
@@ -52,18 +56,13 @@ async function whatamifunc(message, args, callback) {
 										});
 										return;
 									})
-									.catch(() => { });
+									.catch(() => {});
 							});
 						if (entity != undefined) {
 							whatami = "message";
 						} else {
 							whatami = "not found";
 							callback({ entity: entity, whatami: whatami });
-							// return message.reply(
-							// 	kifo.embed(
-							// 		"this Id is neither a role nor a channel, nor a user, nor a message. Please provide valid Id."
-							// 	)
-							// );
 							return;
 						}
 					} else {
@@ -80,15 +79,22 @@ async function whatamifunc(message, args, callback) {
 				}
 			} else {
 				whatami = "user";
-				entity = message.guild.members.cache.find(
-					(member) => member.id == args[0]
-				);
+				entity = await message.guild.members.fetch({
+					user: [args[0]],
+					withPresences: true,
+				});
+				entity = entity.first();
 				callback({ entity: entity, whatami: whatami });
 				return;
 			}
 		} else {
 			if (message.mentions.members.firstKey() != undefined) {
-				entity = message.mentions.members.first();
+				entity = await message.mentions.members.first().fetch();
+				entity = await message.guild.members.fetch({
+					user: [entity.id],
+					withPresences: true,
+				});
+				entity = entity.first();
 				whatami = "user";
 				callback({ entity: entity, whatami: whatami });
 				return;
@@ -141,7 +147,7 @@ async function stats(message, args, prefix, isList = true) {
 				),
 			],
 		});
-	message.channel.sendTyping().catch(() => { });
+	message.channel.sendTyping().catch(() => {});
 	const newEmbed = new Discord.MessageEmbed();
 	let time = new Date(Date.now());
 
@@ -161,7 +167,7 @@ async function stats(message, args, prefix, isList = true) {
 							),
 						],
 					})
-					.catch(() => { });
+					.catch(() => {});
 			let thisChannel = null;
 			if (args[0].toLowerCase() == "here") thisChannel = message.channel;
 			else if (
@@ -226,22 +232,24 @@ async function stats(message, args, prefix, isList = true) {
 			}
 
 			await memberList.each((member) => {
-				fileContent += `${member.id}\t${member.roles.highest.rawPosition
-					}\t${member.user.username}\t${member.nickname ?? ""}\n`;
+				fileContent += `${member.id}\t${
+					member.roles.highest.rawPosition
+				}\t${member.user.username}\t${member.nickname ?? ""}\n`;
 			});
 
 			fs.writeFileSync(
 				`./${time.toISOString().replace(":", "_")}_list.txt`,
 				fileContent,
-				() => { }
+				() => {}
 			);
 
 			var roleList = "";
 			for (i = 0; i < roleIds.length; i++) {
-				roleList += `${roleIds[i]} - ${message.guild.roles.cache.find(
-					(role) => role.id == roleIds[i]
-				).name
-					}\n`;
+				roleList += `${roleIds[i]} - ${
+					message.guild.roles.cache.find(
+						(role) => role.id == roleIds[i]
+					).name
+				}\n`;
 			}
 
 			newEmbed
@@ -274,7 +282,7 @@ async function stats(message, args, prefix, isList = true) {
 						name: "More",
 						value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 					}
-			);
+				);
 		} else if (isList) {
 			let roleIds = [];
 			i = 0;
@@ -323,22 +331,24 @@ async function stats(message, args, prefix, isList = true) {
 			}
 
 			await memberList.each((member) => {
-				fileContent += `${member.id}\t${member.roles.highest.rawPosition
-					}\t${member.user.username}\t${member.nickname ?? ""}\n`;
+				fileContent += `${member.id}\t${
+					member.roles.highest.rawPosition
+				}\t${member.user.username}\t${member.nickname ?? ""}\n`;
 			});
 
 			fs.writeFileSync(
 				`./${time.toISOString().replace(":", "_")}_list.txt`,
 				fileContent,
-				() => { }
+				() => {}
 			);
 
 			var roleList = "";
 			for (i = 0; i < roleIds.length; i++) {
-				roleList += `${roleIds[i]} - ${message.guild.roles.cache.find(
-					(role) => role.id == roleIds[i]
-				).name
-					}\n`;
+				roleList += `${roleIds[i]} - ${
+					message.guild.roles.cache.find(
+						(role) => role.id == roleIds[i]
+					).name
+				}\n`;
 			}
 
 			newEmbed
@@ -366,7 +376,7 @@ async function stats(message, args, prefix, isList = true) {
 						name: "More",
 						value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 					}
-			);
+				);
 		} else {
 			return message
 				.reply({
@@ -376,7 +386,7 @@ async function stats(message, args, prefix, isList = true) {
 						),
 					],
 				})
-				.catch(() => { });
+				.catch(() => {});
 		}
 	}
 	let guildcount = 0;
@@ -425,22 +435,30 @@ async function stats(message, args, prefix, isList = true) {
 			}
 
 			if (isList) {
-				await message.guild.members.cache.each((member) => {
-					fileContent += `${member.id}\t${member.roles.highest.rawPosition
+				await message.guild.members.cache
+					.each((member) => {
+						fileContent += `${member.id}\t${
+							member.roles.highest.rawPosition
 						}\t${member.user.username}\t${member.nickname ?? ""}\n`;
-				});
+					});
 			}
 			await message.guild.members.cache.each((member) => {
 				if (member.user.bot) botcount++;
 				if (member.premiumSinceTimestamp != undefined) boostcount++;
 			});
 
-			await message.guild.members.cache
-				.filter(
-					(member) =>
-						member.presence?.status != "offline" && !member.user.bot
-				)
-				.each(() => onlinecount++);
+			// let mmmng = await message.guild.members.fetch({
+			// 	withPresences: true,
+			// });
+
+			// mmmng
+			// 	.filter(
+			// 		(member) =>
+			// 			member.presence?.status != "offline" && !member.user.bot
+			// 	)
+			// 	.each(() => onlinecount++);
+
+			message.guild.presences.cache.filter(pr => !pr.user.bot && (pr.status !== "offline")).each(() => onlinecount++)
 
 			await message.guild.channels.cache.each(() => {
 				channelcount++;
@@ -465,7 +483,7 @@ async function stats(message, args, prefix, isList = true) {
 				fs.writeFileSync(
 					`./${time.toISOString().replace(":", "_")}_list.txt`,
 					fileContent,
-					() => { }
+					() => {}
 				);
 			}
 
@@ -474,7 +492,7 @@ async function stats(message, args, prefix, isList = true) {
 				.setColor("a039a0")
 				.setTitle(
 					message.guild.name +
-					` stats: ||also try "${prefix}stats me"||`
+						` stats: ||also try "${prefix}stats me"||`
 				)
 				.setThumbnail(
 					message.guild.iconURL({
@@ -513,13 +531,15 @@ async function stats(message, args, prefix, isList = true) {
 				.addFields(
 					{
 						name: "Member Count:",
-						value: `Users: <:offline:823658022957613076> ${message.guild.memberCount - botcount
-							} (<:online:823658022974521414> ${onlinecount} online), 🤖 Bots: ${botcount}, Total: ${message.guild.memberCount
-							}.`,
+						value: `Users: <:offline:823658022957613076> ${
+							message.guild.memberCount - botcount
+						} (<:online:823658022974521414> ${onlinecount} online), 🤖 Bots: ${botcount}, Total: ${
+							message.guild.memberCount
+						}.`,
 					},
 					{
 						name: `Boosts status:`,
-						value: `<:boost:823658698412392449> Tier ${message.guild.premiumTier}, thanks to ${message.guild.premiumSubscriptionCount} boosts.`, //${boostcount} members boosted throughout server's existence.
+						value: `<:boost:823658698412392449> ${message.guild.premiumTier}, thanks to ${message.guild.premiumSubscriptionCount} boosts.`, //${boostcount} members boosted throughout server's existence.
 					},
 					{
 						name: `Region`,
@@ -533,27 +553,33 @@ async function stats(message, args, prefix, isList = true) {
 					},
 					{
 						name: `<:owner:823658022785908737> Owner`,
-						value: `${owner.nickname == undefined
-							? "No nickname set,"
-							: `${owner.nickname}, AKA`
-							} ${owner.user.tag}.`,
+						value: `${
+							owner.nickname == undefined
+								? "No nickname set,"
+								: `${owner.nickname}, AKA`
+						} ${owner.user.tag}.`,
 						inline: true,
 					},
 					{
 						name: `Channels`,
-						value: `<:voice:823658022684721164> ${channelvoicecount} voice channel${channelvoicecount != 1 ? "s" : ""
-							}, <:stage:842672130541617152> ${channelstagecount} stage channels${channelstagecount != 1 ? "s" : ""
-							}, <:textchannel:823658022849085512> ${channeltextcount} text channel${channeltextcount != 1 ? "s" : ""
-							}, <:categoryNEW:842672130420506625> ${channelcategorycount} categor${channelcategorycount != 1 ? "ies" : "y"
-							}, <:announcement:842672130587754506> ${channelnewscount} news channel${channelnewscount != 1 ? "s" : ""
-							}, Total: ${channelcount}.`,
+						value: `<:voice:823658022684721164> ${channelvoicecount} voice channel${
+							channelvoicecount != 1 ? "s" : ""
+						}, <:stage:842672130541617152> ${channelstagecount} stage channels${
+							channelstagecount != 1 ? "s" : ""
+						}, <:textchannel:823658022849085512> ${channeltextcount} text channel${
+							channeltextcount != 1 ? "s" : ""
+						}, <:categoryNEW:842672130420506625> ${channelcategorycount} categor${
+							channelcategorycount != 1 ? "ies" : "y"
+						}, <:announcement:842672130587754506> ${channelnewscount} news channel${
+							channelnewscount != 1 ? "s" : ""
+						}, Total: ${channelcount}.`,
 					},
 					// {name: `\u200B`, value: `\u200B`},
 					{
 						name: "More",
 						value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 					}
-			);
+				);
 		} else {
 			//NOT SERVER STATS (user, bot, role, channel, message)
 
@@ -574,7 +600,7 @@ async function stats(message, args, prefix, isList = true) {
 							),
 						],
 					})
-					.catch(() => { });
+					.catch(() => {});
 			}
 
 			if (whatami == undefined) {
@@ -588,7 +614,7 @@ async function stats(message, args, prefix, isList = true) {
 							),
 						],
 					})
-					.catch(() => { });
+					.catch(() => {});
 			}
 
 			if (entity == undefined) {
@@ -602,7 +628,7 @@ async function stats(message, args, prefix, isList = true) {
 							),
 						],
 					})
-					.catch(() => { });
+					.catch(() => {});
 			}
 
 			const contents = fs.readFileSync(`././commandList.json`);
@@ -611,6 +637,11 @@ async function stats(message, args, prefix, isList = true) {
 			const ppcmd = require(`${jsonCmdList.pp.relativepath}`);
 			const howgaycmd = require(`${jsonCmdList.howgay.relativepath}`);
 			const iqcmd = require(`${jsonCmdList.iq.relativepath}`);
+
+			let presence = undefined;
+			if (whatami == "user") {
+				presence = message.guild.presences.cache.find(pr => pr.userId == entity.id);
+			}
 
 			//WHAT ARE YOU CHECK ? - determines if you wanna check stats of user, bot, role, channel or message
 			if (whatami == "user" && entity.user.bot) whatami = "bot";
@@ -622,8 +653,8 @@ async function stats(message, args, prefix, isList = true) {
 				let fileContent = `Role Id\tPosition\tRole name\n`;
 				let statusicon;
 				if (
-					entity.presence?.status == "online" ||
-					entity.presence?.status == "idle"
+					presence?.status == "online" ||
+					presence?.status == "idle"
 				)
 					statusicon = "<:online:823658022974521414>";
 				else statusicon = "<:offline:823658022957613076>";
@@ -663,7 +694,7 @@ async function stats(message, args, prefix, isList = true) {
 					fs.writeFileSync(
 						`./${time.toISOString().replace(":", "_")}_list.txt`,
 						fileContent,
-						() => { }
+						() => {}
 					);
 				}
 
@@ -671,9 +702,10 @@ async function stats(message, args, prefix, isList = true) {
 					.setColor("a039a0")
 					.setTitle(`${entity.displayName} stats:`)
 					.setDescription(
-						`<:info:823907804200435713> <@${entity.user.id}>, ${entity.nickname == undefined
-							? "No nickname set,"
-							: `${entity.nickname}, AKA`
+						`<:info:823907804200435713> <@${entity.user.id}>, ${
+							entity.nickname == undefined
+								? "No nickname set,"
+								: `${entity.nickname}, AKA`
 						} ${entity.user.tag}.`
 					)
 					.setImage(
@@ -695,7 +727,7 @@ async function stats(message, args, prefix, isList = true) {
 					.setFooter(
 						`Account created at: ${entity.user.createdAt.toUTCString()}\nAccount joined server at: ${entity.joinedAt.toUTCString()}, ${ms(
 							entity.joinedAt.getTime() -
-							entity.guild.createdAt.getTime(),
+								entity.guild.createdAt.getTime(),
 							{ long: true }
 						)} after server creation.\nIt is ${ms(usertime, {
 							long: true,
@@ -703,50 +735,49 @@ async function stats(message, args, prefix, isList = true) {
 							long: true,
 						})} ago (it joined ${ms(
 							entity.joinedAt.getTime() -
-							entity.user.createdAt.getTime(),
+								entity.user.createdAt.getTime(),
 							{ long: true }
-						)} after account creation).\n${entity.joinedAt.getTime() -
-							entity.user.createdAt.getTime() <
+						)} after account creation).\n${
+							entity.joinedAt.getTime() -
+								entity.user.createdAt.getTime() <
 							ms("1h")
-							? `It *could* be an alt.`
-							: `It *probably* isn't alt.`
+								? `It *could* be an alt.`
+								: `It *probably* isn't alt.`
 						}`
 					)
 					.addFields(
 						{
 							name: `Boost status:`,
-							value: `<:boost:823658698412392449> ${entity.premiumSince != undefined
-								? `Boosting since ${entity.premiumSince.toUTCString()}, that's ${ms(
-									time -
-									entity.premiumSince.getTime(),
-									{ long: true }
-								)}!`
-								: `Not boosting... ***yet***.`
-								}`,
+							value: `<:boost:823658698412392449> ${
+								entity.premiumSince != undefined
+									? `Boosting since ${entity.premiumSince.toUTCString()}, that's ${ms(
+											time -
+												entity.premiumSince.getTime(),
+											{ long: true }
+									  )}!`
+									: `Not boosting... ***yet***.`
+							}`,
 						},
 						{
 							name: `Roles`,
-							value: `<:role:823658022948700240> ${rolecount != 1
-								? `${rolecount - 1
-								} roles, highest role is ${entity.roles?.highest?.name
-								} (${-entity.roles?.highest.comparePositionTo(
-									message.guild.roles.highest
-								) + 1
-								}${kifo.place(
-									-entity.roles?.highest.comparePositionTo(
-										message.guild.roles.highest
-									) + 1
-								)} out of ${serverrolecount} server roles), ${entity.roles?.hoist?.name ==
-									undefined
-									? `not hoisted`
-									: `\nhoisted as <:hoist:823907804141322311> ${entity.roles?.hoist?.name}`
-								}.`
-								: `This account has no roles yet.`
-								}`,
+							value: `<:role:823658022948700240> ${
+								rolecount != 1
+									? `${
+											rolecount - 1
+									  } roles, highest role is ${
+											entity.roles?.highest?.name
+									  } (${kifo.place(entity.guild.roles.highest?.rawPosition - entity.roles?.highest?.rawPosition + 1)} out of ${serverrolecount} server roles), ${
+											entity.roles?.hoist?.name ==
+											undefined
+												? `not hoisted`
+												: `\nhoisted as <:hoist:823907804141322311> ${entity.roles?.hoist?.name}`
+									  }.`
+									: `This account has no roles yet.`
+							}`,
 						},
 						{
 							name: `Status`,
-							value: `${statusicon} User is currently **${entity.presence.status}**.`,
+							value: `${statusicon} User is currently **${presence?.status ?? "offline"}**.`,
 						},
 						{
 							name: `IQ level: ${iqfield.name}`,
@@ -768,7 +799,7 @@ async function stats(message, args, prefix, isList = true) {
 							name: "More",
 							value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 						}
-				);
+					);
 			}
 			//BOT STATS
 			else if (whatami == "bot") {
@@ -814,7 +845,7 @@ async function stats(message, args, prefix, isList = true) {
 					fs.writeFileSync(
 						`./${time.toISOString().replace(":", "_")}_list.txt`,
 						fileContent,
-						() => { }
+						() => {}
 					);
 				}
 
@@ -822,9 +853,10 @@ async function stats(message, args, prefix, isList = true) {
 					.setColor("a039a0")
 					.setTitle(`${entity.displayName} stats:`)
 					.setDescription(
-						`BOT <:info:823907804200435713> <@${entity.user.id}>, ${entity.nickname == undefined
-							? "No nickname set,"
-							: `${entity.nickname}, AKA`
+						`BOT <:info:823907804200435713> <@${entity.user.id}>, ${
+							entity.nickname == undefined
+								? "No nickname set,"
+								: `${entity.nickname}, AKA`
 						} ${entity.user.tag}.`
 					)
 					.setImage(
@@ -846,7 +878,7 @@ async function stats(message, args, prefix, isList = true) {
 					.setFooter(
 						`Bot created at: ${entity.user.createdAt.toUTCString()}\nBot joined server at: ${entity.joinedAt.toUTCString()}, ${ms(
 							entity.joinedAt.getTime() -
-							entity.guild.createdAt.getTime(),
+								entity.guild.createdAt.getTime(),
 							{ long: true }
 						)} after server creation.\nIt is ${ms(usertime, {
 							long: true,
@@ -854,34 +886,31 @@ async function stats(message, args, prefix, isList = true) {
 							long: true,
 						})} ago (it joined ${ms(
 							entity.joinedAt.getTime() -
-							entity.user.createdAt.getTime(),
+								entity.user.createdAt.getTime(),
 							{ long: true }
 						)} after account creation).`
 					)
 					.addFields(
 						{
 							name: `Roles`,
-							value: `<:role:823658022948700240> ${rolecount != 1
-								? `${rolecount - 1
-								} roles, highest role is ${entity.roles?.highest?.name
-								} (${-entity.roles?.highest.comparePositionTo(
-									message.guild.roles.highest
-								) + 1
-								}${kifo.place(
-									-entity.roles?.highest.comparePositionTo(
-										message.guild.roles.highest
-									) + 1
-								)} out of ${serverrolecount} server roles), ${entity.roles?.hoist?.name ==
-									undefined
-									? `not hoisted`
-									: `\nhoisted as <:hoist:823907804141322311> ${entity.roles?.hoist?.name}`
-								}.`
-								: `This bot has no roles yet.`
-								}`,
+							value: `<:role:823658022948700240> ${
+								rolecount != 1
+									? `${
+											rolecount - 1
+									  } roles, highest role is ${
+											entity.roles?.highest?.name
+									  } (${kifo.place(entity.guild.roles.highest?.rawPosition - entity.roles?.highest?.rawPosition + 1)} out of ${serverrolecount} server roles), ${
+											entity.roles?.hoist?.name ==
+											undefined
+												? `not hoisted`
+												: `\nhoisted as <:hoist:823907804141322311> ${entity.roles?.hoist?.name}`
+									  }.`
+									: `This bot has no roles yet.`
+							}`,
 						},
 						{
 							name: `Status`,
-							value: `${statusicon} Bot is currently **${entity.presence.status}**.`,
+							value: `${statusicon} Bot is currently **${presence?.status ?? "offline"}**.`,
 						},
 						{
 							name: `Interesting stats:`,
@@ -907,7 +936,7 @@ async function stats(message, args, prefix, isList = true) {
 							name: "More",
 							value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 						}
-				);
+					);
 			}
 			//ROLE STATS
 			else if (whatami == "role") {
@@ -923,8 +952,9 @@ async function stats(message, args, prefix, isList = true) {
 				});
 				if (isList)
 					await entity.members.each((member) => {
-						fileContent += `${member.id}\t${member.roles.highest.rawPosition
-							}\t${member.user.username}\t${member.nickname ?? ""}\n`;
+						fileContent += `${member.id}\t${
+							member.roles.highest.rawPosition
+						}\t${member.user.username}\t${member.nickname ?? ""}\n`;
 					});
 				if (
 					Count > 1000 &&
@@ -949,7 +979,7 @@ async function stats(message, args, prefix, isList = true) {
 					fs.writeFileSync(
 						`./${time.toISOString().replace(":", "_")}_list.txt`,
 						fileContent,
-						() => { }
+						() => {}
 					);
 
 				let colour = await api.get(`http://www.thecolorapi.com/id`, {
@@ -983,22 +1013,16 @@ async function stats(message, args, prefix, isList = true) {
 					.addFields(
 						{
 							name: `Colour:`,
-							value: `${entity.hexColor}${colour.status === 200
-								? `\n${colour.data.name.value}`
-								: ``
-								}`,
+							value: `${entity.hexColor}${
+								colour.status === 200
+									? `\n${colour.data.name.value}`
+									: ``
+							}`,
 							inline: true,
 						},
 						{
 							name: `Position:`,
-							value: `${-entity.comparePositionTo(
-								message.guild.roles.highest
-							) + 1
-								}${kifo.place(
-									-entity.comparePositionTo(
-										message.guild.roles.highest
-									) + 1
-								)} out of ${serverrolecount}`,
+							value: `${kifo.place(entity.guild.roles.highest?.rawPosition - entity.rawPosition  + 1)} out of ${serverrolecount}`,
 							inline: true,
 						},
 						{
@@ -1027,15 +1051,16 @@ async function stats(message, args, prefix, isList = true) {
 						},
 						{
 							name: `Permissions:`,
-							value: `${strperms.length != 0 ? strperms : "none"
-								}`,
+							value: `${
+								strperms.length != 0 ? strperms : "none"
+							}`,
 						},
 						//{name: "Also:", value: `You can check your own stats with "stats me", or someone else's stats by ${this.usage}`},
 						{
 							name: "More",
 							value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 						}
-				);
+					);
 			}
 			//CHANNEL STATS --- NOT YET IMPLEMENTED
 			else if (whatami == "channel") {
@@ -1071,7 +1096,8 @@ async function stats(message, args, prefix, isList = true) {
 					.setColor("a039a0")
 					.setTitle(`${entity.name} stats:`)
 					.setDescription(
-						`${emote} ${type == "text" || type == "news" ? entity.topic : ""
+						`${emote} ${
+							type == "text" || type == "news" ? entity.topic : ""
 						}`
 					)
 					.setAuthor(
@@ -1086,7 +1112,7 @@ async function stats(message, args, prefix, isList = true) {
 					.setFooter(
 						`Channel created at: ${entity.createdAt.toUTCString()}, ${ms(
 							entity.createdAt.getTime() -
-							entity.guild.createdAt.getTime(),
+								entity.guild.createdAt.getTime(),
 							{ long: true }
 						)} after server creation.\nIt is ${ms(channelage, {
 							long: true,
@@ -1095,23 +1121,28 @@ async function stats(message, args, prefix, isList = true) {
 					.addFields(
 						{
 							name: `Roles`,
-							value: `<:role:823658022948700240> ${rolecount != 1
-								? `${rolecount - 1
-								} roles, highest role is ${entity.roles?.highest?.name
-								} (${-entity.roles?.highest.comparePositionTo(
-									message.guild.roles.highest
-								) + 1
-								}${kifo.place(
-									-entity.roles?.highest.comparePositionTo(
-										message.guild.roles.highest
-									) + 1
-								)} out of ${serverrolecount} server roles), ${entity.roles?.hoist?.name ==
-									undefined
-									? `not hoisted`
-									: `\nhoisted as <:hoist:823907804141322311> ${entity.roles?.hoist?.name}`
-								}.`
-								: `This bot has no roles yet.`
-								}`,
+							value: `<:role:823658022948700240> ${
+								rolecount != 1
+									? `${
+											rolecount - 1
+									  } roles, highest role is ${
+											entity.roles?.highest?.name
+									  } (${
+											-entity.roles?.highest.comparePositionTo(
+												message.guild.roles.highest
+											) + 1
+									  }${kifo.place(
+											-entity.roles?.highest.comparePositionTo(
+												message.guild.roles.highest
+											) + 1
+									  )} out of ${serverrolecount} server roles), ${
+											entity.roles?.hoist?.name ==
+											undefined
+												? `not hoisted`
+												: `\nhoisted as <:hoist:823907804141322311> ${entity.roles?.hoist?.name}`
+									  }.`
+									: `This bot has no roles yet.`
+							}`,
 						},
 						{
 							name: `Status`,
@@ -1145,7 +1176,13 @@ async function stats(message, args, prefix, isList = true) {
 			}
 			//MESSAGE STATS
 			else if (whatami == "message") {
-				return message.reply({embeds: [kifo.embed("Because of newest Discord API features, this command is broke. There will be a replacement `/` command soon™.")]})
+				return message.reply({
+					embeds: [
+						kifo.embed(
+							"Because of newest Discord API features, this command is broke. There will be a replacement `/` command soon™."
+						),
+					],
+				});
 				//F for message stats
 				await entity.fetch().then((msg) => (entity = msg));
 				let topReaction = await entity.reactions.cache
@@ -1171,14 +1208,17 @@ async function stats(message, args, prefix, isList = true) {
 						fileContent += entity.embeds
 							.map(
 								(eb) =>
-									`**Embed message (human-readable):**\n\nDescription:\n${eb.description
+									`**Embed message (human-readable):**\n\nDescription:\n${
+										eb.description
 									}\n\nFields:\n\n${eb.fields
 										.map(
 											(field) =>
 												`${field.name}\n${field.value}\n`
 										)
-										.join("\n")}\n\nFooter: ${eb.footer?.text
-									}\n\nColor: ${eb.hexColor}\n\nLength: ${eb.length
+										.join("\n")}\n\nFooter: ${
+										eb.footer?.text
+									}\n\nColor: ${eb.hexColor}\n\nLength: ${
+										eb.length
 									}\n\n**JSON (code-readable, programmer-readable)**:\n${JSON.stringify(
 										eb.toJSON(),
 										null,
@@ -1190,7 +1230,7 @@ async function stats(message, args, prefix, isList = true) {
 					fs.writeFileSync(
 						`./${time.toISOString().replace(":", "_")}_list.txt`,
 						fileContent,
-						() => { }
+						() => {}
 					);
 				}
 				newEmbed
@@ -1210,7 +1250,7 @@ async function stats(message, args, prefix, isList = true) {
 					.setFooter(
 						`Message sent at: ${entity.createdAt.toUTCString()}\n ${ms(
 							entity.createdAt.getTime() -
-							entity.guild.createdAt.getTime(),
+								entity.guild.createdAt.getTime(),
 							{ long: true }
 						)} after server creation.`
 					)
@@ -1236,20 +1276,22 @@ async function stats(message, args, prefix, isList = true) {
 						},
 						{
 							name: `Flags:`,
-							value: `${entity.flags.toArray.length > 0
-								? entity.flags.toArray.join(", ")
-								: "no flags."
-								}`,
+							value: `${
+								entity.flags.toArray.length > 0
+									? entity.flags.toArray.join(", ")
+									: "no flags."
+							}`,
 							inline: true,
 						},
 						{
 							name: `Attachments:`,
-							value: `${attachments.length > 0
-								? attachments
-									.map((x) => `[${x.name}](${x.url})`)
-									.join("\n")
-								: "no attachments."
-								}`,
+							value: `${
+								attachments.length > 0
+									? attachments
+											.map((x) => `[${x.name}](${x.url})`)
+											.join("\n")
+									: "no attachments."
+							}`,
 							inline: false,
 						},
 						{
@@ -1284,7 +1326,7 @@ async function stats(message, args, prefix, isList = true) {
 							name: "More",
 							value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 						}
-				);
+					);
 			}
 		}
 	}
@@ -1301,7 +1343,14 @@ async function stats(message, args, prefix, isList = true) {
 		});
 	if (isList) {
 		try {
-			fs.unlink(`./${time.toISOString().replace(":", "_")}_list.txt`, (err) => { main.log(err)})
-		} catch (err) {main.log(err) }
+			fs.unlink(
+				`./${time.toISOString().replace(":", "_")}_list.txt`,
+				(err) => {
+					main.log(err);
+				}
+			);
+		} catch (err) {
+			main.log(err);
+		}
 	}
 }

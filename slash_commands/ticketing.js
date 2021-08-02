@@ -432,7 +432,6 @@ And most important one: __**Don't forget to thank the person for answering!**__ 
 						}
 					})
 					.catch((err) => {
-						main.log(err);
 						let newEmbed = kifo.embed("Command safely canceled.");
 						itr.editReply({
 							embeds: [newEmbed],

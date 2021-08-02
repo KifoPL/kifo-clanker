@@ -676,7 +676,6 @@ async function commands(message, prefix) {
 						msg.edit({ components: [] });
 					})
 					.catch((err) => {
-						main.log(err);
 						msg.edit({ components: [] });
 					})
 			);

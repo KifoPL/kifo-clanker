@@ -21,9 +21,11 @@ fail, run !kifo](https://i.imgur.com/hWkoxmm.jpg)
 
 **!** If you find any bugs (or have an awesome idea), please notify me on Discord: @KifoPL#3358 `<@289119054130839552>`, or submit a [ticket](https://github.com/KifoPL/kifo-clanker/issues/new/choose).
 
-## [List of Commands](/commandList.md)
+## Useful Lists
+- **[List of Commands](./commandList)**
+- **[List of Guides](./guideList)**
 
-> The list is always up-to-date with the latest release.
+> The lists are always up-to-date with the latest release.
 
 # Showcase:
 

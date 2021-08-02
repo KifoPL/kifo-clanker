@@ -6,6 +6,6 @@
 
 ### [How to use `/ticketing` and how to set up channel permissions?](./guides/ticketing)
 
-<hr/>*Last update: Sun, 01 Aug 2021 17:43:11 GMT.*
+<hr/>*Last update: Mon, 02 Aug 2021 14:48:13 GMT.*
 
 ~by [KifoPL](https://bio.link/KifoPL)

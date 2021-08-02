@@ -87,7 +87,7 @@ module.exports = {
 							`You do not have required permissions to run this command.\nRequired perms: \`MANAGE_CHANNELS\` and \`MANAGE_ROLES\`.\nYou have: ${message.member
 								.permissionsIn(message.channel)
 								.toArray()
-								.join(", ")}.`,
+								.join(",\n")}.`,
 							"Missing permissions!"
 						)
 					]
@@ -99,7 +99,7 @@ module.exports = {
 							`I do not have required permissions to run this command.\nI need \`MANAGE_CHANNELS\` and \`MANAGE_ROLES\`.\nI have: ${message.guild?.me
 								.permissionsIn(message.channel)
 								.toArray()
-								.join(", ")}.`,
+								.join(",\n")}.`,
 							"Missing permissions!"
 						)
 					]
@@ -186,13 +186,13 @@ module.exports = {
 							if (permOver.allow.toArray().length > 0) {
 								newEmbed.addField(
 									"Allowed:",
-									`${permOver.allow.toArray().join(", ")}.`
+									`${permOver.allow.toArray().join(",\n")}.`
 								);
 							}
 							if (permOver.deny.toArray().length > 0) {
 								newEmbed.addField(
 									"Denied:",
-									`${permOver.deny.toArray().join(", ")}.`
+									`${permOver.deny.toArray().join(",\n")}.`
 								);
 							}
 						});
