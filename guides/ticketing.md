@@ -18,7 +18,7 @@ Your channel should have these permissions:
 - `@everyone` (or the role that will be able to use `/ticket`):
 	- `ALLOW`: `VIEW_CHANNEL`, `USE_SLASH_COMMANDS`, `USE_PUBLIC_THREADS` or `USE_PRIVATE_THREADS` (see note below).
 - `Moderators` and `Kifo Clanker`:
-	- `ALLOW`: `SEND_MESSAGES`, `MANAGE_CHANNELS`, `MANAGE_THREADS`, `USE_SLASH_COMMANDS`.
+	- `ALLOW`: `SEND_MESSAGES`, `MANAGE_CHANNELS`, `MANAGE_THREADS`, `MANAGE_MESSAGES`, `USE_SLASH_COMMANDS`.
 
 **NOTE**: If you want to set `Public` visibility, users will need `USE_PUBLIC_THREADS`. For `Private` it's `USE_PRIVATE_THREADS`.
 

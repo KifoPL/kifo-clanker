@@ -14,6 +14,7 @@ module.exports = {
 				{ name: "Slash commands", value: "slash" },
 				{ name: "Using /ticket", value: "ticket" },
 				{ name: "Ticketing system", value: "ticketing" },
+				{ name: "Auto-threading system", value: "autothreading" },
 			],
 		},
 	],

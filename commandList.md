@@ -93,8 +93,7 @@ If the bot doesn't see some channels, lists ~~may~~ will be incorrect.
 	- `list` - lists all users in the server
 	- `list <user>` - lists roles of specified user.
 	- `list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.
-	- `list <channel/"here"> <role> <optional_role2> <optional_role_n> - lists users with specified roles in specified channel.
-	- `list <message_id>` - pastes raw message content *(with formatting, works with embeds and all types of messages)*.
+	- `list <channel/"here"> <role> <optional_role2> <optional_role_n>` - lists users with specified roles in specified channel.
 - Required user permissions: `SEND_MESSAGES`, `MANAGE_GUILD`
 
 ### menu
@@ -195,6 +194,17 @@ This command allows you to create a simple todo notes.
 - Required user permissions: `SEND_MESSAGES`
 
 # List of slash commands (used with `/`):
+### autothreading
+Set up auto threading system in a channel.
+- Options:
+	- `on` - Turn on auto-threading system.
+		- `title` - Choose the title for every thread (use /autothreading help for more info)
+		- `archiving` - After what time of inactivity should threads be archived?
+		- `bots` - True if you want threads to be created on bot messages as well, false otherwise.
+		- `slowmode` - What should be the default slow-mode for threads?
+	- `off` - Turn off auto-threading system.
+	- `list` - List all channels with auto-threading system enabled.
+	- `help` - Send a link with very detailed information regarding auto-threading system.
 ### guide
 Receive link for command list, or guide regarding speficic topic.
 - Options:
@@ -226,7 +236,12 @@ test out if the `/` commands work properly.
 Manage threads in this channel.
 - Options:
 	- `archive` - Bulk archive oldest threads in this channel.
+		- `count` - How many oldest threads would you like to archive?
+		- `silent` - Do you want the output to be visible only by you? Defaults to false.
 	- `delete` - Bulk delete specified threads in this channel.
+		- `count` - How many oldest threads would you like to archive?
+		- `which` - Should I delete archived, or active threads?
+		- `silent` - Do you want the output to be visible only by you? Defaults to false.
 ### ticket
 Create a ticket
 - Options:
@@ -236,10 +251,13 @@ Create a ticket
 Set up ticketing system in a channel.
 - Options:
 	- `on` - Turn on ticketing system.
+		- `visibility` - Should tickets be public, allowing everyone to answer questions, or private?
+		- `archiving` - After what time of inactivity should threads be archived?
+		- `slowmode` - What should be the default slow-mode for tickets?
 	- `off` - Turn off ticketing system.
 	- `list` - List all channels with ticketing system enabled.
 	- `help` - Send a link with very detailed information regarding ticketing system.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Mon, 02 Aug 2021 14:48:13 GMT*
+> - *Last update: Tue, 03 Aug 2021 12:11:54 GMT*

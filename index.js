@@ -65,8 +65,21 @@ const menus = new Map();
 }
  */
 const ticketings = new Map();
+/**
+ * @example
+ * autothreading = {
+ * GuildId: "",
+ * ChannelId: "",
+	DefaultArchive: "3h" || "1d" || "3d" || "1w",
+	DefaultSlowmode: "10s" || "1m" || "...",
+	Title: "some string with optional parameters in brackets like [member]",
+	BotAuto: True || False,
+ }
+ */
+const autothreadings = new Map();
 module.exports.menus = menus;
 module.exports.ticketings = ticketings;
+module.exports.autothreadings = autothreadings;
 // var reactMap = new Map();
 // var superslowMap = new Map();
 var dbconfig = {
@@ -449,6 +462,81 @@ async function superslow(message, prefix) {
 			}
 		}
 	);
+}
+//IF CORRECT CHANNEL, TICKET CHECK
+async function ticketing(message) {
+	if (ticketings.has(message.channel.id)) {
+		if (message.author.id !== message.client.user.id)
+			if (
+				!message.member
+					.permissionsIn(message.channel)
+					.has(Discord.Permissions.FLAGS.MANAGE_CHANNELS) &&
+				message.interaction?.type !== "APPLICATION_COMMAND"
+			) {
+				let actionRow = new Discord.MessageActionRow().addComponents(
+					new Discord.MessageButton()
+						.setStyle("LINK")
+						.setLabel("Guide")
+						.setURL(
+							"https://kifopl.github.io/kifo-clanker/guides/ticket"
+						)
+				);
+				message.author
+					.send({
+						embeds: [
+							kifo.embed(
+								"Hey, you're trying to send a message in a channel with **ticketing system**.\n> If you have a question/problem, please use `/ticket` command, to create a ticket.\n\n> If you're still confused, there is a detailed guide available, just click the button below."
+							),
+						],
+						components: [actionRow],
+					})
+					.catch(() => {});
+				message.delete().catch(() => {});
+				return "deleted";
+			}
+	}
+}
+async function autothreading(message) {
+	if (message.guild == null) return;
+	if (autothreadings.has(message.channel.id)) {
+		let at = autothreadings.get(message.channel.id);
+		if (at.GuildId == message.guild.id) {
+			if (message.author.bot && !at.BotAuto) return;
+			if (message.components.length > 0) return;
+			let title = at.Title;
+			title = title
+				.replace("[member]", () => message.member.displayName)
+				.replace("[channel]", () =>
+					message.channel.name.replace("-", () => " ")
+				)
+				.replace("[server]", () => message.guild.name);
+			if (title.length > 100) title = title.slice(0, 97) + "...";
+			message
+				.startThread({
+					name: title,
+					autoArchiveDuration: at.DefaultArchive / 1000 / 60,
+					reason: "auto-threading enabled",
+				})
+				.then((th) => {
+					if (at.DefaultSlowmode != null)
+						th.setRateLimitPerUser(at.DefaultSlowmode / 1000).catch(
+							() => {}
+						);
+				})
+				.catch((err) => {
+					message
+						.reply({
+							embeds: [
+								kifo.embed(
+									"Unable to create thread channel! Error:\n" +
+										err
+								),
+							],
+						})
+						.catch(() => {});
+				});
+		}
+	}
 }
 //various checks if we can proceed with commands
 function checks(message, prefix) {
@@ -1156,40 +1244,15 @@ async function commands(message, prefix) {
 }
 async function onmessage(message) {
 	const prefix = await main.prefix(message.guild?.id);
-	if (ticketings.has(message.channel.id)) {
-		if (message.author.id !== message.client.user.id)
-			if (
-				!message.member
-					.permissionsIn(message.channel)
-					.has(Discord.Permissions.FLAGS.MANAGE_CHANNELS) &&
-				message.interaction?.type !== "APPLICATION_COMMAND"
-			) {
-				let actionRow = new Discord.MessageActionRow().addComponents(
-					new Discord.MessageButton()
-						.setStyle("LINK")
-						.setLabel("Guide")
-						.setURL(
-							"https://kifopl.github.io/kifo-clanker/guides/ticket"
-						)
-				);
-				message.author
-					.send({
-						embeds: [
-							kifo.embed(
-								"Hey, you're trying to send a message in a channel with **ticketing system**.\n> If you have a question/problem, please use `/ticket` command, to create a ticket.\n\n> If you're still confused, there is a detailed guide available, just click the button below."
-							),
-						],
-						components: [actionRow],
-					})
-					.catch(() => {});
-				message.delete().catch(() => {});
-				return;
-			}
-	}
+	let t = await ticketing(message);
+	if (t === "deleted") return;
+	if (message.deleted) return;
 	react(message, prefix).catch(() => {});
 	await superslow(message, prefix).catch(() => {});
 
 	if (message.deleted) return;
+
+	autothreading(message);
 
 	if (
 		message.content === `<@!${client.user.id}>` ||
@@ -1276,7 +1339,20 @@ function setCommandList() {
 		cmdListMD += `- Options:\n`;
 		if (command.options != undefined) {
 			cmdListMD += `\t- ${command?.options
-				.map((x) => `\`${x.name}\` - ${x.description}`)
+				.map((x) => {
+					if (x.type == "SUB_COMMAND") {
+						return `\`${x.name}\` - ${x.description}${
+							x.options != undefined
+								? `\n\t\t- ${x.options
+										.map(
+											(o) =>
+												`\`${o.name}\` - ${o.description}`
+										)
+										.join("\n\t\t- ")}`
+								: ""
+						}`;
+					} else return `\`${x.name}\` - ${x.description}`;
+				})
 				.join("\n\t- ")}\n`;
 		}
 	}
@@ -1395,6 +1471,26 @@ client.once("ready", () => {
 				});
 			}
 			console.log(`Loaded ${result.length} ticketings!`);
+		}
+	);
+	con.query(
+		"SELECT Id, GuildId, ChannelId, DefaultArchive, DefaultSlowmode, BotAuto, Title FROM autothreading",
+		[],
+		function (err, result) {
+			if (err) throw err;
+			if (result.length > 0) {
+				result.forEach((row) => {
+					autothreadings.set(row.ChannelId, {
+						ChannelId: row.ChannelId,
+						GuildId: row.GuildId,
+						DefaultArchive: row.DefaultArchive,
+						DefaultSlowmode: row.DefaultSlowmode,
+						Title: row.Title,
+						BotAuto: row.BotAuto,
+					});
+				});
+				console.log(`Loaded ${result.length} auto-threadings!`);
+			}
 		}
 	);
 });
