@@ -198,6 +198,20 @@ module.exports = {
 					ephemeral: true,
 				});
 
+			if (
+				!itr.guild?.me
+					.permissionsIn(itr.channel)
+					.has(Permissions.FLAGS.MANAGE_MESSAGES)
+			)
+				return itr.reply({
+					embeds: [
+						kifo.embed(
+							"I don't have `MANAGE_MESSAGES` permission!"
+						),
+					],
+					ephemeral: true,
+				});
+
 			if (tier == "NONE") {
 				if (archiving == "3d" || archiving == "1w")
 					return itr.reply({
