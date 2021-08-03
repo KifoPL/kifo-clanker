@@ -205,6 +205,11 @@ Set up auto threading system in a channel.
 	- `off` - Turn off auto-threading system.
 	- `list` - List all channels with auto-threading system enabled.
 	- `help` - Send a link with very detailed information regarding auto-threading system.
+### bookmark
+Sends a copy of the message in DM (with attachments).
+- Options:
+	- `message` - ID or URL of the message.
+	- `pin` - Whether the message should be pinned. False by default.
 ### guide
 Receive link for command list, or guide regarding speficic topic.
 - Options:
@@ -260,4 +265,4 @@ Set up ticketing system in a channel.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Tue, 03 Aug 2021 12:11:54 GMT*
+> - *Last update: Tue, 03 Aug 2021 15:52:13 GMT*

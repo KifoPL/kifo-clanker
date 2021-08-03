@@ -2119,13 +2119,13 @@ client.on("messageReactionAdd", async (msgReaction, user) => {
 	if (user.partial) {
 		await user.fetch().catch(() => {});
 	}
-	if (
-		msg.channel.type == "DM" &&
-		msg.author.bot &&
-		!msgReaction.me &&
-		msg.embeds[0]?.author?.name == `TODO`
-	) {
-		msg.delete().catch(() => {});
+	if (msg.channel.type == "DM" && msg.author.bot) {
+		if (!msgReaction.me) {
+			if (msg.embeds[0]?.author?.name == `TODO`) {
+				msg.delete().catch(() => {});
+			}
+			if (msgReaction.emoji.id === "857976926542757910") msg.delete().catch(() => {});
+		}
 	} else if (menus.has(msg.id) && !user.bot) {
 		let menu = menus.get(msg.id);
 		if (menu.isPerm) {
