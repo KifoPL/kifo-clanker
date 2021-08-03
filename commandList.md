@@ -93,8 +93,7 @@ If the bot doesn't see some channels, lists ~~may~~ will be incorrect.
 	- `list` - lists all users in the server
 	- `list <user>` - lists roles of specified user.
 	- `list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.
-	- `list <channel/"here"> <role> <optional_role2> <optional_role_n> - lists users with specified roles in specified channel.
-	- `list <message_id>` - pastes raw message content *(with formatting, works with embeds and all types of messages)*.
+	- `list <channel/"here"> <role> <optional_role2> <optional_role_n>` - lists users with specified roles in specified channel.
 - Required user permissions: `SEND_MESSAGES`, `MANAGE_GUILD`
 
 ### menu
@@ -261,4 +260,4 @@ Set up ticketing system in a channel.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Tue, 03 Aug 2021 11:21:07 GMT*
+> - *Last update: Tue, 03 Aug 2021 12:11:54 GMT*
