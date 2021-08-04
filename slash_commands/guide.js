@@ -1,5 +1,6 @@
 const kifo = require("kifo");
 const Discord = require("discord.js");
+const main = require("../index.js")
 
 module.exports = {
 	name: "guide",
