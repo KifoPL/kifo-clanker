@@ -69,10 +69,9 @@ async function execute(itr) {
 	Promise.all(promises).then(() => {
 		let copyEmbed = kifo.embed(
 			`${msg.content ?? "No content."}`,
-			"BOOKMARK"
+			`BOOKMARK - ${msg.channel.name.replace("-", () => " ")}, ${msg.guild.name}`
 		);
 		copyEmbed
-			.setTitle("BOOKMARK")
 			.setAuthor(
 				`${msg.author.tag}, Id: ${msg.member.id}`,
 				msg.author.avatarURL({ dynamic: true })
@@ -95,6 +94,13 @@ async function execute(itr) {
 					ephemeral: true,
 				});
 			})
-			.catch(() => {});
+			.catch(() => {})
+			.finally(() => {
+				attPaths.forEach((attPath) => {
+					fs.unlink(attPath, (err) => {
+						if (err) main.log(err);
+					});
+				});
+			});
 	});
 }

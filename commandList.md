@@ -265,4 +265,4 @@ Set up ticketing system in a channel.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Tue, 03 Aug 2021 15:52:13 GMT*
+> - *Last update: Wed, 04 Aug 2021 08:15:22 GMT*

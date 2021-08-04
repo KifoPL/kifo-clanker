@@ -2120,7 +2120,7 @@ client.on("messageReactionAdd", async (msgReaction, user) => {
 		await user.fetch().catch(() => {});
 	}
 	if (msg.channel.type == "DM" && msg.author.bot) {
-		if (!msgReaction.me) {
+		if (user.id !== client.user.id) {
 			if (msg.embeds[0]?.author?.name == `TODO`) {
 				msg.delete().catch(() => {});
 			}
