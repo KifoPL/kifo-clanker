@@ -1341,7 +1341,7 @@ function setCommandList() {
 	}
 	const cmdMapSorted = new Map([...cmdMap.entries()].sort());
 	cmdMapSorted.forEach((val, key) => {
-		cmdListMD += `## ${key}\n`;
+		cmdListMD += `## ${key}\n\n`;
 		val.forEach((command) => {
 			cmdListMD += `### ${command?.name}\n`;
 			cmdListMD += `${command?.description}\n`;
@@ -1369,7 +1369,7 @@ function setCommandList() {
 								!x.required ? " *(optional)*" : ""
 							} - ${x.description}`;
 					})
-					.join("\n\t- ")}\n`;
+					.join("\n\t- ")}\n\n`;
 			}
 		});
 	});

@@ -130,53 +130,67 @@ This command allows you to create a simple todo notes.
 
 # List of slash commands (used with `/`):
 ## DEBUG
+
 ### error
 Creates an issue on GitHub and pings KifoPL. Do not spam this command.
 - Options:
 	- `description` - Provide a brief description of how and when this error occurred.
+
 ### ping
 ...pong?
 - Options:
 	- `reply` *(optional)* - What do you want me to reply with?
+
 ### test
 test out if the `/` commands work properly.
 - Options:
 	- `input` *(optional)* - The text to return.
+
 ## FUN
+
 ### cringe
 Express your feelings to another discord user with this beautiful poem.
 - Options:
 	- `user` *(optional)* - direct your feelings towards the user.
+
 ### howgay
 A quick test to find out your gayness level.
 - Options:
 	- `user` *(optional)* - A subject of measurement.
+
 ### iq
 A very quick and accurate IQ test.
 - Options:
 	- `user` *(optional)* - A subject of measurement.
+
 ### pp
 Measure your PP length with this totally reliable pp length calculator.
 - Options:
 	- `user` *(optional)* - A subject of measurement.
+
 ### reverse
 This command reverses anything you type.
 - Options:
-	- `text` *(optional)* - The text to reverse
+	- `text` - The text to reverse
 	- `silent` *(optional)* - Whether to show the result to only you, or everyone. False by default.
+
 ### stfu
 This is an eloquent way to say "Thank you for this conversation we've had".
 - Options:
 	- `user` *(optional)* - Ask someone to lower their voice to the sub-audible level in an elegant manner.
+
 ### urmum
 Random *yo momma* joke.
 - Options:
 ## HELP
+
 ### guide
 Receive link for command list, or guide regarding speficic topic.
 - Options:
 	- `choice` *(optional)* - Select topic, which you want to learn about.
+
 ## MANAGEMENT
+
 ### autothreading
 Set up auto threading system in a channel.
 - Options:
@@ -188,6 +202,7 @@ Set up auto threading system in a channel.
 	- `off` - Turn off auto-threading system.
 	- `list` - List all channels with auto-threading system enabled.
 	- `help` - Send a link with very detailed information regarding auto-threading system.
+
 ### threads
 Manage threads in this channel.
 - Options:
@@ -198,6 +213,7 @@ Manage threads in this channel.
 		- `count` - How many oldest threads would you like to archive?
 		- `which` - Should I delete archived, or active threads?
 		- `silent` *(optional)* - Do you want the output to be visible only by you? Defaults to false.
+
 ### ticketing
 Set up ticketing system in a channel.
 - Options:
@@ -208,12 +224,15 @@ Set up ticketing system in a channel.
 	- `off` - Turn off ticketing system.
 	- `list` - List all channels with ticketing system enabled.
 	- `help` - Send a link with very detailed information regarding ticketing system.
+
 ## UTILITY
+
 ### bookmark
 Sends a copy of the message in DM (with attachments).
 - Options:
 	- `message` - ID or URL of the message.
 	- `pin` *(optional)* - Whether the message should be pinned. False by default.
+
 ### poll
 Create a poll.
 - Options:
@@ -229,12 +248,14 @@ Create a poll.
 	- `eight` *(optional)* - Option 8
 	- `nine` *(optional)* - Option 9
 	- `ten` *(optional)* - Option 10
+
 ### ticket
 Create a ticket
 - Options:
 	- `title` - The problem, or question you have.
 	- `description` *(optional)* - Provide any additional information about your question/problem
+
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Wed, 04 Aug 2021 20:32:23 GMT*
+> - *Last update: Thu, 05 Aug 2021 11:54:24 GMT*

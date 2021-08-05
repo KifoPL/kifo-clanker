@@ -300,7 +300,6 @@ module.exports = {
 				else message.channel.send({embeds: [newEmbed]})
 				ii++;
 			}
-			//message.channel.sendTyping().catch();
 		}
 		message.delete().catch(() => {});
 		if (loops < args[0])

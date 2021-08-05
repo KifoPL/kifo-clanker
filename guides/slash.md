@@ -5,6 +5,9 @@ You can learn everything the bot does and easily find new features as they're ad
 Thanks to the features above, **there is no need for `/help` command** - simply type `/` and click `Kifo Clanker` icon to see all available commands! Each command and command argument has a description below its name.
 > Since some commands have an advanced / confusing usage, I created `/guide` command, which links you different guides for very detailed help.
 
+## List of `/` commands
+The complete and auto-updated list of command can be found [here](https://kifopl.github.io/kifo-clanker/commandList#list-of-slash-commands-used-with-)
+
 ## Using `/` commands on `PC`
 After typing `/`, you will see a menu with available command list, as well as a list of bots on the left (represented by their icons). Some bots may have the the same command name, so pay attention to the icons.<br/>
 After clicking the chosen command (or pressing `Tab`), if required, type or choose the argument **(you can't skip required arguments)**. To proceed to the next argument, press `Tab`. Optional arguments are listed after `Optional` text.<br/>

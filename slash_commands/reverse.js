@@ -3,7 +3,12 @@ module.exports = {
 	name: "reverse",
 	description: "This command reverses anything you type.",
 	options: [
-		{ name: "text", type: "STRING", description: "The text to reverse" },
+		{
+			name: "text",
+			type: "STRING",
+			description: "The text to reverse",
+			required: true,
+		},
 		{
 			name: "silent",
 			type: "BOOLEAN",
@@ -17,8 +22,9 @@ module.exports = {
 	perms: ["USE_SLASH_COMMANDS"],
 	execute(itr) {
 		const kifo = require("kifo");
-		const text = itr.options.data.find(o => o.name === "text").value;
-		const silent = itr.options.data.find(o => o.name === "silent")?.value ?? false;
+		const text = itr.options.data.find((o) => o.name === "text").value;
+		const silent =
+			itr.options.data.find((o) => o.name === "silent")?.value ?? false;
 
 		const embedreply = new Discord.MessageEmbed();
 		embedreply
@@ -29,9 +35,7 @@ module.exports = {
 				`https://discord.gg/HxUFQCxPFp`
 			)
 			.setTitle(
-				`Command "${this.name.toUpperCase()}" issued by ${
-					itr.user.tag
-				}`
+				`Command "${this.name.toUpperCase()}" issued by ${itr.user.tag}`
 			);
 		var output = text.split("").reverse().join("");
 		embedreply.setDescription(output);
