@@ -18,7 +18,9 @@ module.exports = {
 				"Provide any additional information about your question/problem",
 		},
 	],
+	category: "UTILITY",
 	defaultPermission: true,
+	guildonly: true,
 	perms: ["USE_SLASH_COMMANDS"],
 
 	//itr = interaction

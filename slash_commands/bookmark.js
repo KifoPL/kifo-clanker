@@ -21,6 +21,8 @@ module.exports = {
 		},
 	],
 	defaultPermission: true,
+	guildonly: true,
+	category: "UTILITY",
 	perms: ["USE_SLASH_COMMANDS"],
 
 	//itr = interaction
@@ -57,6 +59,14 @@ async function execute(itr) {
 	let msgResolvable = options.find((o) => o.name === "message").value;
 	if (msgResolvable.match(kifo.urlRegex())) {
 		msgResolvable = msgResolvable.split("/").pop();
+		if (!msgResolvable.match(/\d{16,22}/gm)) {
+			return itr.editReply({
+				embeds: [
+					kifo.embed("Please use **message link** or **message Id**!"),
+				],
+				ephemeral: true,
+			});
+		}
 	}
 	let pin = options.find((o) => o.name === "pin")?.value ?? false;
 	let msg = await itr.channel.messages.fetch(msgResolvable);
@@ -68,8 +78,10 @@ async function execute(itr) {
 	urlArr.forEach((row) => promises.push(downloadAttachment(row)));
 	Promise.all(promises).then(() => {
 		let copyEmbed = kifo.embed(
-			`${msg.content ?? "No content."}`,
-			`BOOKMARK - ${msg.channel.name.replace("-", () => " ")}, ${msg.guild.name}`
+			``,
+			`BOOKMARK - ${msg.channel.name.replace("-", () => " ")}, ${
+				msg.guild.name
+			}`
 		);
 		copyEmbed
 			.setAuthor(
@@ -77,6 +89,7 @@ async function execute(itr) {
 				msg.author.avatarURL({ dynamic: true })
 			)
 			.setURL(msg.url)
+			.addField("Message content:", `${msg.content ?? "*No content.*"}`)
 			.addField(
 				"Don't need this anymore?",
 				"React with <:RedX:857976926542757910> to delete this bookmark."

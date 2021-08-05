@@ -86,6 +86,8 @@ module.exports = {
 		},
 	],
 	defaultPermission: true,
+	guildonly: true,
+	category: "MANAGEMENT",
 	perms: ["USE_SLASH_COMMANDS", "MANAGE_CHANNELS", "MANAGE_THREADS"],
 
 	//itr = interaction

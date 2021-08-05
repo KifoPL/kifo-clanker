@@ -8,6 +8,8 @@
 
 ### [How to use `/ticketing` and how to set up channel permissions?](./guides/ticketing)
 
-<hr/>*Last update: Wed, 04 Aug 2021 08:15:22 GMT.*
+<hr/>
+
+*Last update: Wed, 04 Aug 2021 20:32:23 GMT.*
 
 ~by [KifoPL](https://bio.link/KifoPL)

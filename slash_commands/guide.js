@@ -19,7 +19,9 @@ module.exports = {
 			],
 		},
 	],
+	category: "HELP",
 	defaultPermission: true,
+	guildonly: false,
 	perms: ["USE_SLASH_COMMANDS"],
 
 	//itr = interaction

@@ -7,6 +7,7 @@ const timer = (ms) => new Promise((res) => setTimeout(res, ms));
 module.exports = {
 	name: "autothreading",
 	description: "Set up auto threading system in a channel.",
+	category: "MANAGEMENT",
 	options: [
 		{
 			name: "on",
@@ -83,6 +84,7 @@ module.exports = {
 		},
 	],
 	defaultPermission: true,
+	guildonly: true,
 	perms: ["USE_SLASH_COMMANDS", "MANAGE_CHANNELS", "MANAGE_THREADS"],
 
 	//itr = interaction
