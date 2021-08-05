@@ -12,6 +12,8 @@ module.exports = {
 		},
 	],
 	defaultPermission: true,
+	guildonly: false,
+	category: "DEBUG",
 	perms: ["USE_SLASH_COMMANDS"],
 
 	//itr = interaction

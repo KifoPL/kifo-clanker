@@ -1256,7 +1256,7 @@ async function onmessage(message) {
 
 	if (
 		message.content === `<@!${client.user.id}>` ||
-		message.content === `<@${client.user.id}>`
+		(message.content === `<@${client.user.id}>` && !message.author.bot)
 	) {
 		return message
 			.reply({
@@ -1332,30 +1332,47 @@ function setCommandList() {
 		}
 	}
 	cmdListMD += `# List of slash commands (used with \`/\`):\n`;
+	let cmdMap = new Map();
 	for (const cmd of cmdFiles) {
 		const command = require(`./slash_commands/${cmd}`);
-		cmdListMD += `### ${command?.name}\n`;
-		cmdListMD += `${command?.description}\n`;
-		cmdListMD += `- Options:\n`;
-		if (command.options != undefined) {
-			cmdListMD += `\t- ${command?.options
-				.map((x) => {
-					if (x.type == "SUB_COMMAND") {
-						return `\`${x.name}\` - ${x.description}${
-							x.options != undefined
-								? `\n\t\t- ${x.options
-										.map(
-											(o) =>
-												`\`${o.name}\` - ${o.description}`
-										)
-										.join("\n\t\t- ")}`
-								: ""
-						}`;
-					} else return `\`${x.name}\` - ${x.description}`;
-				})
-				.join("\n\t- ")}\n`;
-		}
+		if (cmdMap.has(command.category)) {
+			cmdMap.get(command.category).push(command);
+		} else cmdMap.set(command.category, [command]);
 	}
+	const cmdMapSorted = new Map([...cmdMap.entries()].sort());
+	cmdMapSorted.forEach((val, key) => {
+		cmdListMD += `## ${key}\n\n`;
+		val.forEach((command) => {
+			cmdListMD += `### ${command?.name}\n`;
+			cmdListMD += `${command?.description}\n`;
+			cmdListMD += `- Options:\n`;
+			if (command.options != undefined) {
+				cmdListMD += `\t- ${command?.options
+					.map((x) => {
+						if (x.type == "SUB_COMMAND") {
+							return `\`${x.name}\` - ${x.description}${
+								x.options != undefined
+									? `\n\t\t- ${x.options
+											.map(
+												(o) =>
+													`\`${o.name}\`${
+														!o.required
+															? " *(optional)*"
+															: ""
+													} - ${o.description}`
+											)
+											.join("\n\t\t- ")}`
+									: ""
+							}`;
+						} else
+							return `\`${x.name}\`${
+								!x.required ? " *(optional)*" : ""
+							} - ${x.description}`;
+					})
+					.join("\n\t- ")}\n\n`;
+			}
+		});
+	});
 	let now = new Date(Date.now());
 	cmdListJSON = cmdListJSON.slice(0, cmdListJSON.length - 2);
 	cmdListJSON += `\n}`;
@@ -1377,7 +1394,7 @@ function setGuideList() {
 	let guideList = "# List of available guides:\n\n";
 	const guides = fs
 		.readdirSync(`./guides`)
-		.filter((file) => file.endsWith(".md"));
+		.filter((guide) => guide.endsWith(".md"));
 	guides.forEach((guide) => {
 		const data = fs
 			.readFileSync(`./guides/${guide}`, { encoding: `utf8`, flag: `r` })
@@ -1389,7 +1406,7 @@ function setGuideList() {
 			-3
 		)})\n\n`;
 	});
-	guideList += `<hr/>*Last update: ${now.toUTCString()}.*\n`;
+	guideList += `<hr/>\n\n*Last update: ${now.toUTCString()}.*\n`;
 	guideList += "\n~by [KifoPL](https://bio.link/KifoPL)";
 
 	fs.writeFile(`guideList.md`, guideList, () => {
@@ -2124,7 +2141,8 @@ client.on("messageReactionAdd", async (msgReaction, user) => {
 			if (msg.embeds[0]?.author?.name == `TODO`) {
 				msg.delete().catch(() => {});
 			}
-			if (msgReaction.emoji.id === "857976926542757910") msg.delete().catch(() => {});
+			if (msgReaction.emoji.id === "857976926542757910")
+				msg.delete().catch(() => {});
 		}
 	} else if (menus.has(msg.id) && !user.bot) {
 		let menu = menus.get(msg.id);

@@ -72,7 +72,9 @@ module.exports = {
 			description: "Option 10",
 		},
 	],
+	category: "UTILITY",
 	defaultPermission: true,
+	guildonly: true,
 	perms: ["USE_SLASH_COMMANDS"],
 
 	//itr = interaction

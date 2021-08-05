@@ -10,15 +10,16 @@ module.exports = {
 	adminonly: true,
 	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
 	async execute(message, args) {
-		const { client, con } = require("../../index.js");
+		const main = require(`../../index.js`);
+		const { client } = require("../../index.js");
 		//This is for timestamps
 		const ms = require(`ms`);
 		const kifo = require("kifo");
 		if (message.guild == null)
 			return message.reply({
 				embeds: [
-				kifo.embed("you can only run this command on the server.")
-				]
+					kifo.embed("you can only run this command on the server."),
+				],
 			});
 		if (
 			!message.member
@@ -27,41 +28,45 @@ module.exports = {
 		)
 			return message.reply({
 				embeds: [
-				kifo.embed("You do not have `MANAGE_CHANNELS` permissions.")
-				]
+					kifo.embed(
+						"You do not have `MANAGE_CHANNELS` permissions."
+					),
+				],
 			});
 		if (!args[3])
 			return message.reply({
 				embeds: [
-				kifo.embed(`insufficient arguments. Use ${this.usage}`)
-				]
+					kifo.embed(`insufficient arguments. Use ${this.usage}`),
+				],
 			});
 		if (isNaN(args[0]))
-			return message.reply({ embeds: [kifo.embed("incorrect amount of posts.")] });
+			return message.reply({
+				embeds: [kifo.embed("incorrect amount of posts.")],
+			});
 		if (args[0] < 1 || args[0] > 10)
 			return message.reply({
 				embeds: [
-				kifo.embed(
-					"incorrect amount of posts. You must select at least 1, but not more than 10."
-				)
-				]
+					kifo.embed(
+						"incorrect amount of posts. You must select at least 1, but not more than 10."
+					),
+				],
 			});
 		let x = args[0];
 		if (isNaN(ms(args[1])))
 			return message.reply({
 				embeds: [
-				kifo.embed(
-					"incorrect time period. Please specify correct time period."
-				)
-				]
+					kifo.embed(
+						"incorrect time period. Please specify correct time period."
+					),
+				],
 			});
 		if (ms(args[1]) < ms("10s") || ms(args[1]) > ms("14d"))
 			return message.reply({
 				embeds: [
-				kifo.embed(
-					"incorrect amount of time. For the command to work, please input period of time that is between 10 seconds and 14 days."
-				)
-				]
+					kifo.embed(
+						"incorrect amount of time. For the command to work, please input period of time that is between 10 seconds and 14 days."
+					),
+				],
 			});
 		if (
 			message.guild.channels.cache.find(
@@ -70,70 +75,84 @@ module.exports = {
 		)
 			return message.reply({
 				embeds: [
-				kifo.embed(
-					"channel does not exist. Please input correct channel."
-				)
-				]
+					kifo.embed(
+						"channel does not exist. Please input correct channel."
+					),
+				],
 			});
-		let reaction = args[3]
+		let reaction = args[3];
 		if (
 			client.emojis.resolveIdentifier(reaction) == null &&
 			!reaction.match(kifo.emojiRegex())
 		) {
-			return message.reply({ embeds: [kifo.embed("Incorrect reaction!")] });
+			return message.reply({
+				embeds: [kifo.embed("Incorrect reaction!")],
+			});
 		}
 		if (args[4] != undefined)
 			return message.reply({
-				embeds: [
-				kifo.embed(`too many arguments! Use ${this.usage}`)
-				]
+				embeds: [kifo.embed(`too many arguments! Use ${this.usage}`)],
 			});
 
 		let now = Date.now();
 		let whichchannel = message.channel.guild.channels.cache.find(
 			(channel) => channel.id == args[2].slice(2, 20)
 		);
-		if (!message.guild.me.permissionsIn(whichchannel).has(Discord.Permissions.FLAGS.VIEW_CHANNEL))
-			return message.reply({
-				embeds: [
-				kifo.embed(
-					"I do not have `VIEW_CHANNEL` permissions in " +
-						"<#" +
-						whichchannel.id +
-						">"
-				)
-				]
-			});
-		if (!message.guild.me.permissionsIn(whichchannel).has(Discord.Permissions.FLAGS.VIEW_CHANNEL))
-			return message.reply({
-				embeds: [
-				kifo.embed(
-					"I do not have `READ_MESSAGE_HISTORY` permissions in " +
-						"<#" +
-						whichchannel.id +
-						">"
-				)
-				]
-			});
 		if (
-			!message.guild.me.permissionsIn(message.channel).has(Discord.Permissions.FLAGS.ATTACH_FILES)
+			!message.guild.me
+				.permissionsIn(whichchannel)
+				.has(Discord.Permissions.FLAGS.VIEW_CHANNEL)
 		)
 			return message.reply({
 				embeds: [
-				kifo.embed(
-					"I do not have `ATTACH_FILES` permissions in this channel."
-				)
-				]
+					kifo.embed(
+						"I do not have `VIEW_CHANNEL` permissions in " +
+							"<#" +
+							whichchannel.id +
+							">"
+					),
+				],
 			});
-		if (!message.member.permissionsIn(whichchannel).has(Discord.Permissions.FLAGS.MANAGE_CHANNELS))
+		if (
+			!message.guild.me
+				.permissionsIn(whichchannel)
+				.has(Discord.Permissions.FLAGS.VIEW_CHANNEL)
+		)
 			return message.reply({
 				embeds: [
-				kifo.embed(
-					"You need to have `MANAGE_CHANNELS` permissions in <#" +
-						whichchannel.id +
-						">"
-				)
-				]
+					kifo.embed(
+						"I do not have `READ_MESSAGE_HISTORY` permissions in " +
+							"<#" +
+							whichchannel.id +
+							">"
+					),
+				],
+			});
+		if (
+			!message.guild.me
+				.permissionsIn(message.channel)
+				.has(Discord.Permissions.FLAGS.ATTACH_FILES)
+		)
+			return message.reply({
+				embeds: [
+					kifo.embed(
+						"I do not have `ATTACH_FILES` permissions in this channel."
+					),
+				],
+			});
+		if (
+			!message.member
+				.permissionsIn(whichchannel)
+				.has(Discord.Permissions.FLAGS.MANAGE_CHANNELS)
+		)
+			return message.reply({
+				embeds: [
+					kifo.embed(
+						"You need to have `MANAGE_CHANNELS` permissions in <#" +
+							whichchannel.id +
+							">"
+					),
+				],
 			});
 		let chmessages = [];
 		let key = kifo.emojiTrim(reaction);
@@ -164,35 +183,33 @@ module.exports = {
 						});
 						fetchoptions.before = oldestMessage.id;
 					}
-				});
+				})
+				.catch((err) => main.log(err));
 		}
-		console.log(messageCollection);
+
 		messageCollection = messageCollection
 			.filter((m) => now - m.createdTimestamp <= ms(args[1]))
 			.filter((m) => m.reactions.resolve(key) != undefined);
-		console.log(messageCollection);
-		chmessages = messageCollection.array();
+		chmessages = messageCollection.map((x) => x);
 		if (!chmessages[0])
 			return message.reply({
 				embeds: [
-				kifo.embed(
-					"no posts found matching criteria. Maybe try longer time period?"
-				)
-				]
+					kifo.embed(
+						"no posts found matching criteria. Maybe try longer time period?"
+					),
+				],
 			});
 		chmessages.sort((a, b) => {
 			if (
 				b.reactions.cache.find(
-					(reaction) =>
-						reaction.emoji.id == key
+					(reaction) => reaction.emoji.id == key
 				) == undefined
 			) {
 				return -1;
 			}
 			if (
 				a.reactions.cache.find(
-					(reaction) =>
-						reaction.emoji.id == key
+					(reaction) => reaction.emoji.id == key
 				) == undefined
 			) {
 				return 1;
@@ -210,9 +227,7 @@ module.exports = {
 		message.channel.sendTyping().catch();
 		for (i = 0; i < loops; i++) {
 			//one person can only get one place.
-			if (
-				userids.has(chmessages[i].author.id)
-			) {
+			if (userids.has(chmessages[i].author.id)) {
 				loops++;
 				if (!chmessages[loops]) {
 					loops--;
@@ -254,7 +269,11 @@ module.exports = {
 
 				message.channel.sendTyping().catch();
 				newEmbed.setTitle(
-					`**${ii}${kifo.place(ii)}** place by **${chmessages[i].author.username}** with **${chmessages[i].reactions.resolve(key).count}** ${reaction}`
+					`**${kifo.place(ii)}** place by **${
+						chmessages[i].author.username
+					}** with **${
+						chmessages[i].reactions.resolve(key).count
+					}** ${reaction}`
 				);
 
 				if (chmessages[i].content.length > 0) {
@@ -265,24 +284,31 @@ module.exports = {
 					);
 				}
 
-				if (
-					chmessages[i].attachments.array().length > 0 &&
-					chmessages[i].attachments.array()[0] != undefined
-				) {
-					newEmbed.setImage(chmessages[i].attachments.array()[0].url);
-				}
 				newEmbed.setURL(
 					`https://discord.com/channels/${chmessages[i].channel.guild.id}/${chmessages[i].channel.id}/${chmessages[i].id}`
 				);
-				message.channel.send({ embeds: [newEmbed] }).catch();
+				if (
+					chmessages[i].attachments.first() != undefined
+				) {
+					newEmbed.setImage(chmessages[i].attachments.first().url)
+					message.channel
+					.send({
+						embeds: [newEmbed],
+					})
+					.catch();
+				}
+				else message.channel.send({embeds: [newEmbed]})
 				ii++;
 			}
-			//message.channel.sendTyping().catch();
 		}
-		message.delete().catch(() => { })
+		message.delete().catch(() => {});
 		if (loops < args[0])
 			message.channel
-				.send({ embeds: [kifo.embed("No more posts with given criteria found.")] })
+				.send({
+					embeds: [
+						kifo.embed("No more posts with given criteria found."),
+					],
+				})
 				.catch();
 	},
 };
