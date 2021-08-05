@@ -1369,8 +1369,9 @@ function setCommandList() {
 								!x.required ? " *(optional)*" : ""
 							} - ${x.description}`;
 					})
-					.join("\n\t- ")}\n\n`;
+					.join("\n\t- ")}\n`;
 			}
+			cmdListMD += `\n`
 		});
 	});
 	let now = new Date(Date.now());

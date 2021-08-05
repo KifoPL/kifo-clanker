@@ -182,6 +182,7 @@ This is an eloquent way to say "Thank you for this conversation we've had".
 ### urmum
 Random *yo momma* joke.
 - Options:
+
 ## HELP
 
 ### guide
@@ -258,4 +259,4 @@ Create a ticket
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Thu, 05 Aug 2021 11:54:24 GMT*
+> - *Last update: Thu, 05 Aug 2021 15:17:41 GMT*

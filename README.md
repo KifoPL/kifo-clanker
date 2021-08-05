@@ -22,8 +22,8 @@ fail, run !kifo](https://i.imgur.com/hWkoxmm.jpg)
 **!** If you find any bugs (or have an awesome idea), please notify me on Discord: @KifoPL#3358 `<@289119054130839552>`, or submit a [ticket](https://github.com/KifoPL/kifo-clanker/issues/new/choose).
 
 ## Useful Lists
-- **[List of Commands](./commandList)**
-- **[List of Guides](./guideList)**
+- **[List of Commands](https://kifopl.github.io/kifo-clanker/commandList)**
+- **[List of Guides](https://kifopl.github.io/kifo-clanker/guideList)**
 
 > The lists are always up-to-date with the latest release.
 
