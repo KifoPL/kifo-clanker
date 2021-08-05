@@ -11,7 +11,10 @@ module.exports = {
 			description: "What do you want me to reply with?",
 		},
 	],
+	category: "DEBUG",
 	defaultPermission: true,
+	guildonly: false,
+	perms: ["USE_SLASH_COMMANDS"],
 
 	//itr = interaction
 	async execute(itr) {

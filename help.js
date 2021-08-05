@@ -33,7 +33,6 @@ module.exports = {
 					command: command,
 					folder: folder,
 				});
-				//console.log(file);
 			}
 		}
 
@@ -177,24 +176,13 @@ module.exports = {
 				CategoryCount++;
 			}
 		);
-		// for (const file of commandList) {
-		// 	const command = require(`./commands/${file}`);
-		// 	//Lists everything for admins and only user accessible commands otherwise.
-		// 	if (!command.adminonly || AmIAdmin) {
-		// 		var Field = {};
-		// 		Field.name = command.name;
-		// 		Field.value = command.description;
-		// 		FieldArr.push(Field);
-		// 		i++;
-		// 	}
-		// }
 		const newEmbed = new Discord.MessageEmbed()
 			.setColor("a039a0")
 			.setTitle(
 				`List of ${commandCount} commands in ${CategoryCount} categories, by KifoPL:`
 			)
 			.setDescription(
-				`**Click on the text above** for full and detailed list of commands.\nType \`${prefix}help <category>\` to get detailed list of commands within a category, or \`${prefix}help <command>\` to get help for that command.\n\n*Looking for \`/\` commands help? Run \`/help\`.*`
+				`**Click on the text above** for full and detailed list of commands.\nType \`${prefix}help <category>\` to get detailed list of commands within a category, or \`${prefix}help <command>\` to get help for that command.\n\n*Looking for \`/\` commands? Run \`/guide Slash commands\`, or click [here](https://kifopl.github.io/kifo-clanker/commandList#list-of-slash-commands-used-with-).*`
 			)
 			.setURL("https://kifopl.github.io/kifo-clanker/commandList")
 			.setFooter(

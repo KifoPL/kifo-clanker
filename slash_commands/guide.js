@@ -1,5 +1,6 @@
 const kifo = require("kifo");
 const Discord = require("discord.js");
+const main = require("../index.js")
 
 module.exports = {
 	name: "guide",
@@ -14,10 +15,13 @@ module.exports = {
 				{ name: "Slash commands", value: "slash" },
 				{ name: "Using /ticket", value: "ticket" },
 				{ name: "Ticketing system", value: "ticketing" },
+				{ name: "Auto-threading system", value: "autothreading" },
 			],
 		},
 	],
+	category: "HELP",
 	defaultPermission: true,
+	guildonly: false,
 	perms: ["USE_SLASH_COMMANDS"],
 
 	//itr = interaction

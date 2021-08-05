@@ -9,71 +9,6 @@ This command lists all categories of commands and shows help for every command.
 	- `help <command>` - shows help for specific command
 	- `<command> help` - shows help for specific command
 - Required user permissions: `SEND_MESSAGES`
-## DEBUG
-
-### error
-If this bot encountered an error anywhere, please type this command right after. It will ping me (KifoPL#3358) and automatically create an issue on [GitHub](https://github.com/KifoPL/kifo-clanker/issues).
-WARNING! If you spam this command for no reason, you will get warned on the same premise as spam pinging. Use only when encountering actual errors.
-- Usage:
-	- `error <description>` - pings <@289119054130839552> with provided description and creates an issue on [GitHub](https://github.com/KifoPL/kifo-clanker/issues).
-- Required user permissions: `SEND_MESSAGES`
-
-### ping
-This is a ping command :)
-- Usage:
-	- `ping` - responds with a pong :)
-- Required user permissions: `SEND_MESSAGES`
-
-### test
-This is just to test the functionality of the bot, as well as perms settings.
-- Usage:
-	- `test` - tests if the bot is online and checks for various stuff to find potential issues.
-- Required user permissions: `SEND_MESSAGES`
-
-## FUN
-
-### cringe
-Express your feelings to another discord user with this beautiful poem.
-- Usage:
-	- `cringe <optional_user>` - informs user of their cringe level.
-- Required user permissions: `SEND_MESSAGES`
-
-### howgay
-A quick test to find out your gayness level.
-- Usage:
-	- `howgay <optional_user>` - accurately measures sexual thirst towards the same gender.
-- Required user permissions: `SEND_MESSAGES`
-
-### iq
-A very quick and accurate IQ test.
-- Usage:
-	- `iq <optional_user>` - A quick and reliable IQ test.
-- Required user permissions: `SEND_MESSAGES`
-
-### pp
-Measure your PP length with this totally reliable pp length calculator. Each user has his own constant pp length (like irl), it's not random.
-- Usage:
-	- `pp <optional_user>` - absolutely accurate measurement of pp length.
-- Required user permissions: `SEND_MESSAGES`
-
-### reverse
-This command reverses anything you type.
-- Usage:
-	- `reverse <text>` - reverses the text.
-- Required user permissions: `SEND_MESSAGES`
-
-### stfu
-This is an eloquent way to say "Thank you for this conversation we've had".
-- Usage:
-	- `stfu <optional_user>` - ask someone to lower their voice to the sub-audible level in an elegant manner.
-- Required user permissions: `SEND_MESSAGES`
-
-### urmum
-Random *yo momma* joke.
-- Usage:
-	- `urmum` - get a random *yo momma* joke.
-- Required user permissions: `SEND_MESSAGES`
-
 ## MANAGEMENT
 
 ### clean
@@ -93,8 +28,7 @@ If the bot doesn't see some channels, lists ~~may~~ will be incorrect.
 	- `list` - lists all users in the server
 	- `list <user>` - lists roles of specified user.
 	- `list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.
-	- `list <channel/"here"> <role> <optional_role2> <optional_role_n> - lists users with specified roles in specified channel.
-	- `list <message_id>` - pastes raw message content *(with formatting, works with embeds and all types of messages)*.
+	- `list <channel/"here"> <role> <optional_role2> <optional_role_n>` - lists users with specified roles in specified channel.
 - Required user permissions: `SEND_MESSAGES`, `MANAGE_GUILD`
 
 ### menu
@@ -195,14 +129,110 @@ This command allows you to create a simple todo notes.
 - Required user permissions: `SEND_MESSAGES`
 
 # List of slash commands (used with `/`):
-### guide
-Receive link for command list, or guide regarding speficic topic.
+## DEBUG
+
+### error
+Creates an issue on GitHub and pings KifoPL. Do not spam this command.
 - Options:
-	- `choice` - Select topic, which you want to learn about.
+	- `description` - Provide a brief description of how and when this error occurred.
+
 ### ping
 ...pong?
 - Options:
-	- `reply` - What do you want me to reply with?
+	- `reply` *(optional)* - What do you want me to reply with?
+
+### test
+test out if the `/` commands work properly.
+- Options:
+	- `input` *(optional)* - The text to return.
+
+## FUN
+
+### cringe
+Express your feelings to another discord user with this beautiful poem.
+- Options:
+	- `user` *(optional)* - direct your feelings towards the user.
+
+### howgay
+A quick test to find out your gayness level.
+- Options:
+	- `user` *(optional)* - A subject of measurement.
+
+### iq
+A very quick and accurate IQ test.
+- Options:
+	- `user` *(optional)* - A subject of measurement.
+
+### pp
+Measure your PP length with this totally reliable pp length calculator.
+- Options:
+	- `user` *(optional)* - A subject of measurement.
+
+### reverse
+This command reverses anything you type.
+- Options:
+	- `text` - The text to reverse
+	- `silent` *(optional)* - Whether to show the result to only you, or everyone. False by default.
+
+### stfu
+This is an eloquent way to say "Thank you for this conversation we've had".
+- Options:
+	- `user` *(optional)* - Ask someone to lower their voice to the sub-audible level in an elegant manner.
+
+### urmum
+Random *yo momma* joke.
+- Options:
+## HELP
+
+### guide
+Receive link for command list, or guide regarding speficic topic.
+- Options:
+	- `choice` *(optional)* - Select topic, which you want to learn about.
+
+## MANAGEMENT
+
+### autothreading
+Set up auto threading system in a channel.
+- Options:
+	- `on` - Turn on auto-threading system.
+		- `title` - Choose the title for every thread (use /autothreading help for more info)
+		- `archiving` - After what time of inactivity should threads be archived?
+		- `bots` - True if you want threads to be created on bot messages as well, false otherwise.
+		- `slowmode` *(optional)* - What should be the default slow-mode for threads?
+	- `off` - Turn off auto-threading system.
+	- `list` - List all channels with auto-threading system enabled.
+	- `help` - Send a link with very detailed information regarding auto-threading system.
+
+### threads
+Manage threads in this channel.
+- Options:
+	- `archive` - Bulk archive oldest threads in this channel.
+		- `count` - How many oldest threads would you like to archive?
+		- `silent` *(optional)* - Do you want the output to be visible only by you? Defaults to false.
+	- `delete` - Bulk delete specified threads in this channel.
+		- `count` - How many oldest threads would you like to archive?
+		- `which` - Should I delete archived, or active threads?
+		- `silent` *(optional)* - Do you want the output to be visible only by you? Defaults to false.
+
+### ticketing
+Set up ticketing system in a channel.
+- Options:
+	- `on` - Turn on ticketing system.
+		- `visibility` - Should tickets be public, allowing everyone to answer questions, or private?
+		- `archiving` - After what time of inactivity should threads be archived?
+		- `slowmode` *(optional)* - What should be the default slow-mode for tickets?
+	- `off` - Turn off ticketing system.
+	- `list` - List all channels with ticketing system enabled.
+	- `help` - Send a link with very detailed information regarding ticketing system.
+
+## UTILITY
+
+### bookmark
+Sends a copy of the message in DM (with attachments).
+- Options:
+	- `message` - ID or URL of the message.
+	- `pin` *(optional)* - Whether the message should be pinned. False by default.
+
 ### poll
 Create a poll.
 - Options:
@@ -210,36 +240,22 @@ Create a poll.
 	- `timeout` - When do you want to calculate results? "0", if never.
 	- `one` - Option 1
 	- `two` - Option 2
-	- `three` - Option 3
-	- `four` - Option 4
-	- `five` - Option 5
-	- `six` - Option 6
-	- `seven` - Option 7
-	- `eight` - Option 8
-	- `nine` - Option 9
-	- `ten` - Option 10
-### test
-test out if the `/` commands work properly.
-- Options:
-	- `input` - The text to return.
-### threads
-Manage threads in this channel.
-- Options:
-	- `archive` - Bulk archive oldest threads in this channel.
-	- `delete` - Bulk delete specified threads in this channel.
+	- `three` *(optional)* - Option 3
+	- `four` *(optional)* - Option 4
+	- `five` *(optional)* - Option 5
+	- `six` *(optional)* - Option 6
+	- `seven` *(optional)* - Option 7
+	- `eight` *(optional)* - Option 8
+	- `nine` *(optional)* - Option 9
+	- `ten` *(optional)* - Option 10
+
 ### ticket
 Create a ticket
 - Options:
 	- `title` - The problem, or question you have.
-	- `description` - Provide any additional information about your question/problem
-### ticketing
-Set up ticketing system in a channel.
-- Options:
-	- `on` - Turn on ticketing system.
-	- `off` - Turn off ticketing system.
-	- `list` - List all channels with ticketing system enabled.
-	- `help` - Send a link with very detailed information regarding ticketing system.
+	- `description` *(optional)* - Provide any additional information about your question/problem
+
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Mon, 02 Aug 2021 14:48:13 GMT*
+> - *Last update: Thu, 05 Aug 2021 11:54:24 GMT*

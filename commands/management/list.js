@@ -10,8 +10,8 @@ module.exports = {
 		"`list` - lists all users in the server",
 		"`list <user>` - lists roles of specified user.",
 		"`list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.",
-		'`list <channel/"here"> <role> <optional_role2> <optional_role_n> - lists users with specified roles in specified channel.',
-		"`list <message_id>` - pastes raw message content *(with formatting, works with embeds and all types of messages)*.",
+		'`list <channel/"here"> <role> <optional_role2> <optional_role_n>` - lists users with specified roles in specified channel.',
+		//"`list <message_id>` - pastes raw message content *(with formatting, works with embeds and all types of messages)*.",
 	],
 	adminonly: false,
 	perms: ["SEND_MESSAGES", "MANAGE_GUILD"],
@@ -435,30 +435,20 @@ async function stats(message, args, prefix, isList = true) {
 			}
 
 			if (isList) {
-				await message.guild.members.cache
-					.each((member) => {
-						fileContent += `${member.id}\t${
-							member.roles.highest.rawPosition
-						}\t${member.user.username}\t${member.nickname ?? ""}\n`;
-					});
+				await message.guild.members.cache.each((member) => {
+					fileContent += `${member.id}\t${
+						member.roles.highest.rawPosition
+					}\t${member.user.username}\t${member.nickname ?? ""}\n`;
+				});
 			}
 			await message.guild.members.cache.each((member) => {
 				if (member.user.bot) botcount++;
 				if (member.premiumSinceTimestamp != undefined) boostcount++;
 			});
 
-			// let mmmng = await message.guild.members.fetch({
-			// 	withPresences: true,
-			// });
-
-			// mmmng
-			// 	.filter(
-			// 		(member) =>
-			// 			member.presence?.status != "offline" && !member.user.bot
-			// 	)
-			// 	.each(() => onlinecount++);
-
-			message.guild.presences.cache.filter(pr => !pr.user.bot && (pr.status !== "offline")).each(() => onlinecount++)
+			message.guild.presences.cache
+				.filter((pr) => !pr.user.bot && pr.status !== "offline")
+				.each(() => onlinecount++);
 
 			await message.guild.channels.cache.each(() => {
 				channelcount++;
@@ -634,13 +624,15 @@ async function stats(message, args, prefix, isList = true) {
 			const contents = fs.readFileSync(`././commandList.json`);
 			var jsonCmdList = JSON.parse(contents);
 
-			const ppcmd = require(`${jsonCmdList.pp.relativepath}`);
-			const howgaycmd = require(`${jsonCmdList.howgay.relativepath}`);
-			const iqcmd = require(`${jsonCmdList.iq.relativepath}`);
+			const ppcmd = require(`../../slash_commands/pp`);
+			const howgaycmd = require(`../../slash_commands/howgay`);
+			const iqcmd = require(`../../slash_commands/iq`);
 
 			let presence = undefined;
 			if (whatami == "user") {
-				presence = message.guild.presences.cache.find(pr => pr.userId == entity.id);
+				presence = message.guild.presences.cache.find(
+					(pr) => pr.userId == entity.id
+				);
 			}
 
 			//WHAT ARE YOU CHECK ? - determines if you wanna check stats of user, bot, role, channel or message
@@ -652,10 +644,7 @@ async function stats(message, args, prefix, isList = true) {
 				let rolecount = 0;
 				let fileContent = `Role Id\tPosition\tRole name\n`;
 				let statusicon;
-				if (
-					presence?.status == "online" ||
-					presence?.status == "idle"
-				)
+				if (presence?.status == "online" || presence?.status == "idle")
 					statusicon = "<:online:823658022974521414>";
 				else statusicon = "<:offline:823658022957613076>";
 				await entity.roles.cache
@@ -671,23 +660,17 @@ async function stats(message, args, prefix, isList = true) {
 					});
 				}
 
-				const ppfield = await ppcmd.execute(
-					message,
-					args,
-					true,
-					entity.id
+				const ppfield = await ppcmd.calculate(
+					entity.id,
+					entity.guild.id
 				);
-				const howgayfield = await howgaycmd.execute(
-					message,
-					args,
-					true,
-					entity.id
+				const howgayfield = await howgaycmd.calculate(
+					entity.id,
+					entity.guild.id
 				);
-				const iqfield = await iqcmd.execute(
-					message,
-					args,
-					true,
-					entity.id
+				const iqfield = await iqcmd.calculate(
+					entity.id,
+					entity.guild.id
 				);
 
 				if (isList) {
@@ -766,7 +749,13 @@ async function stats(message, args, prefix, isList = true) {
 											rolecount - 1
 									  } roles, highest role is ${
 											entity.roles?.highest?.name
-									  } (${kifo.place(entity.guild.roles.highest?.rawPosition - entity.roles?.highest?.rawPosition + 1)} out of ${serverrolecount} server roles), ${
+									  } (${kifo.place(
+											entity.guild.roles.highest
+												?.rawPosition -
+												entity.roles?.highest
+													?.rawPosition +
+												1
+									  )} out of ${serverrolecount} server roles), ${
 											entity.roles?.hoist?.name ==
 											undefined
 												? `not hoisted`
@@ -777,7 +766,9 @@ async function stats(message, args, prefix, isList = true) {
 						},
 						{
 							name: `Status`,
-							value: `${statusicon} User is currently **${presence?.status ?? "offline"}**.`,
+							value: `${statusicon} User is currently **${
+								presence?.status ?? "offline"
+							}**.`,
 						},
 						{
 							name: `IQ level: ${iqfield.name}`,
@@ -822,23 +813,17 @@ async function stats(message, args, prefix, isList = true) {
 						fileContent += `${role.id}\t${role.name}\n`;
 					});
 				}
-				const ppfield = await ppcmd.execute(
-					message,
-					args,
-					true,
-					entity.id
+				const ppfield = await ppcmd.calculate(
+					entity.id,
+					entity.guild.id
 				);
-				const howgayfield = await howgaycmd.execute(
-					message,
-					args,
-					true,
-					entity.id
+				const howgayfield = await howgaycmd.calculate(
+					entity.id,
+					entity.guild.id
 				);
-				const iqfield = await iqcmd.execute(
-					message,
-					args,
-					true,
-					entity.id
+				const iqfield = await iqcmd.calculate(
+					entity.id,
+					entity.guild.id
 				);
 
 				if (isList) {
@@ -899,7 +884,13 @@ async function stats(message, args, prefix, isList = true) {
 											rolecount - 1
 									  } roles, highest role is ${
 											entity.roles?.highest?.name
-									  } (${kifo.place(entity.guild.roles.highest?.rawPosition - entity.roles?.highest?.rawPosition + 1)} out of ${serverrolecount} server roles), ${
+									  } (${kifo.place(
+											entity.guild.roles.highest
+												?.rawPosition -
+												entity.roles?.highest
+													?.rawPosition +
+												1
+									  )} out of ${serverrolecount} server roles), ${
 											entity.roles?.hoist?.name ==
 											undefined
 												? `not hoisted`
@@ -910,7 +901,9 @@ async function stats(message, args, prefix, isList = true) {
 						},
 						{
 							name: `Status`,
-							value: `${statusicon} Bot is currently **${presence?.status ?? "offline"}**.`,
+							value: `${statusicon} Bot is currently **${
+								presence?.status ?? "offline"
+							}**.`,
 						},
 						{
 							name: `Interesting stats:`,
@@ -1022,7 +1015,11 @@ async function stats(message, args, prefix, isList = true) {
 						},
 						{
 							name: `Position:`,
-							value: `${kifo.place(entity.guild.roles.highest?.rawPosition - entity.rawPosition  + 1)} out of ${serverrolecount}`,
+							value: `${kifo.place(
+								entity.guild.roles.highest?.rawPosition -
+									entity.rawPosition +
+									1
+							)} out of ${serverrolecount}`,
 							inline: true,
 						},
 						{
@@ -1342,15 +1339,13 @@ async function stats(message, args, prefix, isList = true) {
 			main.log(err);
 		});
 	if (isList) {
-		try {
-			fs.unlink(
-				`./${time.toISOString().replace(":", "_")}_list.txt`,
-				(err) => {
-					main.log(err);
-				}
-			);
-		} catch (err) {
-			main.log(err);
-		}
+		fs.unlink(
+			`${__dirname}/../../${time
+				.toISOString()
+				.replace(":", "_")}_list.txt`,
+			(err) => {
+				main.log(err);
+			}
+		);
 	}
 }

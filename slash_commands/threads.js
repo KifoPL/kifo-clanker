@@ -71,6 +71,8 @@ module.exports = {
 			],
 		},
 	],
+	category: "MANAGEMENT",
+	guildonly: true,
 	defaultPermission: true,
 	perms: ["USE_SLASH_COMMANDS", "MANAGE_THREADS"],
 

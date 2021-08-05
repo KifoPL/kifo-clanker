@@ -86,6 +86,8 @@ module.exports = {
 		},
 	],
 	defaultPermission: true,
+	guildonly: true,
+	category: "MANAGEMENT",
 	perms: ["USE_SLASH_COMMANDS", "MANAGE_CHANNELS", "MANAGE_THREADS"],
 
 	//itr = interaction
@@ -193,6 +195,20 @@ module.exports = {
 					embeds: [
 						kifo.embed(
 							"I don't have `MANAGE_CHANNELS` permission!"
+						),
+					],
+					ephemeral: true,
+				});
+
+			if (
+				!itr.guild?.me
+					.permissionsIn(itr.channel)
+					.has(Permissions.FLAGS.MANAGE_MESSAGES)
+			)
+				return itr.reply({
+					embeds: [
+						kifo.embed(
+							"I don't have `MANAGE_MESSAGES` permission!"
 						),
 					],
 					ephemeral: true,
