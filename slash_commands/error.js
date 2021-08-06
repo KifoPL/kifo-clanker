@@ -26,7 +26,7 @@ module.exports = {
 	guildonly: false,
 	perms: ["USE_SLASH_COMMANDS"],
 	async execute(itr) {
-		await itr.defer();
+		await itr.deferReply();
 		const desc = itr.options.data.find(
 			(o) => o.name === "description"
 		).value;

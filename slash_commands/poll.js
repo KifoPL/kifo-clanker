@@ -90,7 +90,7 @@ module.exports = {
 					kifo.embed("I don't have `ADD_REACTIONS` permission!"),
 				],
 			});
-		await itr.defer();
+		await itr.deferReply();
 		let reactions = [
 			"1️⃣",
 			"2️⃣",

@@ -54,7 +54,7 @@ async function downloadAttachment(url) {
 }
 
 async function execute(itr) {
-	await itr.defer({ ephemeral: true });
+	await itr.deferReply({ ephemeral: true });
 	let options = itr.options.data;
 	let msgResolvable = options.find((o) => o.name === "message").value;
 	if (msgResolvable.match(kifo.urlRegex())) {

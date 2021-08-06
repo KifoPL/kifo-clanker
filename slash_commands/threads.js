@@ -132,7 +132,7 @@ module.exports = {
 		let count = subcmd.options.find((o) => o.name === "count").value;
 		let silent =
 			subcmd.options.find((o) => o.name === "silent")?.value ?? false;
-		await itr.defer({ ephemeral: silent });
+		await itr.deferReply({ ephemeral: silent });
 		if (subcmd.name === "archive") {
 			threads = await itr.channel.threads.fetch({ active: true });
 			threads = threads?.threads;

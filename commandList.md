@@ -259,4 +259,4 @@ Create a ticket
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Thu, 05 Aug 2021 15:17:41 GMT*
+> - *Last update: Fri, 06 Aug 2021 14:10:44 GMT*
