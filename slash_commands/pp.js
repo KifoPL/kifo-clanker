@@ -25,7 +25,7 @@ module.exports = {
 		calculate(userid, itr.guildId).then((field) => {
 			const newEmbed = new Discord.MessageEmbed()
 				.setColor("a039a0")
-				.setTitle(username + "'s gay level is:")
+				.setTitle(username + "'s pp length is:")
 				.addField(field.name, field.value);
 			itr.reply({ embeds: [newEmbed] }).catch();
 		});

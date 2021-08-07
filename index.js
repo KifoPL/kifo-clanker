@@ -800,6 +800,20 @@ async function commands(message, prefix) {
 	}
 
 	if (!client.commands.has(command)) {
+		
+		let cmds = await clientapp.commands.fetch();
+		if (cmds.find((cmd) => cmd.name === command) != undefined) {
+			return message
+				.reply({
+					embeds: [
+						kifo.embed(
+							`This is a slash command.\n\nTry \`/${command}\`!`,
+							"Boomer alert!"
+						),
+					],
+				})
+				.catch(() => {});
+		}
 		const embedreply = new Discord.MessageEmbed();
 		embedreply
 			.setColor("a039a0")
@@ -1371,7 +1385,7 @@ function setCommandList() {
 					})
 					.join("\n\t- ")}\n`;
 			}
-			cmdListMD += `\n`
+			cmdListMD += `\n`;
 		});
 	});
 	let now = new Date(Date.now());
