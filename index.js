@@ -1589,7 +1589,6 @@ function giveawayCheck() {
 								" `not enough reactions to conclude, if that's not the case notify Kifo` <@289119054130839552> "
 							}>`;
 						}
-						if (winner === null) main.log(winners);
 					});
 
 					const giveEmbed = new Discord.MessageEmbed()
