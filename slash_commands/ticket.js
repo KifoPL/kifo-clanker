@@ -42,7 +42,12 @@ module.exports = {
 		let thtitle = title.length > 50 ? `${title.slice(0, 47)}...` : title;
 		let description = options.find((o) => o.name === "description")?.value;
 		let ticket = kifo
-			.embed(description ?? "", title)
+			.embed(
+				description?.replace(kifo.urlRegex(), (match) => {
+					return `[link](${match})`;
+				}) ?? "",
+				title
+			)
 			.setAuthor(
 				`${itr.member.displayName}, ${itr.user.tag}`,
 				itr.user.avatarURL({ dynamic: true })
