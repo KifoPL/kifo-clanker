@@ -88,7 +88,7 @@ module.exports = {
 	defaultPermission: true,
 	guildonly: true,
 	category: "MANAGEMENT",
-	perms: ["USE_SLASH_COMMANDS", "MANAGE_CHANNELS", "MANAGE_THREADS"],
+	perms: ["USE_APPLICATION_COMMANDS", "MANAGE_CHANNELS", "MANAGE_THREADS"],
 
 	//itr = interaction
 	async execute(itr) {
@@ -410,7 +410,7 @@ And most important one: __**Don't forget to thank the person for answering!**__ 
 										})
 										.finally(() => {
 											//send ephemeral follow up message asking to check permissions for the channel,
-											//@everyone should have X SEND_MESSAGES and V USE_SLASH_COMMANDS and V USE_PRIVATE_THREADS or V USE_PUBLIC_THREADS
+											//@everyone should have X SEND_MESSAGES and V USE_APPLICATION_COMMANDS and V USE_PRIVATE_THREADS or V USE_PUBLIC_THREADS
 											let permsEmbed = kifo
 												.embed(
 													``,
@@ -419,11 +419,11 @@ And most important one: __**Don't forget to thank the person for answering!**__ 
 												.addFields([
 													{
 														name: `@everyone perms:`,
-														value: "- `ALLOW`: `VIEW_CHANNEL`, `USE_SLASH_COMMANDS`, `USE_PUBLIC_THREADS` or `USE_PRIVATE_THREADS` (see note below).",
+														value: "- `ALLOW`: `VIEW_CHANNEL`, `USE_APPLICATION_COMMANDS`, `USE_PUBLIC_THREADS` or `USE_PRIVATE_THREADS` (see note below).",
 													},
 													{
 														name: `Moderators and Kifo Clanker:`,
-														value: "- `ALLOW`: `SEND_MESSAGES`, `MANAGE_CHANNELS`, `MANAGE_THREADS`, `USE_SLASH_COMMANDS`.",
+														value: "- `ALLOW`: `SEND_MESSAGES`, `MANAGE_CHANNELS`, `MANAGE_THREADS`, `USE_APPLICATION_COMMANDS`.",
 													},
 													{
 														name: "NOTE:",

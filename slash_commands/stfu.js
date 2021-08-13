@@ -15,7 +15,7 @@ module.exports = {
 	],
 	guildonly: true,
 	category: "FUN",
-	perms: ["USE_SLASH_COMMANDS"],
+	perms: ["USE_APPLICATION_COMMANDS"],
 	execute(itr) {
 		//THIS IS A TEMPLATE
 		const kifo = require("kifo");

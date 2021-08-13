@@ -149,11 +149,13 @@ dbReconnect();
 
 client.commands = new Discord.Collection();
 client.slash_commands = new Discord.Collection();
+client.context_menus = new Discord.Collection();
 
 const commandFolders = fs.readdirSync("./commands");
 console.log("Loading commands...");
 let i = 0;
 let j = 0;
+let k = 0;
 for (const folder of commandFolders) {
 	const commandFiles = fs
 		.readdirSync(`./commands/${folder}`)
@@ -178,6 +180,17 @@ for (const file of cmdFiles) {
 	j++;
 }
 console.log(`Loaded ${j} / commands!`);
+console.log("Loading context menus...");
+const cxtFiles = fs
+	.readdirSync(`./context_menus`)
+	.filter((file) => file.endsWith(".js"));
+for (const file of cxtFiles) {
+	const context = require(`./context_menus/${file}`);
+	client.context_menus.set(context.name, context);
+	console.log(`Context menu "${context.name}"`);
+	k++;
+}
+console.log(`Loaded ${k} context menus!`);
 command = require(`./help.js`);
 client.commands.set(command.name, command);
 
@@ -686,12 +699,29 @@ async function commands(message, prefix) {
 								console.log(`/ "${cmd.slice(0, -3)}"`);
 								i++;
 							}
+							const contextFolder = fs
+								.readdirSync(`./context_menus`)
+								.filter((file) => file.endsWith(".js"));
+							console.log("Loading context menus...");
+							let j = 0;
+							for (const ctxtMenu of contextFolder) {
+								const ctxt = require(`./context_menus/${ctxtMenu}`);
+								data.push({
+									name: ctxt.name,
+									type: ctxt.type,
+								});
+								console.log(`Context menu: "${ctxt.name}"`);
+								j++;
+							}
 							if (btnItr.customId == "deploy_guild") {
 								clientapp.commands.set(data, msg.guild.id);
 								btnItr.reply({
 									embeds: [kifo.embed("DEPLOYED to Test!")],
 								});
 								console.log(`Deployed ${i} commands to test!`);
+								console.log(
+									`Deployed ${j} context menus to test!`
+								);
 							} else if (btnItr.customId == "deploy_global") {
 								clientapp.commands.set(data);
 								btnItr.reply({
@@ -703,6 +733,9 @@ async function commands(message, prefix) {
 								});
 								console.log(
 									`Deployed ${i} commands to production!`
+								);
+								console.log(
+									`Deployed ${j} context menus to production!`
 								);
 							}
 						}
@@ -800,7 +833,6 @@ async function commands(message, prefix) {
 	}
 
 	if (!client.commands.has(command)) {
-		
 		let cmds = await clientapp.commands.fetch();
 		if (cmds.find((cmd) => cmd.name === command) != undefined) {
 			return message
@@ -1385,15 +1417,35 @@ function setCommandList() {
 					})
 					.join("\n\t- ")}\n`;
 			}
+			cmdListMD += `- Required user permissions: \`${command.perms.join("\`, \`")}\`\n`
 			cmdListMD += `\n`;
 		});
 	});
+	cmdListMD += `# List of context menus (used with <kbd>Right-Click</kbd>):\n`
+	let cxtMap = new Map();
+	for (const cxt of cxtFiles) {
+		const context = require(`./context_menus/${cxt}`);
+		if (cxtMap.has(context.type)) {
+			cxtMap.get(context.type).push(context);
+		} else cxtMap.set(context.type, [context]);
+	}
+	const cxtMapSorted = new Map([...cxtMap.entries()].sort());
+	cxtMapSorted.forEach((val, key) => {
+		cmdListMD += `## ${key.toUpperCase()} *(right-click on \`${key.toLowerCase()}\` to use)*\n\n`;
+		val.forEach((command) => {
+			cmdListMD += `### ${command?.name}\n`;
+			cmdListMD += `${command?.description}\n`;
+			cmdListMD += `- Required user permissions: \`${command.perms.join("\`, \`")}\`\n`
+			cmdListMD += `\n`;
+		});
+	})
 	let now = new Date(Date.now());
 	cmdListJSON = cmdListJSON.slice(0, cmdListJSON.length - 2);
 	cmdListJSON += `\n}`;
 	cmdListMD += `<hr/>\n`;
 	cmdListMD += `\n> - *Some commands may require additional perms for the bot.*`;
-	cmdListMD += `\n> - *Last update: ${now.toUTCString()}*`;
+	cmdListMD += `\n- Last update: ${now.toUTCString()}`;
+	cmdListMD += "\n*~by [KifoPL](https://bio.link/KifoPL)*\n\n[<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)*";
 
 	fs.writeFile(`commandList.json`, cmdListJSON, () => {
 		return;
@@ -1421,8 +1473,8 @@ function setGuideList() {
 			-3
 		)})\n\n`;
 	});
-	guideList += `<hr/>\n\n*Last update: ${now.toUTCString()}.*\n`;
-	guideList += "\n~by [KifoPL](https://bio.link/KifoPL)";
+	guideList += `<hr/>\n\nLast update: ${now.toUTCString()}.\n`;
+	guideList += "\n*~by [KifoPL](https://bio.link/KifoPL)*\n\n[<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)";
 
 	fs.writeFile(`guideList.md`, guideList, () => {
 		return;
@@ -2037,7 +2089,11 @@ client.on("interactionCreate", (interaction) => {
 					}
 					//remember to add handling SUB_COMMAND_GROUP when I ever start using that
 				})
-				.join("\n")}\n*at <t:${Math.floor(
+				.join("\n")}\nin ${
+					interaction.channel.name
+				} - <#${interaction.channelId}> ${
+					interaction.guild.name
+				}\n*at <t:${Math.floor(
 				now.getTime() / 1000
 			)}>, <t:${Math.floor(now.getTime() / 1000)}:R>*.`
 		);
@@ -2061,6 +2117,36 @@ client.on("interactionCreate", (interaction) => {
 				embeds: [
 					kifo.embed(
 						"Unknown command! If this should not happen, please use `error` command and provide a description."
+					),
+				],
+			});
+		}
+	}
+	if (interaction.isContextMenu()) {
+		if (client.context_menus.has(interaction.commandName)) {
+			main.log(
+				`${interaction.user.tag} issued \`/${
+					interaction.commandName
+				}\` context menu for ${client.context_menus.get(interaction.commandName).type} in ${
+					interaction.channel.name
+				} - <#${interaction.channelId}> ${
+					interaction.guild.name
+				}\n*at <t:${Math.floor(now.getTime() / 1000)}>, <t:${Math.floor(
+					now.getTime() / 1000
+				)}:R>*.`
+			);
+			try {
+				client.context_menus
+					.get(interaction.commandName)
+					.execute(interaction);
+			} catch (error) {
+				main.log(error);
+			}
+		} else {
+			interaction.reply({
+				embeds: [
+					kifo.embed(
+						"How did this happen? We're smarter than this! (if you see this message, Kifo did some major fuck up in the backend, because logically speaking no one should ever see this)"
 					),
 				],
 			});

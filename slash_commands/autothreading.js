@@ -85,7 +85,7 @@ module.exports = {
 	],
 	defaultPermission: true,
 	guildonly: true,
-	perms: ["USE_SLASH_COMMANDS", "MANAGE_CHANNELS", "MANAGE_THREADS"],
+	perms: ["USE_APPLICATION_COMMANDS", "MANAGE_CHANNELS", "MANAGE_THREADS"],
 
 	//itr = interaction
 	async execute(itr) {

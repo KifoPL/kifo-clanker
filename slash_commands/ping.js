@@ -14,7 +14,7 @@ module.exports = {
 	category: "DEBUG",
 	defaultPermission: true,
 	guildonly: false,
-	perms: ["USE_SLASH_COMMANDS"],
+	perms: ["USE_APPLICATION_COMMANDS"],
 
 	//itr = interaction
 	async execute(itr) {

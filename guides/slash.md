@@ -3,10 +3,10 @@ Slash Commands are the new, exciting way to interact with bots on Discord. With 
 You can learn everything the bot does and easily find new features as they're added. Validation, error states, and helpful UI walks you through the commands, meaning you can get it right the first time, especially on mobile. You now have one more ally in the fight against your phone's autocorrect (`kifo help`, `! kif hello`, `!kifo hell`, `@KifoPL#3358 HELP BOT BROKE`).
 
 Thanks to the features above, **there is no need for `/help` command** - simply type `/` and click `Kifo Clanker` icon to see all available commands! Each command and command argument has a description below its name.
-> Since some commands have an advanced / confusing usage, I created `/guide` command, which links you different guides for very detailed help.
+> Since some commands have an advanced / confusing usage, I created `/guide` command, which links you to different guides for very detailed help.
 
 ## List of `/` commands
-The complete and auto-updated list of command can be found [here](https://kifopl.github.io/kifo-clanker/commandList#list-of-slash-commands-used-with-)
+The complete and auto-updated list of command can be found [here](https://kifopl.github.io/kifo-clanker/commandList#list-of-slash-commands-used-with-).
 
 ## Using `/` commands on `PC`
 After typing `/`, you will see a menu with available command list, as well as a list of bots on the left (represented by their icons). Some bots may have the the same command name, so pay attention to the icons.<br/>
@@ -30,3 +30,6 @@ There are a few types of arguments a command may require. The most basic is:
 - `ROLE`: Same as user, but for roles.
 - `CHANNEL`: Any channel (category, voice, stage, etc), also with an interactive list.
 - `MENTIONABLE`: User or role.
+<hr/>
+
+~by [KifoPL](https://bio.link/KifoPL)

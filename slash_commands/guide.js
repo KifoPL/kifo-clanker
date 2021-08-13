@@ -13,6 +13,7 @@ module.exports = {
 			description: "Select topic, which you want to learn about.",
 			choices: [
 				{ name: "Slash commands", value: "slash" },
+				{ name: "Context menus", value: "contextmenus"},
 				{ name: "Using /ticket", value: "ticket" },
 				{ name: "Ticketing system", value: "ticketing" },
 				{ name: "Auto-threading system", value: "autothreading" },
@@ -22,7 +23,7 @@ module.exports = {
 	category: "HELP",
 	defaultPermission: true,
 	guildonly: false,
-	perms: ["USE_SLASH_COMMANDS"],
+	perms: ["USE_APPLICATION_COMMANDS"],
 
 	//itr = interaction
 	async execute(itr) {

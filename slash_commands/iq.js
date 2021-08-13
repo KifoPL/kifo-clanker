@@ -12,7 +12,7 @@ module.exports = {
 	usage: ["`iq <optional_user>` - A quick and reliable IQ test."],
 	category: "FUN",
 	guildonly: true,
-	perms: ["USE_SLASH_COMMANDS"],
+	perms: ["USE_APPLICATION_COMMANDS"],
 	execute(itr) {
 		let userid =
 			itr.options.data.find((o) => o.name === "user")?.value ??

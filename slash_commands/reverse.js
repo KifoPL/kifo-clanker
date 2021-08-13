@@ -19,7 +19,7 @@ module.exports = {
 	usage: ["`reverse <text>` - reverses the text."],
 	guildonly: false,
 	category: "FUN",
-	perms: ["USE_SLASH_COMMANDS"],
+	perms: ["USE_APPLICATION_COMMANDS"],
 	execute(itr) {
 		const kifo = require("kifo");
 		const text = itr.options.data.find((o) => o.name === "text").value;
