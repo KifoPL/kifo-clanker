@@ -34,7 +34,7 @@ module.exports = {
 				],
 				ephemeral: true,
 			});
-		itr.deferReply({ ephemeral: true });
+		await itr.deferReply({ ephemeral: true });
 		let ticketing = ticketings.get(itr.channelId);
 		let now = new Date(Date.now());
 		let options = itr.options.data;

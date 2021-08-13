@@ -89,7 +89,9 @@ async function execute(itr) {
 				msg.author.avatarURL({ dynamic: true })
 			)
 			.setURL(msg.url)
-			.addField("Message content:", `${msg.content?.length > 0 ? msg.content : "*No content.*"}`)
+			.addField("Message content:", `${msg.content?.length > 0 ? msg.content.replace(/<@&\d{16,20}>/gm, (match) => 
+				`@${msg.guild.roles.resolve(match.slice(3,-1)).name}`
+			) : "*No content.*"}`)
 			.addField(
 				"Don't need this anymore?",
 				"React with <:RedX:857976926542757910> to delete this bookmark."
