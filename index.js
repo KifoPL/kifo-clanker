@@ -2126,7 +2126,7 @@ client.on("interactionCreate", (interaction) => {
 			main.log(
 				`${interaction.user.tag} issued \`/${
 					interaction.commandName
-				}\` context menu for ${interaction.type} in ${
+				}\` context menu for ${client.context_menus.get(interaction.commandName).type} in ${
 					interaction.channel.name
 				} - <#${interaction.channelId}> ${
 					interaction.guild.name

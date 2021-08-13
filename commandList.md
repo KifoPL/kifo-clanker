@@ -283,4 +283,4 @@ Sends a copy of the message in DM (with attachments).
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Fri, 13 Aug 2021 15:07:38 GMT*
+> - *Last update: Fri, 13 Aug 2021 15:10:56 GMT*
