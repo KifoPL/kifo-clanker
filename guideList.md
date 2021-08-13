@@ -2,6 +2,8 @@
 
 ### [How to use `/autothreading`?](./guides/autothreading)
 
+### [How to use context menus?](./guides/contextmenus)
+
 ### [How to use `/` commands?](./guides/slash)
 
 ### [What is a `/ticket`?](./guides/ticket)
@@ -10,6 +12,6 @@
 
 <hr/>
 
-*Last update: Fri, 13 Aug 2021 08:24:09 GMT.*
+*Last update: Fri, 13 Aug 2021 15:07:38 GMT.*
 
 ~by [KifoPL](https://bio.link/KifoPL)

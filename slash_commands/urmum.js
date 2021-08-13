@@ -5,7 +5,7 @@ module.exports = {
 	usage: ["`urmum` - get a random *yo momma* joke."],
 	category: "FUN",
 	guildonly: false,
-	perms: ["USE_SLASH_COMMANDS"],
+	perms: ["USE_APPLICATION_COMMANDS"],
 	execute(itr) {
 		const kifo = require("kifo");
 		const api = require("axios");

@@ -4,12 +4,12 @@ const fs = require("fs");
 const https = require("https");
 
 module.exports = {
-	name: "bookmark",
+	name: "save",
 	description: "Sends a copy of the message in DM (with attachments).",
 	type: "MESSAGE",
 	guildonly: false,
 	category: "UTILITY",
-	perms: ["USE_SLASH_COMMANDS"],
+	perms: ["USE_APPLICATION_COMMANDS"],
 
 	//itr = interaction
 	execute: execute,

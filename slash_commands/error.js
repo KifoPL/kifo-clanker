@@ -24,7 +24,7 @@ module.exports = {
 	],
 	category: "DEBUG",
 	guildonly: false,
-	perms: ["USE_SLASH_COMMANDS"],
+	perms: ["USE_APPLICATION_COMMANDS"],
 	async execute(itr) {
 		await itr.deferReply();
 		const desc = itr.options.data.find(

@@ -181,10 +181,10 @@ for (const file of cmdFiles) {
 }
 console.log(`Loaded ${j} / commands!`);
 console.log("Loading context menus...");
-const ctxtFiles = fs
+const cxtFiles = fs
 	.readdirSync(`./context_menus`)
 	.filter((file) => file.endsWith(".js"));
-for (const file of ctxtFiles) {
+for (const file of cxtFiles) {
 	const context = require(`./context_menus/${file}`);
 	client.context_menus.set(context.name, context);
 	console.log(`Context menu "${context.name}"`);
@@ -1417,9 +1417,28 @@ function setCommandList() {
 					})
 					.join("\n\t- ")}\n`;
 			}
+			cmdListMD += `- Required user permissions: \`${command.perms.join("\`, \`")}\`\n`
 			cmdListMD += `\n`;
 		});
 	});
+	cmdListMD += `# List of context menus (used with <kbd>Right-Click</kbd>):\n`
+	let cxtMap = new Map();
+	for (const cxt of cxtFiles) {
+		const context = require(`./context_menus/${cxt}`);
+		if (cxtMap.has(context.type)) {
+			cxtMap.get(context.type).push(context);
+		} else cxtMap.set(context.type, [context]);
+	}
+	const cxtMapSorted = new Map([...cxtMap.entries()].sort());
+	cxtMapSorted.forEach((val, key) => {
+		cmdListMD += `## ${key.toUpperCase()} *(right-click on \`${key.toLowerCase()}\` to use)*\n\n`;
+		val.forEach((command) => {
+			cmdListMD += `### ${command?.name}\n`;
+			cmdListMD += `${command?.description}\n`;
+			cmdListMD += `- Required user permissions: \`${command.perms.join("\`, \`")}\`\n`
+			cmdListMD += `\n`;
+		});
+	})
 	let now = new Date(Date.now());
 	cmdListJSON = cmdListJSON.slice(0, cmdListJSON.length - 2);
 	cmdListJSON += `\n}`;
