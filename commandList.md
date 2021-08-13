@@ -283,11 +283,7 @@ Sends a copy of the message in DM (with attachments).
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-<<<<<<< Updated upstream
-- Last update: Fri, 13 Aug 2021 15:55:55 GMT
-=======
-- Last update: Fri, 13 Aug 2021 15:58:33 GMT
->>>>>>> Stashed changes
+- Last update: Fri, 13 Aug 2021 16:07:23 GMT
 *~by [KifoPL](https://bio.link/KifoPL)*
 
 [<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)*
