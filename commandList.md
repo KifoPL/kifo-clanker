@@ -228,12 +228,6 @@ Set up ticketing system in a channel.
 
 ## UTILITY
 
-### bookmark
-Sends a copy of the message in DM (with attachments).
-- Options:
-	- `message` - ID or URL of the message.
-	- `pin` *(optional)* - Whether the message should be pinned. False by default.
-
 ### poll
 Create a poll.
 - Options:
@@ -259,4 +253,4 @@ Create a ticket
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Mon, 09 Aug 2021 16:27:00 GMT*
+> - *Last update: Fri, 13 Aug 2021 08:24:09 GMT*
