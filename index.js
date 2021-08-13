@@ -2125,7 +2125,7 @@ client.on("interactionCreate", (interaction) => {
 	if (interaction.isContextMenu()) {
 		if (client.context_menus.has(interaction.commandName)) {
 			main.log(
-				`${interaction.user.tag} issued \`/${
+				`${interaction.user.tag} issued \`${
 					interaction.commandName
 				}\` context menu for ${client.context_menus.get(interaction.commandName).type} in ${
 					interaction.channel.name
