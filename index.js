@@ -1444,7 +1444,8 @@ function setCommandList() {
 	cmdListJSON += `\n}`;
 	cmdListMD += `<hr/>\n`;
 	cmdListMD += `\n> - *Some commands may require additional perms for the bot.*`;
-	cmdListMD += `\n> - *Last update: ${now.toUTCString()}*`;
+	cmdListMD += `\n- Last update: ${now.toUTCString()}`;
+	cmdListMD += "\n*~by [KifoPL](https://bio.link/KifoPL)*\n\n[<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)*";
 
 	fs.writeFile(`commandList.json`, cmdListJSON, () => {
 		return;
@@ -1472,8 +1473,8 @@ function setGuideList() {
 			-3
 		)})\n\n`;
 	});
-	guideList += `<hr/>\n\n*Last update: ${now.toUTCString()}.*\n`;
-	guideList += "\n~by [KifoPL](https://bio.link/KifoPL)";
+	guideList += `<hr/>\n\nLast update: ${now.toUTCString()}.\n`;
+	guideList += "\n*~by [KifoPL](https://bio.link/KifoPL)*\n\n[<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)";
 
 	fs.writeFile(`guideList.md`, guideList, () => {
 		return;

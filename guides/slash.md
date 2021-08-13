@@ -30,3 +30,6 @@ There are a few types of arguments a command may require. The most basic is:
 - `ROLE`: Same as user, but for roles.
 - `CHANNEL`: Any channel (category, voice, stage, etc), also with an interactive list.
 - `MENTIONABLE`: User or role.
+<hr/>
+
+~by [KifoPL](https://bio.link/KifoPL)

@@ -18,3 +18,6 @@ Either <kbd>Right-Click</kbd> on the message or <kbd>Left-Click</kbd> on the <kb
 
 ## Using context menus on `Mobile`
 *Currently there is no support for context menus via mobile app. I will update this guide once this feature is implemented.*
+<hr/>
+
+~by [KifoPL](https://bio.link/KifoPL)
