@@ -14,7 +14,7 @@ module.exports = {
 	],
 	category: "FUN",
 	guildonly: true,
-	perms: ["USE_SLASH_COMMANDS"],
+	perms: ["USE_APPLICATION_COMMANDS"],
 	execute(itr) {
 		let userid =
 			itr.options.data.find((o) => o.name === "user")?.value ??

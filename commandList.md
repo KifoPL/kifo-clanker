@@ -135,16 +135,19 @@ This command allows you to create a simple todo notes.
 Creates an issue on GitHub and pings KifoPL. Do not spam this command.
 - Options:
 	- `description` - Provide a brief description of how and when this error occurred.
+- Required user permissions: `USE_APPLICATION_COMMANDS`
 
 ### ping
 ...pong?
 - Options:
 	- `reply` *(optional)* - What do you want me to reply with?
+- Required user permissions: `USE_APPLICATION_COMMANDS`
 
 ### test
 test out if the `/` commands work properly.
 - Options:
 	- `input` *(optional)* - The text to return.
+- Required user permissions: `USE_APPLICATION_COMMANDS`
 
 ## FUN
 
@@ -152,36 +155,43 @@ test out if the `/` commands work properly.
 Express your feelings to another discord user with this beautiful poem.
 - Options:
 	- `user` *(optional)* - direct your feelings towards the user.
+- Required user permissions: `USE_APPLICATION_COMMANDS`
 
 ### howgay
 A quick test to find out your gayness level.
 - Options:
 	- `user` *(optional)* - A subject of measurement.
+- Required user permissions: `USE_APPLICATION_COMMANDS`
 
 ### iq
 A very quick and accurate IQ test.
 - Options:
 	- `user` *(optional)* - A subject of measurement.
+- Required user permissions: `USE_APPLICATION_COMMANDS`
 
 ### pp
 Measure your PP length with this totally reliable pp length calculator.
 - Options:
 	- `user` *(optional)* - A subject of measurement.
+- Required user permissions: `USE_APPLICATION_COMMANDS`
 
 ### reverse
 This command reverses anything you type.
 - Options:
 	- `text` - The text to reverse
 	- `silent` *(optional)* - Whether to show the result to only you, or everyone. False by default.
+- Required user permissions: `USE_APPLICATION_COMMANDS`
 
 ### stfu
 This is an eloquent way to say "Thank you for this conversation we've had".
 - Options:
 	- `user` *(optional)* - Ask someone to lower their voice to the sub-audible level in an elegant manner.
+- Required user permissions: `USE_APPLICATION_COMMANDS`
 
 ### urmum
 Random *yo momma* joke.
 - Options:
+- Required user permissions: `USE_APPLICATION_COMMANDS`
 
 ## HELP
 
@@ -189,6 +199,7 @@ Random *yo momma* joke.
 Receive link for command list, or guide regarding speficic topic.
 - Options:
 	- `choice` *(optional)* - Select topic, which you want to learn about.
+- Required user permissions: `USE_APPLICATION_COMMANDS`
 
 ## MANAGEMENT
 
@@ -203,6 +214,7 @@ Set up auto threading system in a channel.
 	- `off` - Turn off auto-threading system.
 	- `list` - List all channels with auto-threading system enabled.
 	- `help` - Send a link with very detailed information regarding auto-threading system.
+- Required user permissions: `USE_APPLICATION_COMMANDS`, `MANAGE_CHANNELS`, `MANAGE_THREADS`
 
 ### threads
 Manage threads in this channel.
@@ -214,6 +226,7 @@ Manage threads in this channel.
 		- `count` - How many oldest threads would you like to archive?
 		- `which` - Should I delete archived, or active threads?
 		- `silent` *(optional)* - Do you want the output to be visible only by you? Defaults to false.
+- Required user permissions: `USE_APPLICATION_COMMANDS`, `MANAGE_THREADS`
 
 ### ticketing
 Set up ticketing system in a channel.
@@ -225,14 +238,16 @@ Set up ticketing system in a channel.
 	- `off` - Turn off ticketing system.
 	- `list` - List all channels with ticketing system enabled.
 	- `help` - Send a link with very detailed information regarding ticketing system.
+- Required user permissions: `USE_APPLICATION_COMMANDS`, `MANAGE_CHANNELS`, `MANAGE_THREADS`
 
 ## UTILITY
 
 ### bookmark
-Sends a copy of the message in DM (with attachments).
+Sends a copy of the message in DM (with attachments) (**DEPRACATED**).
 - Options:
 	- `message` - ID or URL of the message.
 	- `pin` *(optional)* - Whether the message should be pinned. False by default.
+- Required user permissions: `USE_APPLICATION_COMMANDS`
 
 ### poll
 Create a poll.
@@ -249,14 +264,26 @@ Create a poll.
 	- `eight` *(optional)* - Option 8
 	- `nine` *(optional)* - Option 9
 	- `ten` *(optional)* - Option 10
+- Required user permissions: `USE_APPLICATION_COMMANDS`
 
 ### ticket
 Create a ticket
 - Options:
 	- `title` - The problem, or question you have.
 	- `description` *(optional)* - Provide any additional information about your question/problem
+- Required user permissions: `USE_APPLICATION_COMMANDS`
+
+# List of context menus (used with <kbd>Right-Click</kbd>):
+## MESSAGE *(right-click on `message` to use)*
+
+### save
+Sends a copy of the message in DM (with attachments).
+- Required user permissions: `USE_APPLICATION_COMMANDS`
 
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-> - *Last update: Mon, 09 Aug 2021 16:27:00 GMT*
+- Last update: Fri, 13 Aug 2021 15:27:39 GMT
+*~by [KifoPL](https://bio.link/KifoPL)*
+
+[<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)*

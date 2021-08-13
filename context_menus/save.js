@@ -4,24 +4,10 @@ const fs = require("fs");
 const https = require("https");
 
 module.exports = {
-	name: "bookmark",
-	description: "Sends a copy of the message in DM (with attachments) (**DEPRACATED**).",
-	options: [
-		{
-			name: "message",
-			type: "STRING",
-			description: "ID or URL of the message.",
-			required: true,
-		},
-		{
-			name: "pin",
-			type: "BOOLEAN",
-			description:
-				"Whether the message should be pinned. False by default.",
-		},
-	],
-	defaultPermission: true,
-	guildonly: true,
+	name: "save",
+	description: "Sends a copy of the message in DM (with attachments).",
+	type: "MESSAGE",
+	guildonly: false,
 	category: "UTILITY",
 	perms: ["USE_APPLICATION_COMMANDS"],
 
@@ -55,21 +41,7 @@ async function downloadAttachment(url) {
 
 async function execute(itr) {
 	await itr.deferReply({ ephemeral: true });
-	let options = itr.options.data;
-	let msgResolvable = options.find((o) => o.name === "message").value;
-	if (msgResolvable.match(kifo.urlRegex())) {
-		msgResolvable = msgResolvable.split("/").pop();
-		if (!msgResolvable.match(/\d{16,22}/gm)) {
-			return itr.editReply({
-				embeds: [
-					kifo.embed("Please use **message link** or **message Id**!"),
-				],
-				ephemeral: true,
-			});
-		}
-	}
-	let pin = options.find((o) => o.name === "pin")?.value ?? false;
-	let msg = await itr.channel.messages.fetch(msgResolvable);
+	let msg = itr.options.getMessage('message');
 	let urlArr = [];
 	msg.attachments.each((att) => urlArr.push(att.url));
 	let attNames = urlArr.map((a) => a.split("/").pop());
@@ -89,7 +61,9 @@ async function execute(itr) {
 				msg.author.avatarURL({ dynamic: true })
 			)
 			.setURL(msg.url)
-			.addField("Message content:", `${msg.content?.length > 0 ? msg.content : "*No content.*"}`)
+			.addField("Message content:", `${msg.content?.length > 0 ? msg.content.replace(/<@&\d{16,20}>/gm, (match) => 
+				`@${msg.guild.roles.resolve(match.slice(3,-1)).name}`
+			) : "*No content.*"}`)
 			.addField(
 				"Don't need this anymore?",
 				"React with <:RedX:857976926542757910> to delete this bookmark."
@@ -101,9 +75,8 @@ async function execute(itr) {
 			})
 			.then((msgCopy) => {
 				msgCopy.react("<:RedX:857976926542757910>").catch(() => {});
-				if (pin) msgCopy.pin().catch(() => {});
 				itr.editReply({
-					embeds: [kifo.embed("Saved a copy in DM!\n\n**DEPRECATION WARNING**: This will be removed in a future release, because of context menus. If you're on PC, simply right-click on message, then choose `Apps` > `Save`.")],
+					embeds: [kifo.embed("Saved a copy in DM!")],
 					ephemeral: true,
 				});
 			})
