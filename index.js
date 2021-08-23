@@ -815,9 +815,7 @@ async function commands(message, prefix) {
 							.join(", ")}`
 					);
 				});
-				console.log("test");
 				clientapp.commands.fetch().then((cmds1) => {
-					console.log("test");
 					cmds1.each((cmd) => {
 						reply.addField(
 							`${cmd.name}`,
@@ -1417,11 +1415,13 @@ function setCommandList() {
 					})
 					.join("\n\t- ")}\n`;
 			}
-			cmdListMD += `- Required user permissions: \`${command.perms.join("\`, \`")}\`\n`
+			cmdListMD += `- Required user permissions: \`${command.perms.join(
+				"`, `"
+			)}\`\n`;
 			cmdListMD += `\n`;
 		});
 	});
-	cmdListMD += `# List of context menus (used with <kbd>Right-Click</kbd>):\n`
+	cmdListMD += `# List of context menus (used with <kbd>Right-Click</kbd>):\n`;
 	let cxtMap = new Map();
 	for (const cxt of cxtFiles) {
 		const context = require(`./context_menus/${cxt}`);
@@ -1435,17 +1435,20 @@ function setCommandList() {
 		val.forEach((command) => {
 			cmdListMD += `### ${command?.name}\n`;
 			cmdListMD += `${command?.description}\n`;
-			cmdListMD += `- Required user permissions: \`${command.perms.join("\`, \`")}\`\n`
+			cmdListMD += `- Required user permissions: \`${command.perms.join(
+				"`, `"
+			)}\`\n`;
 			cmdListMD += `\n`;
 		});
-	})
+	});
 	let now = new Date(Date.now());
 	cmdListJSON = cmdListJSON.slice(0, cmdListJSON.length - 2);
 	cmdListJSON += `\n}`;
 	cmdListMD += `<hr/>\n`;
 	cmdListMD += `\n> - *Some commands may require additional perms for the bot.*`;
 	cmdListMD += `\n- Last update: ${now.toUTCString()}`;
-	cmdListMD += "\n*~by [KifoPL](https://bio.link/KifoPL)*\n\n[<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)*";
+	cmdListMD +=
+		"\n*~by [KifoPL](https://bio.link/KifoPL)*\n\n[<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)";
 
 	fs.writeFile(`commandList.json`, cmdListJSON, () => {
 		return;
