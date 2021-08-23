@@ -280,10 +280,16 @@ Create a ticket
 Sends a copy of the message in DM (with attachments).
 - Required user permissions: `USE_APPLICATION_COMMANDS`
 
+## USER *(right-click on `user` to use)*
+
+### user stats
+Lists user stats.
+- Required user permissions: `USE_APPLICATION_COMMANDS`
+
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-- Last update: Fri, 13 Aug 2021 15:27:39 GMT
+- Last update: Mon, 23 Aug 2021 10:09:09 GMT
 *~by [KifoPL](https://bio.link/KifoPL)*
 
-[<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)*
+[<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)

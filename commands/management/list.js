@@ -3,6 +3,8 @@ const kifo = require("kifo");
 const main = require(`../../index.js`);
 const Discord = require("discord.js");
 const api = require("axios");
+const ms = require(`ms`);
+const fs = require("fs");
 module.exports = {
 	name: "list",
 	description: `Lists all users in the server, or users having certain role.\nTo list more than ${limit} users you need \`MANAGE_GUILD\` perms.\nIf the bot doesn't see some channels, lists ~~may~~ will be incorrect.`,
@@ -17,6 +19,8 @@ module.exports = {
 	perms: ["SEND_MESSAGES", "MANAGE_GUILD"],
 	execute: execute,
 	stats: stats,
+	userstats: userstats,
+	botstats: botstats,
 };
 
 async function execute(message, args, prefix) {
@@ -120,10 +124,6 @@ async function whatamifunc(message, args, callback) {
 async function stats(message, args, prefix, isList = true) {
 	//If you're reading this, good luck understanding wtf is happening here :)
 
-	//This is for timestamps
-	const ms = require(`ms`);
-	const fs = require("fs");
-
 	//for debugging, uncomment to resolve paths
 	//const path = require("path");
 
@@ -148,7 +148,7 @@ async function stats(message, args, prefix, isList = true) {
 			],
 		});
 	message.channel.sendTyping().catch(() => {});
-	const newEmbed = new Discord.MessageEmbed();
+	let newEmbed = new Discord.MessageEmbed();
 	let time = new Date(Date.now());
 
 	//if you provide multiple role Ids you get a list of members with these roles
@@ -238,7 +238,7 @@ async function stats(message, args, prefix, isList = true) {
 			});
 
 			fs.writeFileSync(
-				`./${time.toISOString().replace(":", "_")}_list.txt`,
+				`./${time.toISOString().replace(/:/g, () => "_")}_list.txt`,
 				fileContent,
 				() => {}
 			);
@@ -337,7 +337,7 @@ async function stats(message, args, prefix, isList = true) {
 			});
 
 			fs.writeFileSync(
-				`./${time.toISOString().replace(":", "_")}_list.txt`,
+				`./${time.toISOString().replace(/:/g, () => "_")}_list.txt`,
 				fileContent,
 				() => {}
 			);
@@ -394,8 +394,7 @@ async function stats(message, args, prefix, isList = true) {
 	message.client.guilds.cache.each(() => {
 		guildcount++;
 	});
-	let serverrolecount = 0;
-	await message.guild.roles.cache.each(() => serverrolecount++);
+
 	let entity;
 
 	//not multiple roles, plain old stats
@@ -406,6 +405,8 @@ async function stats(message, args, prefix, isList = true) {
 			let botcount = 0;
 			let onlinecount = 0;
 			let boostcount = 0;
+			let serverrolecount = 0;
+			await message.guild.roles.cache.each(() => serverrolecount++);
 
 			let channelcount = 0;
 			let channelvoicecount = 0;
@@ -471,7 +472,7 @@ async function stats(message, args, prefix, isList = true) {
 
 			if (isList) {
 				fs.writeFileSync(
-					`./${time.toISOString().replace(":", "_")}_list.txt`,
+					`./${time.toISOString().replace(/:/g, () => "_")}_list.txt`,
 					fileContent,
 					() => {}
 				);
@@ -621,318 +622,20 @@ async function stats(message, args, prefix, isList = true) {
 					.catch(() => {});
 			}
 
-			const contents = fs.readFileSync(`././commandList.json`);
-			var jsonCmdList = JSON.parse(contents);
-
-			const ppcmd = require(`../../slash_commands/pp`);
-			const howgaycmd = require(`../../slash_commands/howgay`);
-			const iqcmd = require(`../../slash_commands/iq`);
-
-			let presence = undefined;
-			if (whatami == "user") {
-				presence = message.guild.presences.cache.find(
-					(pr) => pr.userId == entity.id
-				);
-			}
-
 			//WHAT ARE YOU CHECK ? - determines if you wanna check stats of user, bot, role, channel or message
 			if (whatami == "user" && entity.user.bot) whatami = "bot";
 			//USER STATS
 			if (whatami == "user") {
-				let usertime = time.getTime() - entity.user.createdAt.getTime();
-				let membertime = time.getTime() - entity.joinedAt.getTime();
-				let rolecount = 0;
-				let fileContent = `Role Id\tPosition\tRole name\n`;
-				let statusicon;
-				if (presence?.status == "online" || presence?.status == "idle")
-					statusicon = "<:online:823658022974521414>";
-				else statusicon = "<:offline:823658022957613076>";
-				await entity.roles.cache
-					// .sorted((roleA, roleB) => {
-					// 	return roleB.rawPosition - roleA.rawPosition;
-					// })
-					.each(() => {
-						rolecount++;
-					});
-				if (isList) {
-					entity.roles.cache.each((role) => {
-						fileContent += `${role.id}\t${role.rawPosition}\t${role.name}\n`;
-					});
-				}
-
-				const ppfield = await ppcmd.calculate(
-					entity.id,
-					entity.guild.id
-				);
-				const howgayfield = await howgaycmd.calculate(
-					entity.id,
-					entity.guild.id
-				);
-				const iqfield = await iqcmd.calculate(
-					entity.id,
-					entity.guild.id
-				);
-
-				if (isList) {
-					fs.writeFileSync(
-						`./${time.toISOString().replace(":", "_")}_list.txt`,
-						fileContent,
-						() => {}
-					);
-				}
-
-				newEmbed
-					.setColor("a039a0")
-					.setTitle(`${entity.displayName} stats:`)
-					.setDescription(
-						`<:info:823907804200435713> <@${entity.user.id}>, ${
-							entity.nickname == undefined
-								? "No nickname set,"
-								: `${entity.nickname}, AKA`
-						} ${entity.user.tag}.`
-					)
-					.setImage(
-						entity.user.displayAvatarURL({
-							format: "png",
-							dynamic: true,
-							size: 512,
-						})
-					)
-					.setAuthor(
-						"Kifo Clanker™, by KifoPL#3358",
-						message.guild.me?.user?.avatarURL({
-							format: "png",
-							dynamic: true,
-							size: 64,
-						}),
-						"https://kifopl.github.io/kifo-clanker/"
-					)
-					.setFooter(
-						`Account created at: ${entity.user.createdAt.toUTCString()}\nAccount joined server at: ${entity.joinedAt.toUTCString()}, ${ms(
-							entity.joinedAt.getTime() -
-								entity.guild.createdAt.getTime(),
-							{ long: true }
-						)} after server creation.\nIt is ${ms(usertime, {
-							long: true,
-						})} old.\nIt joined server ${ms(membertime, {
-							long: true,
-						})} ago (it joined ${ms(
-							entity.joinedAt.getTime() -
-								entity.user.createdAt.getTime(),
-							{ long: true }
-						)} after account creation).\n${
-							entity.joinedAt.getTime() -
-								entity.user.createdAt.getTime() <
-							ms("1h")
-								? `It *could* be an alt.`
-								: `It *probably* isn't alt.`
-						}`
-					)
-					.addFields(
-						{
-							name: `Boost status:`,
-							value: `<:boost:823658698412392449> ${
-								entity.premiumSince != undefined
-									? `Boosting since ${entity.premiumSince.toUTCString()}, that's ${ms(
-											time -
-												entity.premiumSince.getTime(),
-											{ long: true }
-									  )}!`
-									: `Not boosting... ***yet***.`
-							}`,
-						},
-						{
-							name: `Roles`,
-							value: `<:role:823658022948700240> ${
-								rolecount != 1
-									? `${
-											rolecount - 1
-									  } roles, highest role is ${
-											entity.roles?.highest?.name
-									  } (${kifo.place(
-											entity.guild.roles.highest
-												?.rawPosition -
-												entity.roles?.highest
-													?.rawPosition +
-												1
-									  )} out of ${serverrolecount} server roles), ${
-											entity.roles?.hoist?.name ==
-											undefined
-												? `not hoisted`
-												: `\nhoisted as <:hoist:823907804141322311> ${entity.roles?.hoist?.name}`
-									  }.`
-									: `This account has no roles yet.`
-							}`,
-						},
-						{
-							name: `Status`,
-							value: `${statusicon} User is currently **${
-								presence?.status ?? "offline"
-							}**.`,
-						},
-						{
-							name: `IQ level: ${iqfield.name}`,
-							value: iqfield.value,
-							inline: true,
-						},
-						{
-							name: `PP: ${ppfield.name}`,
-							value: ppfield.value,
-							inline: true,
-						},
-						{
-							name: `Gayness level: ${howgayfield.name}`,
-							value: howgayfield.value,
-							inline: false,
-						},
-						//{name: "Also:", value: `You can check your own stats with "stats me", or someone else's stats by ${this.usage}`},
-						{
-							name: "More",
-							value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
-						}
-					);
+				newEmbed = await userstats(message, entity, isList, time);
 			}
 			//BOT STATS
 			else if (whatami == "bot") {
-				let usertime = time.getTime() - entity.user.createdAt.getTime();
-				let membertime = time.getTime() - entity.joinedAt.getTime();
-				let rolecount = 0;
-				let statusicon;
-				let fileContent = `Role Id\tRole name\n`;
-				if (
-					entity.presence?.status == "online" ||
-					entity.presence?.status == "idle"
-				)
-					statusicon = "<:online:823658022974521414>";
-				else statusicon = "<:offline:823658022957613076>";
-				await entity.roles.cache.each((role) => {
-					rolecount++;
-				});
-				if (isList) {
-					await entity.roles.cache.each((role) => {
-						fileContent += `${role.id}\t${role.name}\n`;
-					});
-				}
-				const ppfield = await ppcmd.calculate(
-					entity.id,
-					entity.guild.id
-				);
-				const howgayfield = await howgaycmd.calculate(
-					entity.id,
-					entity.guild.id
-				);
-				const iqfield = await iqcmd.calculate(
-					entity.id,
-					entity.guild.id
-				);
-
-				if (isList) {
-					fs.writeFileSync(
-						`./${time.toISOString().replace(":", "_")}_list.txt`,
-						fileContent,
-						() => {}
-					);
-				}
-
-				newEmbed
-					.setColor("a039a0")
-					.setTitle(`${entity.displayName} stats:`)
-					.setDescription(
-						`BOT <:info:823907804200435713> <@${entity.user.id}>, ${
-							entity.nickname == undefined
-								? "No nickname set,"
-								: `${entity.nickname}, AKA`
-						} ${entity.user.tag}.`
-					)
-					.setImage(
-						entity.user.displayAvatarURL({
-							format: "png",
-							dynamic: true,
-							size: 512,
-						})
-					)
-					.setAuthor(
-						"Kifo Clanker™, by KifoPL#3358",
-						message.guild.me?.user?.avatarURL({
-							format: "png",
-							dynamic: true,
-							size: 64,
-						}),
-						"https://kifopl.github.io/kifo-clanker/"
-					)
-					.setFooter(
-						`Bot created at: ${entity.user.createdAt.toUTCString()}\nBot joined server at: ${entity.joinedAt.toUTCString()}, ${ms(
-							entity.joinedAt.getTime() -
-								entity.guild.createdAt.getTime(),
-							{ long: true }
-						)} after server creation.\nIt is ${ms(usertime, {
-							long: true,
-						})} old.\nIt joined server ${ms(membertime, {
-							long: true,
-						})} ago (it joined ${ms(
-							entity.joinedAt.getTime() -
-								entity.user.createdAt.getTime(),
-							{ long: true }
-						)} after account creation).`
-					)
-					.addFields(
-						{
-							name: `Roles`,
-							value: `<:role:823658022948700240> ${
-								rolecount != 1
-									? `${
-											rolecount - 1
-									  } roles, highest role is ${
-											entity.roles?.highest?.name
-									  } (${kifo.place(
-											entity.guild.roles.highest
-												?.rawPosition -
-												entity.roles?.highest
-													?.rawPosition +
-												1
-									  )} out of ${serverrolecount} server roles), ${
-											entity.roles?.hoist?.name ==
-											undefined
-												? `not hoisted`
-												: `\nhoisted as <:hoist:823907804141322311> ${entity.roles?.hoist?.name}`
-									  }.`
-									: `This bot has no roles yet.`
-							}`,
-						},
-						{
-							name: `Status`,
-							value: `${statusicon} Bot is currently **${
-								presence?.status ?? "offline"
-							}**.`,
-						},
-						{
-							name: `Interesting stats:`,
-							value: `(They're seriously interesting, though!)`,
-						},
-						{
-							name: `IQ level: ${iqfield.name}`,
-							value: iqfield.value,
-							inline: true,
-						},
-						{
-							name: `PP: ${ppfield.name}`,
-							value: ppfield.value,
-							inline: true,
-						},
-						{
-							name: `Gayness level: ${howgayfield.name}`,
-							value: howgayfield.value,
-							inline: false,
-						},
-						//{name: "Also:", value: `You can check your own stats with "stats me", or someone else's stats by ${this.usage}`},
-						{
-							name: "More",
-							value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
-						}
-					);
+				newEmbed = await botstats(message, entity, isList, time);
 			}
 			//ROLE STATS
 			else if (whatami == "role") {
+				let serverrolecount = 0;
+				await message.guild.roles.cache.each(() => serverrolecount++);
 				let rolecreationAt =
 					time.getTime() - entity.createdAt.getTime();
 				let perms = entity.permissions;
@@ -970,7 +673,9 @@ async function stats(message, args, prefix, isList = true) {
 
 				if (isList)
 					fs.writeFileSync(
-						`./${time.toISOString().replace(":", "_")}_list.txt`,
+						`./${time
+							.toISOString()
+							.replace(/:/g, () => "_")}_list.txt`,
 						fileContent,
 						() => {}
 					);
@@ -979,7 +684,7 @@ async function stats(message, args, prefix, isList = true) {
 					params: { hex: entity.hexColor.slice(1) },
 				});
 
-				newEmbed
+				return newEmbed
 					.setColor("a039a0")
 					.setTitle(`${entity.name} stats:`)
 					.setDescription(
@@ -1000,7 +705,9 @@ async function stats(message, args, prefix, isList = true) {
 							{ long: true }
 						)} ago, ${ms(
 							entity.createdAt - message.guild.createdAt,
-							{ long: true }
+							{
+								long: true,
+							}
 						)} after server creation.`
 					)
 					.addFields(
@@ -1180,7 +887,7 @@ async function stats(message, args, prefix, isList = true) {
 						),
 					],
 				});
-				//F for message stats
+				//TODO F for message stats
 				await entity.fetch().then((msg) => (entity = msg));
 				let topReaction = await entity.reactions.cache
 					.sort((a, b) => b.count - a.count)
@@ -1225,7 +932,9 @@ async function stats(message, args, prefix, isList = true) {
 							.join("\n\n\n");
 					}
 					fs.writeFileSync(
-						`./${time.toISOString().replace(":", "_")}_list.txt`,
+						`./${time
+							.toISOString()
+							.replace(/:/g, () => "_")}_list.txt`,
 						fileContent,
 						() => {}
 					);
@@ -1327,14 +1036,16 @@ async function stats(message, args, prefix, isList = true) {
 			}
 		}
 	}
-	if (isList)
+	if (isList) {
 		await message
 			.reply({
 				embeds: [newEmbed],
-				files: [`./${time.toISOString().replace(":", "_")}_list.txt`],
+				files: [
+					`./${time.toISOString().replace(/:/g, () => "_")}_list.txt`,
+				],
 			})
 			.catch((err) => main.log(err));
-	else
+	} else
 		await message.reply({ embeds: [newEmbed] }).catch((err) => {
 			main.log(err);
 		});
@@ -1342,10 +1053,303 @@ async function stats(message, args, prefix, isList = true) {
 		fs.unlink(
 			`${__dirname}/../../${time
 				.toISOString()
-				.replace(":", "_")}_list.txt`,
+				.replace(/:/g, () => "_")}_list.txt`,
 			(err) => {
 				main.log(err);
 			}
 		);
 	}
+}
+
+async function userstats(
+	itr,
+	entity,
+	isList = true,
+	time = new Date(Date.now())
+) {
+	const ppcmd = require(`../../slash_commands/pp`);
+	const howgaycmd = require(`../../slash_commands/howgay`);
+	const iqcmd = require(`../../slash_commands/iq`);
+
+	let presence = undefined;
+
+	presence = itr.guild.presences.cache.find((pr) => pr.userId == entity.id);
+
+	let newEmbed = new Discord.MessageEmbed();
+
+	let usertime = time.getTime() - entity.user.createdAt.getTime();
+	let membertime = time.getTime() - entity.joinedAt.getTime();
+	let rolecount = 0;
+	let serverrolecount = 0;
+	await itr.guild.roles.cache.each(() => serverrolecount++);
+	let fileContent = `Role Id\tPosition\tRole name\n`;
+	let statusicon;
+	if (presence?.status == "online" || presence?.status == "idle")
+		statusicon = "<:online:823658022974521414>";
+	else statusicon = "<:offline:823658022957613076>";
+	await entity.roles.cache
+		// // .sorted((roleA, roleB) => {
+		// // 	return roleB.rawPosition - roleA.rawPosition;
+		// // })
+		.each(() => {
+			rolecount++;
+		});
+	if (isList) {
+		entity.roles.cache.each((role) => {
+			fileContent += `${role.id}\t${role.rawPosition}\t${role.name}\n`;
+		});
+	}
+
+	const ppfield = await ppcmd.calculate(entity.id, entity.guild.id);
+	const howgayfield = await howgaycmd.calculate(entity.id, entity.guild.id);
+	const iqfield = await iqcmd.calculate(entity.id, entity.guild.id);
+
+	if (isList) {
+		fs.writeFileSync(
+			`./${time.toISOString().replace(/:/g, () => "_")}_list.txt`,
+			fileContent,
+			() => {}
+		);
+	}
+
+	return newEmbed
+		.setColor("a039a0")
+		.setTitle(`${entity.displayName} stats:`)
+		.setDescription(
+			`<:info:823907804200435713> <@${entity.user.id}>, ${
+				entity.nickname == undefined
+					? "No nickname set,"
+					: `${entity.nickname}, AKA`
+			} ${entity.user.tag}.`
+		)
+		.setImage(
+			entity.user.displayAvatarURL({
+				format: "png",
+				dynamic: true,
+				size: 512,
+			})
+		)
+		.setAuthor(
+			"Kifo Clanker™, by KifoPL#3358",
+			itr.guild.me?.user?.avatarURL({
+				format: "png",
+				dynamic: true,
+				size: 64,
+			}),
+			"https://kifopl.github.io/kifo-clanker/"
+		)
+		.setFooter(
+			`Account created at: ${entity.user.createdAt.toUTCString()}\nAccount joined server at: ${entity.joinedAt.toUTCString()}, ${ms(
+				entity.joinedAt.getTime() - entity.guild.createdAt.getTime(),
+				{ long: true }
+			)} after server creation.\nIt is ${ms(usertime, {
+				long: true,
+			})} old.\nIt joined server ${ms(membertime, {
+				long: true,
+			})} ago (it joined ${ms(
+				entity.joinedAt.getTime() - entity.user.createdAt.getTime(),
+				{ long: true }
+			)} after account creation).\n${
+				entity.joinedAt.getTime() - entity.user.createdAt.getTime() <
+				ms("1h")
+					? `It *could* be an alt.`
+					: `It *probably* isn't alt.`
+			}`
+		)
+		.addFields(
+			{
+				name: `Boost status:`,
+				value: `<:boost:823658698412392449> ${
+					entity.premiumSince != undefined
+						? `Boosting since ${entity.premiumSince.toUTCString()}, that's ${ms(
+								time - entity.premiumSince.getTime(),
+								{ long: true }
+						  )}!`
+						: `Not boosting... ***yet***.`
+				}`,
+			},
+			{
+				name: `Roles`,
+				value: `<:role:823658022948700240> ${
+					rolecount != 1
+						? `${rolecount - 1} roles, highest role is ${
+								entity.roles?.highest?.name
+						  } (${kifo.place(
+								entity.guild.roles.highest?.rawPosition -
+									entity.roles?.highest?.rawPosition +
+									1
+						  )} out of ${serverrolecount} server roles), ${
+								entity.roles?.hoist?.name == undefined
+									? `not hoisted`
+									: `\nhoisted as <:hoist:823907804141322311> ${entity.roles?.hoist?.name}`
+						  }.`
+						: `This account has no roles yet.`
+				}`,
+			},
+			{
+				name: `Status`,
+				value: `${statusicon} User is currently **${
+					presence?.status ?? "offline"
+				}**.`,
+			},
+			{
+				name: `IQ level: ${iqfield.name}`,
+				value: iqfield.value,
+				inline: true,
+			},
+			{
+				name: `PP: ${ppfield.name}`,
+				value: ppfield.value,
+				inline: true,
+			},
+			{
+				name: `Gayness level: ${howgayfield.name}`,
+				value: howgayfield.value,
+				inline: false,
+			},
+			////{name: "Also:", value: `You can check your own stats with "stats me", or someone else's stats by ${this.usage}`},
+			{
+				name: "More",
+				value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
+			}
+		);
+}
+
+async function botstats(
+	itr,
+	entity,
+	isList = true,
+	time = new Date(Date.now())
+) {
+	const ppcmd = require(`../../slash_commands/pp`);
+	const howgaycmd = require(`../../slash_commands/howgay`);
+	const iqcmd = require(`../../slash_commands/iq`);
+
+	let presence = undefined;
+
+	presence = itr.guild.presences.cache.find((pr) => pr.userId == entity.id);
+
+	let newEmbed = new Discord.MessageEmbed();
+	let usertime = time.getTime() - entity.user.createdAt.getTime();
+	let membertime = time.getTime() - entity.joinedAt.getTime();
+	let rolecount = 0;
+	let serverrolecount = 0;
+	await itr.guild.roles.cache.each(() => serverrolecount++);
+	let statusicon;
+	let fileContent = `Role Id\tRole name\n`;
+	if (
+		entity.presence?.status == "online" ||
+		entity.presence?.status == "idle"
+	)
+		statusicon = "<:online:823658022974521414>";
+	else statusicon = "<:offline:823658022957613076>";
+	await entity.roles.cache.each(() => {
+		rolecount++;
+	});
+	if (isList) {
+		await entity.roles.cache.each((role) => {
+			fileContent += `${role.id}\t${role.name}\n`;
+		});
+	}
+	const ppfield = await ppcmd.calculate(entity.id, entity.guild.id);
+	const howgayfield = await howgaycmd.calculate(entity.id, entity.guild.id);
+	const iqfield = await iqcmd.calculate(entity.id, entity.guild.id);
+
+	if (isList) {
+		fs.writeFileSync(
+			`./${time.toISOString().replace(/:/g, () => "_")}_list.txt`,
+			fileContent,
+			() => {}
+		);
+	}
+
+	return newEmbed
+		.setColor("a039a0")
+		.setTitle(`${entity.displayName} stats:`)
+		.setDescription(
+			`BOT <:info:823907804200435713> <@${entity.user.id}>, ${
+				entity.nickname == undefined
+					? "No nickname set,"
+					: `${entity.nickname}, AKA`
+			} ${entity.user.tag}.`
+		)
+		.setImage(
+			entity.user.displayAvatarURL({
+				format: "png",
+				dynamic: true,
+				size: 512,
+			})
+		)
+		.setAuthor(
+			"Kifo Clanker™, by KifoPL#3358",
+			itr.guild.me?.user?.avatarURL({
+				format: "png",
+				dynamic: true,
+				size: 64,
+			}),
+			"https://kifopl.github.io/kifo-clanker/"
+		)
+		.setFooter(
+			`Bot created at: ${entity.user.createdAt.toUTCString()}\nBot joined server at: ${entity.joinedAt.toUTCString()}, ${ms(
+				entity.joinedAt.getTime() - entity.guild.createdAt.getTime(),
+				{ long: true }
+			)} after server creation.\nIt is ${ms(usertime, {
+				long: true,
+			})} old.\nIt joined server ${ms(membertime, {
+				long: true,
+			})} ago (it joined ${ms(
+				entity.joinedAt.getTime() - entity.user.createdAt.getTime(),
+				{ long: true }
+			)} after account creation).`
+		)
+		.addFields(
+			{
+				name: `Roles`,
+				value: `<:role:823658022948700240> ${
+					rolecount != 1
+						? `${rolecount - 1} roles, highest role is ${
+								entity.roles?.highest?.name
+						  } (${kifo.place(
+								entity.guild.roles.highest?.rawPosition -
+									entity.roles?.highest?.rawPosition +
+									1
+						  )} out of ${serverrolecount} server roles), ${
+								entity.roles?.hoist?.name == undefined
+									? `not hoisted`
+									: `\nhoisted as <:hoist:823907804141322311> ${entity.roles?.hoist?.name}`
+						  }.`
+						: `This bot has no roles yet.`
+				}`,
+			},
+			{
+				name: `Status`,
+				value: `${statusicon} Bot is currently **${
+					presence?.status ?? "offline"
+				}**.`,
+			},
+			{
+				name: `Interesting stats:`,
+				value: `(They're seriously interesting, though!)`,
+			},
+			{
+				name: `IQ level: ${iqfield.name}`,
+				value: iqfield.value,
+				inline: true,
+			},
+			{
+				name: `PP: ${ppfield.name}`,
+				value: ppfield.value,
+				inline: true,
+			},
+			{
+				name: `Gayness level: ${howgayfield.name}`,
+				value: howgayfield.value,
+				inline: false,
+			},
+			//{name: "Also:", value: `You can check your own stats with "stats me", or someone else's stats by ${this.usage}`},
+			{
+				name: "More",
+				value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
+			}
+		);
 }
