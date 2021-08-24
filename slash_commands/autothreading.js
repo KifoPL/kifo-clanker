@@ -6,7 +6,7 @@ const timer = (ms) => new Promise((res) => setTimeout(res, ms));
 
 module.exports = {
 	name: "autothreading",
-	description: "Set up auto threading system in a channel.",
+	description: "Set up an auto threading system in a channel.",
 	category: "MANAGEMENT",
 	options: [
 		{
@@ -316,7 +316,9 @@ module.exports = {
 											ChannelId: itr.channelId,
 											DefaultArchive: archiving,
 											DefaultSlowmode:
-											slowmode == null ? null : ms(slowmode),
+												slowmode == null
+													? null
+													: ms(slowmode),
 											Title: title,
 											BotAuto: botAuto,
 										});
@@ -400,20 +402,22 @@ module.exports = {
 							if (btnItr.customId === "autothreading_off_yes") {
 								try {
 									con.query(
-									"DELETE FROM autothreading WHERE ChannelId = ? AND GuildId = ?",
-									[itr.channelId, itr.guildId],
-									function(err) {
-										if (err) throw err;
-										autothreadings.delete(itr.channelId);
-										itr.editReply({
-											embeds: [
-												kifo.embed(
-													`Auto-threading system has been disabled by <@!${itr.member.id}>.`
-												),
-											],
-											components: [],
-										});
-									}
+										"DELETE FROM autothreading WHERE ChannelId = ? AND GuildId = ?",
+										[itr.channelId, itr.guildId],
+										function (err) {
+											if (err) throw err;
+											autothreadings.delete(
+												itr.channelId
+											);
+											itr.editReply({
+												embeds: [
+													kifo.embed(
+														`Auto-threading system has been disabled by <@!${itr.member.id}>.`
+													),
+												],
+												components: [],
+											});
+										}
 									);
 								} catch (error) {
 									throw error;
@@ -443,30 +447,33 @@ module.exports = {
 					autothreadings.forEach((value) => {
 						if (value.GuildId == itr.guildId) {
 							fieldArr.push({
-								name: itr.guild.channels.resolve(value.ChannelId)
-									.name,
-								value: `<#${value.ChannelId}>, archives after ${ms(
-									value.DefaultArchive,
-									{ long: true }
-								)}, ticket visibility: ${
+								name: itr.guild.channels.resolve(
+									value.ChannelId
+								).name,
+								value: `<#${
+									value.ChannelId
+								}>, archives after ${ms(value.DefaultArchive, {
+									long: true,
+								})}, ticket visibility: ${
 									value.ArePublic ? "public" : "private"
 								}, slowmode: ${
 									value.DefaultSlowmode == null
 										? "none"
-										: ms(value.DefaultSlowmode, { long: true })
-								}\n__Message:__ ${value.Title
-							.replace(
-								"[member]".toLowerCase(),
-								(match) => `\`${match}\``
-							)
-							.replace(
-								"[channel]".toLowerCase(),
-								(match) => `\`${match}\``
-							)
-							.replace(
-								"[server]".toLowerCase(),
-								(match) => `\`${match}\``
-							)}`,
+										: ms(value.DefaultSlowmode, {
+												long: true,
+										  })
+								}\n__Message:__ ${value.Title.replace(
+									"[member]".toLowerCase(),
+									(match) => `\`${match}\``
+								)
+									.replace(
+										"[channel]".toLowerCase(),
+										(match) => `\`${match}\``
+									)
+									.replace(
+										"[server]".toLowerCase(),
+										(match) => `\`${match}\``
+									)}`,
 							});
 						}
 					});

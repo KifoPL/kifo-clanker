@@ -36,7 +36,7 @@ async function loadowner() {
 	console.log("Bot owner object loaded!");
 }
 
-//DATABASE CONNECTION
+//*DATABASE CONNECTION
 const mysql = require("mysql");
 const prefixes = new Map();
 /**
@@ -80,8 +80,8 @@ const autothreadings = new Map();
 module.exports.menus = menus;
 module.exports.ticketings = ticketings;
 module.exports.autothreadings = autothreadings;
-// var reactMap = new Map();
-// var superslowMap = new Map();
+//// var reactMap = new Map();
+//// var superslowMap = new Map();
 var dbconfig = {
 	host: process.env.HOST,
 	user: process.env.USER,
@@ -119,7 +119,8 @@ function dbReconnect() {
 
 		//for fetching prefixes from DB
 		con.query(
-			"SELECT Prefix, GuildId FROM prefixes",
+			/*sql*/
+			`SELECT Prefix, GuildId FROM prefixes`,
 			async function (err, result) {
 				if (err) throw err;
 				prefixes.clear();
@@ -194,7 +195,7 @@ console.log(`Loaded ${k} context menus!`);
 command = require(`./help.js`);
 client.commands.set(command.name, command);
 
-//Hello message
+//*Hello message
 async function hello(message, prefix) {
 	//I have to do it here too
 	if (message.content.toLowerCase().trim() == prefix.toLowerCase().trim()) {
@@ -250,7 +251,7 @@ async function hello(message, prefix) {
 const timer = (ms) => new Promise((res) => setTimeout(res, ms));
 //timer(500).then(_ => {})
 
-//IF CORRECT CHANNEL, REACT
+//*IF CORRECT CHANNEL, REACT
 async function react(message, prefix) {
 	con.query(
 		"SELECT ChannelId, emote FROM react WHERE ChannelId = ?",
@@ -296,7 +297,7 @@ async function react(message, prefix) {
 		}
 	);
 }
-//IF CORRECT CHANNEL, SUPERSLOWMODE
+//*IF CORRECT CHANNEL, SUPERSLOWMODE
 async function superslow(message, prefix) {
 	con.query(
 		"SELECT ChannelId, Time FROM superslow WHERE ChannelId = ?",
@@ -555,7 +556,7 @@ async function autothreading(message) {
 function checks(message, prefix) {
 	//No bot in #citizens
 
-	//if (message.channel.id == "707650931809976391") return false;
+	////if (message.channel.id == "707650931809976391") return false;
 
 	//Only me and @Tester can use Offline test
 	if (
@@ -1352,7 +1353,7 @@ function setCommandList() {
 		help.description
 	}\n- Usage:\n\t- ${help.usage.join(
 		"\n\t- "
-	)}\n- Required user permissions: \`${command.perms.join("`, `")}\`\n`;
+	)}\n- Required user permissions: \`${command.perms.join("`, `")}\`\n\n`;
 	cmdListJSON += `{\n`;
 	for (const folder of commandFolders) {
 		cmdListMD += `## ${folder.toUpperCase()}\n\n`;
@@ -1453,7 +1454,7 @@ function setCommandList() {
 	fs.writeFile(`commandList.json`, cmdListJSON, () => {
 		return;
 	});
-	fs.writeFile(`commandList.md`, cmdListMD, () => {
+	fs.writeFile(`./docs/commandList.md`, cmdListMD, () => {
 		return;
 	});
 	console.log(`Created commandList.json file!`);
@@ -1463,11 +1464,11 @@ function setGuideList() {
 	let now = new Date(Date.now());
 	let guideList = "# List of available guides:\n\n";
 	const guides = fs
-		.readdirSync(`./guides`)
+		.readdirSync(`./docs/guides`)
 		.filter((guide) => guide.endsWith(".md"));
 	guides.forEach((guide) => {
 		const data = fs
-			.readFileSync(`./guides/${guide}`, { encoding: `utf8`, flag: `r` })
+			.readFileSync(`./docs/guides/${guide}`, { encoding: `utf8`, flag: `r` })
 			.split("\n")
 			.shift();
 		console.log(data);
@@ -1479,7 +1480,7 @@ function setGuideList() {
 	guideList += `<hr/>\n\nLast update: ${now.toUTCString()}.\n`;
 	guideList += "\n*~by [KifoPL](https://bio.link/KifoPL)*\n\n[<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)";
 
-	fs.writeFile(`guideList.md`, guideList, () => {
+	fs.writeFile(`./docs/guideList.md`, guideList, () => {
 		return;
 	});
 	console.log("Created guideList.md file!");
@@ -1585,7 +1586,8 @@ client.once("ready", () => {
 function giveawayCheck() {
 	let now = new Date(Date.now());
 	con.query(
-		"SELECT Id, MessageId, ChannelId, GuildId, UserId, Winners, EndTime, Reaction FROM giveaway WHERE EndTime <= ?",
+		/*sql*/
+		`SELECT Id, MessageId, ChannelId, GuildId, UserId, Winners, EndTime, Reaction FROM giveaway WHERE EndTime <= ?`,
 		[now],
 		function (err, result) {
 			if (err) throw err;
@@ -1729,7 +1731,8 @@ function giveawayCheck() {
 function removeCheck() {
 	let now = new Date(Date.now());
 	con.query(
-		"SELECT Id, UserId, RoleId, PerpetratorId, ChannelId, GuildId, EndTime FROM role_remove WHERE EndTime <= ?",
+		/*sql*/
+		`SELECT Id, UserId, RoleId, PerpetratorId, ChannelId, GuildId, EndTime FROM role_remove WHERE EndTime <= ?`,
 		[now],
 		function (err, result) {
 			if (err) throw err;
@@ -1824,7 +1827,8 @@ function removeCheck() {
 function permsCheck() {
 	let now = new Date(Date.now());
 	con.query(
-		"SELECT Id, PerpetratorId, MessageId, ChannelId, GuildId, PermId, PermFlag, EndTime, Command FROM perms WHERE EndTime <= ?",
+		/*sql*/
+		`SELECT Id, PerpetratorId, MessageId, ChannelId, GuildId, PermId, PermFlag, EndTime, Command FROM perms WHERE EndTime <= ?`,
 		[now],
 		function (err, result) {
 			if (err) throw err;
@@ -1943,7 +1947,8 @@ function permsCheck() {
 function menusCheck() {
 	let now = new Date(Date.now());
 	con.query(
-		"SELECT Id, GuildId, ChannelId, CmdMsgId, CmdChId, MessageId, PermName, EndDate, StartDate, DestinationChannelId FROM menu_perms WHERE EndDate <= ?",
+		/*sql*/
+		`SELECT Id, GuildId, ChannelId, CmdMsgId, CmdChId, MessageId, PermName, EndDate, StartDate, DestinationChannelId FROM menu_perms WHERE EndDate <= ?`,
 		[now],
 		function (err, result) {
 			if (err) throw err;
@@ -1974,7 +1979,8 @@ function menusCheck() {
 		}
 	);
 	con.query(
-		"SELECT Id, GuildId, ChannelId, MessageId, RoleId, EndDate, StartDate, CmdMsgId, CmdChId FROM menu_roles WHERE EndDate <= ?",
+		/*sql*/
+		`SELECT Id, GuildId, ChannelId, MessageId, RoleId, EndDate, StartDate, CmdMsgId, CmdChId FROM menu_roles WHERE EndDate <= ?`,
 		[now],
 		function (err, result) {
 			if (err) throw err;
@@ -2007,7 +2013,8 @@ function menusCheck() {
 
 function pollsCheck() {
 	con.query(
-		"SELECT Id, GuildId, ChannelId, MessageId, EndTime FROM polls WHERE EndTime <= NOW()",
+		/*sql*/
+		`SELECT Id, GuildId, ChannelId, MessageId, EndTime FROM polls WHERE EndTime <= NOW()`,
 		[],
 		function (err, result) {
 			if (err) throw err;

@@ -2,7 +2,7 @@ const Discord = require("discord.js");
 module.exports = {
 	name: "top",
 	description:
-		"This command lists x messages with most reactions from other channel.",
+		"This command lists x messages with the most reactions from another channel.",
 	usage: [
 		"`top <x> <time_period> <other_channel> <reaction>` - lists top x messages with most reactions from other channel. Sends x embeds (don't set it too large).",
 	],
@@ -287,17 +287,14 @@ module.exports = {
 				newEmbed.setURL(
 					`https://discord.com/channels/${chmessages[i].channel.guild.id}/${chmessages[i].channel.id}/${chmessages[i].id}`
 				);
-				if (
-					chmessages[i].attachments.first() != undefined
-				) {
-					newEmbed.setImage(chmessages[i].attachments.first().url)
+				if (chmessages[i].attachments.first() != undefined) {
+					newEmbed.setImage(chmessages[i].attachments.first().url);
 					message.channel
-					.send({
-						embeds: [newEmbed],
-					})
-					.catch();
-				}
-				else message.channel.send({embeds: [newEmbed]})
+						.send({
+							embeds: [newEmbed],
+						})
+						.catch();
+				} else message.channel.send({ embeds: [newEmbed] });
 				ii++;
 			}
 		}

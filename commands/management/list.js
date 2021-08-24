@@ -7,9 +7,9 @@ const ms = require(`ms`);
 const fs = require("fs");
 module.exports = {
 	name: "list",
-	description: `Lists all users in the server, or users having certain role.\nTo list more than ${limit} users you need \`MANAGE_GUILD\` perms.\nIf the bot doesn't see some channels, lists ~~may~~ will be incorrect.`,
+	description: `Lists all users in the server, or users having a certain role.\nTo list more than ${limit} users you need \`MANAGE_GUILD\` perms.\nIf the bot doesn't see some channels, lists ~~may~~ will be incorrect.`,
 	usage: [
-		"`list` - lists all users in the server",
+		"`list` - lists all users on the server",
 		"`list <user>` - lists roles of specified user.",
 		"`list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.",
 		'`list <channel/"here"> <role> <optional_role2> <optional_role_n>` - lists users with specified roles in specified channel.',

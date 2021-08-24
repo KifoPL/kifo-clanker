@@ -1,4 +1,4 @@
-![Kifo Clanker™ - When general purpose bots 
+![Kifo Clanker™ - When general-purpose bots 
 fail, run !kifo](https://i.imgur.com/hWkoxmm.jpg)
 
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/kifopl/kifo-clanker?label=latest)
@@ -22,8 +22,8 @@ fail, run !kifo](https://i.imgur.com/hWkoxmm.jpg)
 **!** If you find any bugs (or have an awesome idea), please notify me on Discord: @KifoPL#3358 `<@289119054130839552>`, or submit a [ticket](https://github.com/KifoPL/kifo-clanker/issues/new/choose).
 
 ## Useful Lists
-- **[List of Commands](https://kifopl.github.io/kifo-clanker/commandList)**
-- **[List of Guides](https://kifopl.github.io/kifo-clanker/guideList)**
+- **[List of Commands](https://kifopl.github.io/kifo-clanker/docs/commandList)**
+- **[List of Guides](https://kifopl.github.io/kifo-clanker/docs/guideList)**
 
 > The lists are always up-to-date with the latest release.
 
@@ -47,7 +47,7 @@ fail, run !kifo](https://i.imgur.com/hWkoxmm.jpg)
 > *Feel free to leave a vote and 5-star review!*
 
 ## [Donate for custom bot prefix](https://www.buymeacoffee.com/kifoPL)
-> *VPS, electricity and the internet cost a lot of money, donations motivate me to continue my work developing this bot, plus you get a custom prefix for your server in return.*
+> *VPS, electricity, and the internet cost a lot of money, donations motivate me to continue my work developing this bot, plus you get a custom prefix for your server in return.*
 
 # Self-promotion:
 
@@ -60,9 +60,9 @@ fail, run !kifo](https://i.imgur.com/hWkoxmm.jpg)
 ![GitHub forks](https://img.shields.io/github/forks/kifopl/kifo-clanker?style=social)
 ![Reddit User Karma](https://img.shields.io/reddit/user-karma/combined/kifopl?style=social)
 
-## Do you want to be a part of amazing Star Wars community?
+## Do you want to be a part of the amazing Star Wars community?
 * Join The Galactic Republic [Discord Server](https://discord.gg/Hhp74va)!
-* Subscribe The Galactic Republic [Youtube channel](https://www.youtube.com/channel/UC8-8TAqa9pr1aTfa5Ei83wg?sub_confirmation=1)!
+* Subscribe to The Galactic Republic [Youtube channel](https://www.youtube.com/channel/UC8-8TAqa9pr1aTfa5Ei83wg?sub_confirmation=1)!
 * Check out our [subreddit](https://www.reddit.com/r/republicdiscord/).
 * [Wiki](https://tgr-discord-server.fandom.com/wiki/TGR_Discord_Server_Wiki) of our own RP server canon.
 
