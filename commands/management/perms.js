@@ -12,7 +12,7 @@ module.exports = {
 	description:
 		"This powerful command manages permissions for channels and categories.\n- **ADD** - allows a perm (green check), \n- **DENY** - denies a perm (red x),\n- **RM** - removes a perm (grey /).",
 	usage: [
-		"`perms` - checks if you have permissions to manage channel, lists aliases and Ids of permissions for easier cmd usage.",
+		"`perms` - checks if you have permissions to manage the channel, lists aliases and Ids of permissions for easier cmd usage.",
 		'`perms "here"/"list"` - list perms of all roles and members for this channel in a `.txt` file',
 		"`perms <user_or_role_id>` - lists perms for specific user/role",
 		"`perms <channel_or_category_id>` - lists perms of all roles and members in a `.txt` file",
@@ -26,26 +26,40 @@ module.exports = {
 		//precheck
 		if (!message.guild == null)
 			return message
-				.reply({ embeds: [kifo.embed(`you can only run this command in a server!`)] })
-				.catch(() => { });
+				.reply({
+					embeds: [
+						kifo.embed(
+							`you can only run this command in a server!`
+						),
+					],
+				})
+				.catch(() => {});
 		const hasRequiredPerms =
 			message.member
 				.permissionsIn(message.channel)
 				.has(Discord.Permissions.FLAGS.MANAGE_CHANNELS) &&
-			message.member.permissionsIn(message.channel).has(Discord.Permissions.FLAGS.MANAGE_ROLES);
+			message.member
+				.permissionsIn(message.channel)
+				.has(Discord.Permissions.FLAGS.MANAGE_ROLES);
 		const botHasRequiredPerms =
 			message.guild.me
 				.permissionsIn(message.channel)
 				.has(Discord.Permissions.FLAGS.MANAGE_CHANNELS) &&
-			message.guild.me.permissionsIn(message.channel).has(Discord.Permissions.FLAGS.MANAGE_ROLES);
+			message.guild.me
+				.permissionsIn(message.channel)
+				.has(Discord.Permissions.FLAGS.MANAGE_ROLES);
 		//`perms`
 		if (!args[0]) {
-			let description = `You ${!hasRequiredPerms ? `DON'T HAVE` : `HAVE`
-				} required perms to use \`perms\` command in <#${message.channel.id
-				}>.`;
-			description += `\nThe bot ${!botHasRequiredPerms ? `DOESN'T HAVE` : `HAS`
-				} required perms to execute \`perms\` command in <#${message.channel.id
-				}>.`;
+			let description = `You ${
+				!hasRequiredPerms ? `DON'T HAVE` : `HAVE`
+			} required perms to use \`perms\` command in <#${
+				message.channel.id
+			}>.`;
+			description += `\nThe bot ${
+				!botHasRequiredPerms ? `DOESN'T HAVE` : `HAS`
+			} required perms to execute \`perms\` command in <#${
+				message.channel.id
+			}>.`;
 			description += `\n**Syntax:** ${this.usage.join("\n")}`;
 			const newEmbed = new Discord.MessageEmbed()
 				.setColor("a039a0")
@@ -61,7 +75,8 @@ module.exports = {
 					"https://kifopl.github.io/kifo-clanker/"
 				)
 				.setFooter(
-					`Issued by ${message.member.displayName} - ${message.member.id
+					`Issued by ${message.member.displayName} - ${
+						message.member.id
 					} at ${now.toUTCString()}.`
 				);
 			//write all aliases of all text channel perms.
@@ -89,8 +104,8 @@ module.exports = {
 								.toArray()
 								.join(",\n")}.`,
 							"Missing permissions!"
-						)
-					]
+						),
+					],
 				});
 			if (!botHasRequiredPerms)
 				return message.reply({
@@ -101,8 +116,8 @@ module.exports = {
 								.toArray()
 								.join(",\n")}.`,
 							"Missing permissions!"
-						)
-					]
+						),
+					],
 				});
 			if (!args[1]) {
 				let whatami = "";
@@ -120,11 +135,15 @@ module.exports = {
 							kifo.mentionTrim(args[0])
 						);
 				} else {
-					entity = message.guild.roles.resolve(kifo.mentionTrim(args[0]));
+					entity = message.guild.roles.resolve(
+						kifo.mentionTrim(args[0])
+					);
 					if (entity != null) {
 						whatami = "role";
 					} else {
-						entity = message.guild.members.resolve(kifo.mentionTrim(args[0]));
+						entity = message.guild.members.resolve(
+							kifo.mentionTrim(args[0])
+						);
 						if (entity != null) {
 							whatami = "member";
 						} else {
@@ -132,8 +151,8 @@ module.exports = {
 								embeds: [
 									kifo.embed(
 										"Please input either user, role, channel Id or mention."
-									)
-								]
+									),
+								],
 							});
 						}
 					}
@@ -144,8 +163,9 @@ module.exports = {
 				if (whatami == "channel") {
 					channelPermsfunc(message, entity, Discord);
 				} else if (whatami == "member" || whatami == "role") {
-					let description = `${whatami == "member" ? "User <@" : "Role <@&"
-						}${entity.id}> permissions in <#${message.channel.id}>:\n`;
+					let description = `${
+						whatami == "member" ? "User <@" : "Role <@&"
+					}${entity.id}> permissions in <#${message.channel.id}>:\n`;
 					// //console.log(
 					// 	`${message.channel.parent?.name}\n${message.channel.permissionsLocked}`
 					// );
@@ -156,9 +176,12 @@ module.exports = {
 					) {
 						description += `Permissions are synchronised with **"${message.channel.parent.name}"** category.\n`;
 					}
-					if (!message.channel.permissionOverwrites.resolve(entity.id)) {
-						description += `No permission overwrites for ${whatami == "member" ? `<@` : `<@&`
-							}${entity.id}>.\n`;
+					if (
+						!message.channel.permissionOverwrites.resolve(entity.id)
+					) {
+						description += `No permission overwrites for ${
+							whatami == "member" ? `<@` : `<@&`
+						}${entity.id}>.\n`;
 					}
 
 					const newEmbed = new Discord.MessageEmbed()
@@ -177,7 +200,8 @@ module.exports = {
 							"https://kifopl.github.io/kifo-clanker/"
 						)
 						.setFooter(
-							`Issued by ${message.member.displayName} - ${message.member.id
+							`Issued by ${message.member.displayName} - ${
+								message.member.id
 							} at ${now.toUTCString()}.`
 						);
 					message.channel.permissionOverwrites.cache
@@ -203,8 +227,8 @@ module.exports = {
 					embeds: [
 						kifo.embed(
 							`Incorrect syntax. Use \`${prefix}perms\`, or \`${prefix}help perms\` for more details.\nSyntax: ${this.usage}`
-						)
-					]
+						),
+					],
 				});
 			} else {
 				if (
@@ -215,8 +239,8 @@ module.exports = {
 						embeds: [
 							kifo.embed(
 								`I don't know what ${args[0]} is supposed to mean. Type \`${prefix}perms\` or \`${prefix}help perms\` to learn about this command.\nSyntax: \`${this.usage}\``
-							)
-						]
+							),
+						],
 					});
 				let perm = kifo.channelPerms.find(
 					(permOver) =>
@@ -229,8 +253,8 @@ module.exports = {
 						embeds: [
 							kifo.embed(
 								`Unrecognized perm alias. Type \`${prefix}perms\` to see a list of perms available for this channel.`
-							)
-						]
+							),
+						],
 					});
 				}
 
@@ -261,18 +285,20 @@ module.exports = {
 								embeds: [
 									kifo.embed(
 										"Incorrect last argument! The last argument needs to be either `user`, `role` or `time period`."
-									)
-								]
+									),
+								],
 							})
-							.catch(() => { });
+							.catch(() => {});
 					if (ms(time) < 1000 * 60)
 						return message
 							.reply({
 								embeds: [
-									kifo.embed("Set the time to at least a minute!")
-								]
+									kifo.embed(
+										"Set the time to at least a minute!"
+									),
+								],
 							})
-							.catch(() => { });
+							.catch(() => {});
 					end = new Date(now.getTime() + ms(time));
 				}
 				let stop = false;
@@ -292,8 +318,8 @@ module.exports = {
 							embeds: [
 								kifo.embed(
 									`There is no role/member with \`${Id}\` Id.`
-								)
-							]
+								),
+							],
 						});
 					} else {
 						let mm = message.guild.members.resolve(Id);
@@ -307,8 +333,8 @@ module.exports = {
 									embeds: [
 										kifo.embed(
 											`You can't edit <@!${mm.id}>'s perms!`
-										)
-									]
+										),
+									],
 								});
 							}
 							if (
@@ -320,8 +346,8 @@ module.exports = {
 									embeds: [
 										kifo.embed(
 											`I can't edit <@!${mm.id}>'s perms!`
-										)
-									]
+										),
+									],
 								});
 							}
 						} else {
@@ -335,8 +361,8 @@ module.exports = {
 									embeds: [
 										kifo.embed(
 											`You can't edit <@&${mm.id}>'s perms!`
-										)
-									]
+										),
+									],
 								});
 							}
 							if (
@@ -348,8 +374,8 @@ module.exports = {
 									embeds: [
 										kifo.embed(
 											`I can't edit <@&${mm.id}>'s perms!`
-										)
-									]
+										),
+									],
 								});
 							}
 						}
@@ -361,20 +387,24 @@ module.exports = {
 				fileContent += `Type\tId\tName\t+/-\tPerms\n`;
 				message.channel.permissionOverwrites.cache.each((permOver) => {
 					if (permOver.allow.toArray().length > 0) {
-						fileContent += `${permOver.type == "member" ? `member` : `role`
-							}\t${permOver.id}\t${permOver.type == "member"
+						fileContent += `${
+							permOver.type == "member" ? `member` : `role`
+						}\t${permOver.id}\t${
+							permOver.type == "member"
 								? message.guild.members.resolve(permOver.id)
-								.displayName
+										.displayName
 								: message.guild.roles.resolve(permOver.id).name
-							}\t+\t${permOver.allow.toArray().join("\t")}\n`;
+						}\t+\t${permOver.allow.toArray().join("\t")}\n`;
 					}
 					if (permOver.deny.toArray().length > 0) {
-						fileContent += `${permOver.type == "member" ? `member` : `role`
-							}\t${permOver.id}\t${permOver.type == "member"
+						fileContent += `${
+							permOver.type == "member" ? `member` : `role`
+						}\t${permOver.id}\t${
+							permOver.type == "member"
 								? message.guild.members.resolve(permOver.id)
-								.displayName
+										.displayName
 								: message.guild.roles.resolve(permOver.id).name
-							}\t-\t${permOver.deny.toArray().join("\t")}\n`;
+						}\t-\t${permOver.deny.toArray().join("\t")}\n`;
 					}
 				});
 
@@ -405,15 +435,17 @@ module.exports = {
 						"https://kifopl.github.io/kifo-clanker/"
 					)
 					.setTitle(
-						`${message.member.displayName} ${args[0].toLowerCase() == "add"
-							? "added"
-							: args[0].toLowerCase() == "rm"
+						`${message.member.displayName} ${
+							args[0].toLowerCase() == "add"
+								? "added"
+								: args[0].toLowerCase() == "rm"
 								? "removed"
 								: "denied"
 						} ${perm.name} in ${message.channel.name}.`
 					)
 					.setFooter(
-						`Issued by ${message.member.displayName} - ${message.member.id
+						`Issued by ${message.member.displayName} - ${
+							message.member.id
 						} at ${now.toUTCString()}.`
 					);
 
@@ -428,10 +460,10 @@ module.exports = {
 									kifo.embed(
 										err,
 										`Unable to change permissions for ${Id}!`
-									)
-								]
+									),
+								],
 							})
-							.catch(() => { });
+							.catch(() => {});
 					let previous = "rm";
 					if (
 						message.channel.permissionOverwrites.cache
@@ -446,26 +478,29 @@ module.exports = {
 					) {
 						previous = "deny";
 					}
-					fileContent += `${message.guild.members.resolve(Id) != null
+					fileContent += `${
+						message.guild.members.resolve(Id) != null
 							? `member`
 							: `role`
-						}\t${Id}\t${message.guild.members.resolve(Id) != null
+					}\t${Id}\t${
+						message.guild.members.resolve(Id) != null
 							? message.guild.members.resolve(Id).displayName
 							: message.guild.roles.resolve(Id).name
-						}\t${args[0].toLowerCase() == "add"
+					}\t${
+						args[0].toLowerCase() == "add"
 							? "+"
 							: args[0].toLowerCase() == "rm"
-								? "/"
-								: "-"
-						}\t${perm.name}\n`;
-					await message.channel
-						.permissionOverwrites.edit(Id, {
+							? "/"
+							: "-"
+					}\t${perm.name}\n`;
+					await message.channel.permissionOverwrites
+						.edit(Id, {
 							[perm.name]:
 								args[0].toLowerCase() == "add"
 									? true
 									: args[0].toLowerCase() == "rm"
-										? null
-										: false,
+									? null
+									: false,
 						})
 						.then(() => {
 							if (time !== undefined) {
@@ -496,10 +531,10 @@ module.exports = {
 										kifo.embed(
 											err,
 											`Unable to change permissions for ${Id}!`
-										)
-									]
+										),
+									],
 								})
-								.catch(() => { });
+								.catch(() => {});
 						});
 				});
 				if (stop) {
@@ -508,31 +543,33 @@ module.exports = {
 							embeds: [
 								kifo.embed(
 									"Unexpected error. Command exited without changing state."
-								)
-							]
+								),
+							],
 						})
-						.catch(() => { });
+						.catch(() => {});
 				}
 				fs.writeFileSync(
 					`./${message.guild.id}_${message.channel.id} perms.txt`,
 					fileContent,
-					() => { }
+					() => {}
 				);
 				if (time !== undefined) {
 					await message.reply({
-						content:
-							`I'll revert the perms at <t:${Math.floor(
-								end.getTime() / 1000
-							)}>, <t:${Math.floor(end.getTime() / 1000)}:R>`,
-						embeds: [newEmbed], files: [`./${message.guild.id}_${message.channel.id} perms.txt`]
+						content: `I'll revert the perms at <t:${Math.floor(
+							end.getTime() / 1000
+						)}>, <t:${Math.floor(end.getTime() / 1000)}:R>`,
+						embeds: [newEmbed],
+						files: [
+							`./${message.guild.id}_${message.channel.id} perms.txt`,
+						],
 					});
 				} else await message.reply({ embeds: [newEmbed] });
 				try {
 					fs.unlink(
 						`./${message.guild.id}_${message.channel.id} perms.txt`,
-						() => { }
-					).catch(() => { });
-				} catch (err) { }
+						() => {}
+					).catch(() => {});
+				} catch (err) {}
 
 				////console.log("DId IT WORK?")
 			}

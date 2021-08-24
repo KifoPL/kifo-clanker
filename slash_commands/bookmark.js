@@ -5,7 +5,8 @@ const https = require("https");
 
 module.exports = {
 	name: "bookmark",
-	description: "Sends a copy of the message in DM (with attachments) (**DEPRACATED**).",
+	description:
+		"Sends a copy of the message in DM (with attachments) (**DEPRECATED**).",
 	options: [
 		{
 			name: "message",
