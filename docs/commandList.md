@@ -10,6 +10,14 @@ This command lists all categories of commands and shows help for every command.
 	- `<command> help` - shows help for specific command
 - Required user permissions: `SEND_MESSAGES`
 
+## DEBUG
+
+### test
+Test how your arguments are passed.
+- Usage:
+	- `test <args>` - showcase of how the arguments are passed.
+- Required user permissions: `SEND_MESSAGES`
+
 ## MANAGEMENT
 
 ### clean
@@ -148,6 +156,7 @@ Creates an issue on GitHub and pings KifoPL. Do not spam this command.
 test out if the `/` commands work properly.
 - Options:
 	- `input` *(optional)* - The text to return.
+	- `input2` *(optional)* - The text to return.
 - Required user permissions: `USE_APPLICATION_COMMANDS`
 
 ## FUN
@@ -306,7 +315,7 @@ Lists user stats.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-- Last update: Tue, 24 Aug 2021 19:16:34 GMT
+- Last update: Wed, 25 Aug 2021 10:44:28 GMT
 *~by [KifoPL](https://bio.link/KifoPL)*
 
 [<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)

@@ -4,7 +4,7 @@
 
 ### [How to use context menus?](./guides/contextmenus)
 
-### [How to use `/epoch` and date formats?](./guides/epoch)
+### [How to use `/epoch`, date, and time formats?](./guides/epoch)
 
 ### [How to use `/` commands?](./guides/slash)
 
@@ -14,7 +14,7 @@
 
 <hr/>
 
-Last update: Tue, 24 Aug 2021 19:16:34 GMT.
+Last update: Wed, 25 Aug 2021 10:44:28 GMT.
 
 *~by [KifoPL](https://bio.link/KifoPL)*
 
