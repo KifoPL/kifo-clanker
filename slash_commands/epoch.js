@@ -11,20 +11,6 @@ module.exports = {
 			type: "SUB_COMMAND",
 			description: "Convert from date to epoch number (in seconds).",
 			options: [
-				// ? Can it be converted on-the-fly?
-				// {
-				// 	name: "type",
-				// 	type: "STRING",
-				// 	description: "What kind of time do you want to convert?",
-				// 	required: true,
-				// 	choices: [
-				// 		{
-				// 			name: "Time period",
-				// 			value: "time_period",
-				// 		},
-				// 		{ name: "Date", value: "date" },
-				// 	],
-				// },
 				{
 					name: "input",
 					type: "STRING",
