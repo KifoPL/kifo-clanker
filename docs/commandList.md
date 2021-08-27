@@ -102,7 +102,7 @@ This command allows you to set up a timeout, after which random winners who reac
 - Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`, `ADD_REACTIONS`
 
 ### lang
-This command allows you to detect message language.
+(**DEPRECATED**) This command allows you to detect message language.
 - Usage:
 	- `lang <message_id_or_url>` - sends a DM with description (react with any emote to the message to delete it).
 - Required user permissions: `SEND_MESSAGES`
@@ -253,7 +253,7 @@ Set up ticketing system in a channel.
 ## UTILITY
 
 ### bookmark
-Sends a copy of the message in DM (with attachments) (**DEPRECATED**).
+(**DEPRECATED**) Sends a copy of the message in DM (with attachments).
 - Options:
 	- `message` - ID or URL of the message.
 	- `pin` *(optional)* - Whether the message should be pinned. False by default.
@@ -303,6 +303,10 @@ Create a ticket
 # List of context menus (used with <kbd>Right-Click</kbd>):
 ## MESSAGE *(right-click on `message` to use)*
 
+### detect language
+This command allows you to detect message language.
+- Required user permissions: `USE_APPLICATION_COMMANDS`
+
 ### save
 Sends a copy of the message in DM (with attachments).
 - Required user permissions: `USE_APPLICATION_COMMANDS`
@@ -316,7 +320,7 @@ Lists user stats.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-- Last update: Fri, 27 Aug 2021 07:52:04 GMT
+- Last update: Fri, 27 Aug 2021 11:30:53 GMT
 *~by [KifoPL](https://bio.link/KifoPL)*
 
 [<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)
