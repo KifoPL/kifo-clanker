@@ -4,15 +4,17 @@
 
 ### [How to use context menus?](./guides/contextmenus)
 
+### [How to use `/epoch`, date, and time formats?](./guides/epoch)
+
 ### [How to use `/` commands?](./guides/slash)
 
-### [What is a `/ticket`?](./guides/ticket)
+### [How to use `/ticket`?](./guides/ticket)
 
 ### [How to use `/ticketing` and how to set up channel permissions?](./guides/ticketing)
 
 <hr/>
 
-Last update: Mon, 23 Aug 2021 10:09:09 GMT.
+Last update: Fri, 27 Aug 2021 11:30:53 GMT.
 
 *~by [KifoPL](https://bio.link/KifoPL)*
 

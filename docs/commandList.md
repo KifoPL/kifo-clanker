@@ -9,6 +9,15 @@ This command lists all categories of commands and shows help for every command.
 	- `help <command>` - shows help for specific command
 	- `<command> help` - shows help for specific command
 - Required user permissions: `SEND_MESSAGES`
+
+## DEBUG
+
+### test
+Test how your arguments are passed.
+- Usage:
+	- `test <args>` - showcase of how the arguments are passed.
+- Required user permissions: `SEND_MESSAGES`
+
 ## MANAGEMENT
 
 ### clean
@@ -21,18 +30,18 @@ This command cleans any permission overwrites that don't have `DENY` (<:RedX:857
 - Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`, `MANAGE_ROLES`
 
 ### list
-Lists all users in the server, or users having certain role.
+Lists all users in the server, or users having a certain role.
 To list more than 1000 users you need `MANAGE_GUILD` perms.
 If the bot doesn't see some channels, lists ~~may~~ will be incorrect.
 - Usage:
-	- `list` - lists all users in the server
+	- `list` - lists all users on the server
 	- `list <user>` - lists roles of specified user.
 	- `list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.
 	- `list <channel/"here"> <role> <optional_role2> <optional_role_n>` - lists users with specified roles in specified channel.
 - Required user permissions: `SEND_MESSAGES`, `MANAGE_GUILD`
 
 ### menu
-This powerful command allows you to create role menu or channel perms menu with optional timeout
+This powerful command allows you to create a role menu or channel perms menu with an optional timeout
 - Usage:
 	- `menu` - DMs you with channel aliases and syntax of the command.
 	- `menu list` - lists active menus in the server (requires `MANAGE_GUILD`)
@@ -49,7 +58,7 @@ This powerful command manages permissions for channels and categories.
 - **DENY** - denies a perm (red x),
 - **RM** - removes a perm (grey /).
 - Usage:
-	- `perms` - checks if you have permissions to manage channel, lists aliases and Ids of permissions for easier cmd usage.
+	- `perms` - checks if you have permissions to manage the channel, lists aliases and Ids of permissions for easier cmd usage.
 	- `perms "here"/"list"` - list perms of all roles and members for this channel in a `.txt` file
 	- `perms <user_or_role_id>` - lists perms for specific user/role
 	- `perms <channel_or_category_id>` - lists perms of all roles and members in a `.txt` file
@@ -58,7 +67,7 @@ This powerful command manages permissions for channels and categories.
 - Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`
 
 ### remove
-This command allows you to (temporarily) remove user role.
+This command allows you to (temporarily) remove the user role.
 - Usage:
 	- `remove` - Informs you of syntax.
 	- `remove <user> <role>` - permanently removes role from user.
@@ -77,7 +86,7 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 - Required user permissions: `SEND_MESSAGES`
 
 ### top
-This command lists x messages with most reactions from other channel.
+This command lists x messages with the most reactions from another channel.
 - Usage:
 	- `top <x> <time_period> <other_channel> <reaction>` - lists top x messages with most reactions from other channel. Sends x embeds (don't set it too large).
 - Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`
@@ -93,15 +102,15 @@ This command allows you to set up a timeout, after which random winners who reac
 - Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`, `ADD_REACTIONS`
 
 ### lang
-This command allows you to detect message language.
+(**DEPRECATED**) This command allows you to detect message language.
 - Usage:
 	- `lang <message_id_or_url>` - sends a DM with description (react with any emote to the message to delete it).
 - Required user permissions: `SEND_MESSAGES`
 
 ### prefix
-This command informs you in detail how you can change server prefix.
+This command informs you in detail how you can change the server prefix.
 - Usage:
-	- `prefix` - sends a DM with details on prefix change process.
+	- `prefix` - sends a DM with details on the prefix change process.
 - Required user permissions: `SEND_MESSAGES`
 
 ### react
@@ -117,12 +126,12 @@ This command tells the bot to react to all messages in the channel with specific
 Enable Super slow-mode (longer than 6 hours) for channels where you need it.
 - Usage:
 	- `superslow <time>` - turns on superslow command in this channel (setting time to 0s will turn off superslow module). 
-	- `superslow` checks if there is superslow module online.
+	- `superslow` checks if there is a superslow module online.
 	- `superslow list` lists channels in which the command is active.
 - Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`
 
 ### todo
-This command allows you to create a simple todo notes.
+This command allows you to create simple to-do notes.
 - Usage:
 	- `todo <description>` - sends a DM with description (react with any emote to the message to delete it).
 	- `todo <message_url> <optional_description>` - sends a DM with message content, link to the message and optional description.
@@ -147,6 +156,7 @@ Creates an issue on GitHub and pings KifoPL. Do not spam this command.
 test out if the `/` commands work properly.
 - Options:
 	- `input` *(optional)* - The text to return.
+	- `input2` *(optional)* - The text to return.
 - Required user permissions: `USE_APPLICATION_COMMANDS`
 
 ## FUN
@@ -196,15 +206,15 @@ Random *yo momma* joke.
 ## HELP
 
 ### guide
-Receive link for command list, or guide regarding speficic topic.
+Receive a link for the command list, or guide regarding a specific topic.
 - Options:
-	- `choice` *(optional)* - Select topic, which you want to learn about.
+	- `choice` *(optional)* - Select a topic, which you want to learn about.
 - Required user permissions: `USE_APPLICATION_COMMANDS`
 
 ## MANAGEMENT
 
 ### autothreading
-Set up auto threading system in a channel.
+Set up an auto threading system in a channel.
 - Options:
 	- `on` - Turn on auto-threading system.
 		- `title` - Choose the title for every thread (use /autothreading help for more info)
@@ -243,10 +253,27 @@ Set up ticketing system in a channel.
 ## UTILITY
 
 ### bookmark
-Sends a copy of the message in DM (with attachments) (**DEPRACATED**).
+(**DEPRECATED**) Sends a copy of the message in DM (with attachments).
 - Options:
 	- `message` - ID or URL of the message.
 	- `pin` *(optional)* - Whether the message should be pinned. False by default.
+- Required user permissions: `USE_APPLICATION_COMMANDS`
+
+### countdown
+Count down to a given time, then send a message.
+- Options:
+	- `epoch` - The amount of seconds since 1970-01-01T00:00:00Z (use /epoch date_to_epoch to get the number)
+	- `message` - The message to send when the countdown ends.
+- Required user permissions: `USE_APPLICATION_COMMANDS`, `MANAGE_MESSAGES`
+
+### epoch
+Easily convert dates to epoch and vice versa.
+- Options:
+	- `date_to_epoch` - Convert from date to epoch number (in seconds).
+		- `input` - Type either date like "1970-01-01T00:00:00Z", or time period "1h"
+	- `epoch_to_date` - Convert from epoch number (in seconds) to date.
+		- `epoch` - The number of seconds since 1970-01-01T00:00:00
+	- `help` - Receive link to guide that helps you use this command.
 - Required user permissions: `USE_APPLICATION_COMMANDS`
 
 ### poll
@@ -276,6 +303,10 @@ Create a ticket
 # List of context menus (used with <kbd>Right-Click</kbd>):
 ## MESSAGE *(right-click on `message` to use)*
 
+### detect language
+This command allows you to detect message language.
+- Required user permissions: `USE_APPLICATION_COMMANDS`
+
 ### save
 Sends a copy of the message in DM (with attachments).
 - Required user permissions: `USE_APPLICATION_COMMANDS`
@@ -289,7 +320,7 @@ Lists user stats.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-- Last update: Mon, 23 Aug 2021 10:09:09 GMT
+- Last update: Fri, 27 Aug 2021 11:30:53 GMT
 *~by [KifoPL](https://bio.link/KifoPL)*
 
 [<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)
