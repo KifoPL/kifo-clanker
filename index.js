@@ -525,7 +525,7 @@ async function autothreading(message) {
 			let blank = "n/a";
 			let embed_t = message.embeds[0]?.title ?? blank;
 			if (embed_t.length > 50) embed_t = embed_t.slice(0, 47) + "...";
-			let embed_d = message.embeds[0]?.title ?? blank;
+			let embed_d = message.embeds[0]?.description ?? blank;
 			if (embed_d.length > 50) embed_d = embed_d.slice(0, 47) + "...";
 			title = title
 				.replace("[member]", () => message.member.displayName)
