@@ -326,7 +326,8 @@ module.exports = {
 						if (mm != null) {
 							if (
 								mm.roles.highest.rawPosition >=
-								message.member.roles.highest.rawPosition
+									message.member.roles.highest.rawPosition &&
+								args[0] == "deny"
 							) {
 								stop = true;
 								return message.reply({
@@ -338,7 +339,7 @@ module.exports = {
 								});
 							}
 							if (
-								mm.roles.highest.rawPosition >=
+								mm.roles.highest.rawPosition >
 								message.guild.me.roles.highest.rawPosition
 							) {
 								stop = true;
@@ -354,7 +355,8 @@ module.exports = {
 							mm = message.guild.roles.resolve(Id);
 							if (
 								mm.rawPosition >=
-								message.member.roles.highest.rawPosition
+									message.member.roles.highest.rawPosition &&
+								args[0] == "deny"
 							) {
 								stop = true;
 								return message.reply({
@@ -366,7 +368,7 @@ module.exports = {
 								});
 							}
 							if (
-								mm.rawPosition >=
+								mm.rawPosition >
 								message.guild.me.roles.highest.rawPosition
 							) {
 								stop = true;
@@ -585,9 +587,7 @@ async function channelPermsfunc(
 ) {
 	if (entity.type == "GUILD_STORE")
 		return message.reply({
-			embeds: [
-				kifo.embed("Store channels are not implemented yet.")
-			]
+			embeds: [kifo.embed("Store channels are not implemented yet.")],
 		});
 	let description =
 		"Detailed list of permissions is attached in `.txt` file.\n";
@@ -600,16 +600,18 @@ async function channelPermsfunc(
 
 	entity.permissionOverwrites.cache.each((permOver) => {
 		if (permOver.allow.toArray().length > 0) {
-			fileContent += `${permOver.type}\t${permOver.id}\t${permOver.type == "member"
+			fileContent += `${permOver.type}\t${permOver.id}\t${
+				permOver.type == "member"
 					? message.guild.members.resolve(permOver.id).displayName
 					: message.guild.roles.resolve(permOver.id).name
-				}\t+\t${permOver.allow.toArray().join("\t")}\n`;
+			}\t+\t${permOver.allow.toArray().join("\t")}\n`;
 		}
 		if (permOver.deny.toArray().length > 0) {
-			fileContent += `${permOver.type}\t${permOver.id}\t${permOver.type == "member"
+			fileContent += `${permOver.type}\t${permOver.id}\t${
+				permOver.type == "member"
 					? message.guild.members.resolve(permOver.id).displayName
 					: message.guild.roles.resolve(permOver.id).name
-				}\t-\t${permOver.deny.toArray().join("\t")}\n`;
+			}\t-\t${permOver.deny.toArray().join("\t")}\n`;
 		}
 	});
 
@@ -617,7 +619,7 @@ async function channelPermsfunc(
 		fs.writeFileSync(
 			`./${message.guild.id}_${entity.id} perms.txt`,
 			fileContent,
-			() => { }
+			() => {}
 		);
 		const newEmbed = new Discord.MessageEmbed()
 			.setColor("a039a0")
@@ -633,15 +635,19 @@ async function channelPermsfunc(
 				"https://kifopl.github.io/kifo-clanker/"
 			)
 			.setFooter(
-				`Issued by ${message.member.displayName} - ${message.member.id
+				`Issued by ${message.member.displayName} - ${
+					message.member.id
 				} at ${now.toUTCString()}.`
-			)
-		await message.reply({ embeds: [newEmbed], files: [`./${message.guild.id}_${entity.id} perms.txt`] });
+			);
+		await message.reply({
+			embeds: [newEmbed],
+			files: [`./${message.guild.id}_${entity.id} perms.txt`],
+		});
 		try {
 			fs.unlink(
 				`./${message.guild.id}_${entity.id} perms.txt`,
-				() => { }
-			).catch(() => { });
-		} catch (err) { }
+				() => {}
+			).catch(() => {});
+		} catch (err) {}
 	}
 }
