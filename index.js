@@ -1309,7 +1309,6 @@ async function onmessage(message) {
 			?.has(Discord.Permissions.FLAGS.SEND_MESSAGES)
 	)
 		return;
-
 	if (
 		!message.guild?.me
 			.permissionsIn(message.channel)
@@ -2102,7 +2101,11 @@ function countdownCheck() {
 					msg.reply({
 						content: `<@!${row.AuthorId}>`,
 						embeds: [
-							kifo.embed(row.Message, "Countdown has ended!"),
+							kifo
+								.embed(row.Message, "Countdown has ended!")
+								.setImage(
+									`https://media.giphy.com/media/QAPFLCrpfalPi/giphy.gif?cid=790b7611d8c231ec8c2d7508d98b619526888e6ba98714ee&rid=giphy.gif&ct=g`
+								),
 						],
 					}).catch(() => {
 						msg.member.send({
