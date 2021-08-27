@@ -48,8 +48,8 @@ Usually, having the same title for every thread is not the expected outcome. You
 	- `KifoPL - Bot Creator new feature poll discussion in new features polls!`
 - `Thoughts on new update in [server]`
 	- `Thoughts on new update in Kifo Clanker™ Support Server`
-- `This is an example of how horribly long thread names will be shortened to the allowed length, if by any chance thread title will be longer than the 200 characters. As you see by this example, 200 characters is really all you need to fit the longest titles.`
-	- `This is an example of how horribly long thread names will be shortened to the allowed length, if by any chance thread title will be longer than the 200 characters. As you see by this example, 200 c...`
+- `This is an example of how horribly long thread names will be shortened to the allowed length if by any chance thread title will be longer than the 200 characters. As you see by this example, 200 characters are all you need to fit the longest titles.`
+	- `This is an example of how horribly long thread names will be shortened to the allowed length if by any chance thread title will be longer than the 200 characters. As you see by this example, 200 ch...`
 
 ## Server prerequisites
 
