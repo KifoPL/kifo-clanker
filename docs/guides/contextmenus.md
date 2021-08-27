@@ -17,15 +17,14 @@ Context menus are the latest feature of integrating applications directly into y
 > Currently there are two places where you can use context menus: on message, and user.
 
 # List of context menu actions
-The complete and auto-updated list of context menus can be found [here](https://kifopl.github.io/kifo-clanker/commandList#list-of-context-menus-used-with-right-click).
+
+The complete and auto-updated list of context menus can be found [here](https://kifopl.github.io/kifo-clanker/commandList#todo-fix-this-link).
 
 ## Using context menus on `PC`
 
 ### Message context menus:
 
 Either <kbd>Right-Click</kbd> on the message or <kbd>Left-Click</kbd> on the <kbd>...</kbd> in the top right corner to open Discord context menu. Then go to the `Apps` tab, where you'll find all possible interactions with the message provided by `Kifo Clanker`. Simply click on the desired action.
-
-![TODO add image](https://i.imgur.com/s4tuQmd.png)
 
 ### User context menus:
 
