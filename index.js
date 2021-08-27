@@ -20,6 +20,7 @@ const client = new Discord.Client({
 		Discord.Intents.FLAGS.GUILD_INVITES,
 		Discord.Intents.FLAGS.GUILD_PRESENCES,
 		Discord.Intents.FLAGS.GUILD_MESSAGES,
+		Discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
 		Discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
 		Discord.Intents.FLAGS.GUILD_MESSAGE_TYPING,
 		Discord.Intents.FLAGS.DIRECT_MESSAGES,
@@ -103,6 +104,9 @@ var dbconfig = {
 		return useDefaultTypeCasting();
 	},
 };
+/**Database connection
+ * If you see this comment in another module, then it's probably set up correctly.
+ */
 var con;
 function dbReconnect() {
 	con = mysql.createConnection(dbconfig);
@@ -484,7 +488,7 @@ async function ticketing(message) {
 			if (
 				!message.member
 					.permissionsIn(message.channel)
-					.has(Discord.Permissions.FLAGS.MANAGE_CHANNELS) &&
+					.has(Discord.Permissions.FLAGS.MANAGE_MESSAGES) &&
 				message.interaction?.type !== "APPLICATION_COMMAND"
 			) {
 				let actionRow = new Discord.MessageActionRow().addComponents(
@@ -518,13 +522,20 @@ async function autothreading(message) {
 			if (message.author.bot && !at.BotAuto) return;
 			if (message.components.length > 0) return;
 			let title = at.Title;
+			let blank = "n/a";
+			let embed_t = message.embeds[0]?.title ?? blank;
+			if (embed_t.length > 50) embed_t = embed_t.slice(0, 47) + "...";
+			let embed_d = message.embeds[0]?.title ?? blank;
+			if (embed_d.length > 50) embed_d = embed_d.slice(0, 47) + "...";
 			title = title
 				.replace("[member]", () => message.member.displayName)
 				.replace("[channel]", () =>
 					message.channel.name.replace("-", () => " ")
 				)
-				.replace("[server]", () => message.guild.name);
-			if (title.length > 100) title = title.slice(0, 97) + "...";
+				.replace("[server]", () => message.guild.name)
+				.replace("[embed_t]", () => embed_t)
+				.replace("[embed_d]", () => embed_d);
+			if (title.length > 200) title = title.slice(0, 197) + "...";
 			message
 				.startThread({
 					name: title,
@@ -579,13 +590,6 @@ function checks(message, prefix) {
 			});
 			return false;
 		}
-
-	if (
-		!message.guild?.me
-			.permissionsIn(message.channel)
-			.has(Discord.Permissions.FLAGS.SEND_MESSAGES)
-	)
-		return false;
 
 	return true;
 }
@@ -1300,6 +1304,22 @@ async function onmessage(message) {
 	autothreading(message);
 
 	if (
+		!message.guild?.me
+			.permissionsIn(message.channel)
+			?.has(Discord.Permissions.FLAGS.SEND_MESSAGES)
+	)
+		return;
+
+	if (
+		!message.guild?.me
+			.permissionsIn(message.channel)
+			?.has(Discord.Permissions.FLAGS.EMBED_LINKS)
+	)
+		return message
+			.reply("I need `EMBED_LINKS` permission to operate!")
+			.catch(() => {});
+
+	if (
 		message.content === `<@!${client.user.id}>` ||
 		(message.content === `<@${client.user.id}>` && !message.author.bot)
 	) {
@@ -1468,7 +1488,10 @@ function setGuideList() {
 		.filter((guide) => guide.endsWith(".md"));
 	guides.forEach((guide) => {
 		const data = fs
-			.readFileSync(`./docs/guides/${guide}`, { encoding: `utf8`, flag: `r` })
+			.readFileSync(`./docs/guides/${guide}`, {
+				encoding: `utf8`,
+				flag: `r`,
+			})
 			.split("\n")
 			.shift();
 		console.log(data);
@@ -1478,7 +1501,8 @@ function setGuideList() {
 		)})\n\n`;
 	});
 	guideList += `<hr/>\n\nLast update: ${now.toUTCString()}.\n`;
-	guideList += "\n*~by [KifoPL](https://bio.link/KifoPL)*\n\n[<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)";
+	guideList +=
+		"\n*~by [KifoPL](https://bio.link/KifoPL)*\n\n[<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)";
 
 	fs.writeFile(`./docs/guideList.md`, guideList, () => {
 		return;
@@ -1510,6 +1534,8 @@ client.once("ready", () => {
 	setInterval(menusCheck, 1000 * 60);
 	pollsCheck();
 	setInterval(pollsCheck, 1000 * 60);
+	countdownCheck();
+	setInterval(countdownCheck, 1000 * 60);
 
 	con.query("SELECT * FROM menu_perms", [], function (err, result) {
 		if (err) throw err;
@@ -2059,6 +2085,49 @@ function pollsCheck() {
 	);
 }
 
+function countdownCheck() {
+	con.query(
+		/*sql*/
+		`SELECT * FROM countdown c WHERE c.EndDate <= NOW()`,
+		[],
+		function (err, result) {
+			if (err) throw err;
+			if (result.length > 0) {
+				result.forEach(async (row) => {
+					let msg = await client.guilds
+						.resolve(row.GuildId)
+						.channels?.resolve(row.ChannelId)
+						.messages.fetch(row.MessageId);
+					await msg.fetch();
+					msg.reply({
+						content: `<@!${row.AuthorId}>`,
+						embeds: [
+							kifo.embed(row.Message, "Countdown has ended!"),
+						],
+					}).catch(() => {
+						msg.member.send({
+							embeds: [
+								kifo.embed(
+									`Unable to send countdown finish message in <#${row.ChannelId}>!\n\n[__--Original message--__](${msg.url})`
+								),
+							],
+						});
+					});
+				});
+				con.query(
+					/*sql*/
+					`DELETE FROM countdown WHERE EndDate <= NOW()`,
+					[],
+					function (err) {
+						if (err) throw err;
+					}
+				);
+				console.log(`${result.length} countdowns finished!`);
+			}
+		}
+	);
+}
+
 function updatePresence() {
 	client.user.setStatus("online");
 	client.user.setActivity({
@@ -2099,11 +2168,9 @@ client.on("interactionCreate", (interaction) => {
 					}
 					//remember to add handling SUB_COMMAND_GROUP when I ever start using that
 				})
-				.join("\n")}\nin ${
-					interaction.channel.name
-				} - <#${interaction.channelId}> ${
-					interaction.guild.name
-				}\n*at <t:${Math.floor(
+				.join("\n")}\nin ${interaction.channel.name} - <#${
+				interaction.channelId
+			}> ${interaction.guild.name}\n*at <t:${Math.floor(
 				now.getTime() / 1000
 			)}>, <t:${Math.floor(now.getTime() / 1000)}:R>*.`
 		);
@@ -2137,13 +2204,13 @@ client.on("interactionCreate", (interaction) => {
 			main.log(
 				`${interaction.user.tag} issued \`${
 					interaction.commandName
-				}\` context menu for ${client.context_menus.get(interaction.commandName).type} in ${
-					interaction.channel.name
-				} - <#${interaction.channelId}> ${
-					interaction.guild.name
-				}\n*at <t:${Math.floor(now.getTime() / 1000)}>, <t:${Math.floor(
+				}\` context menu for ${
+					client.context_menus.get(interaction.commandName).type
+				} in ${interaction.channel.name} - <#${
+					interaction.channelId
+				}> ${interaction.guild.name}\n*at <t:${Math.floor(
 					now.getTime() / 1000
-				)}:R>*.`
+				)}>, <t:${Math.floor(now.getTime() / 1000)}:R>*.`
 			);
 			try {
 				client.context_menus
@@ -2264,7 +2331,7 @@ client.on("messageReactionAdd", async (msgReaction, user) => {
 			if (
 				channel.permissionOverwrites
 					.get(user.id)
-					?.deny.has(menu.PermName)
+					?.deny.has(menu.permName)
 			)
 				return;
 			channel
@@ -2301,7 +2368,7 @@ client.on("messageReactionAdd", async (msgReaction, user) => {
 							.send({
 								embeds: [
 									kifo.embed(
-										`Gave you ${role.name} role! (Id: ${menu.RoleId})`
+										`Gave you __**${role.name}**__ role! (Id: ${menu.RoleId})`
 									),
 								],
 							})
@@ -2369,7 +2436,7 @@ client.on("messageReactionRemove", async (msgReaction, user) => {
 							.send({
 								embeds: [
 									kifo.embed(
-										`Removed ${role.name} role! (Id: ${menu.RoleId})`
+										`Removed **__${role.name}__** role! (Id: ${menu.RoleId})`
 									),
 								],
 							})

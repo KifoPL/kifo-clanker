@@ -250,18 +250,11 @@ module.exports = {
 					{
 						name: "Thread title:",
 						value: title
-							.replace(
-								"[member]".toLowerCase(),
-								(match) => `\`${match}\``
-							)
-							.replace(
-								"[channel]".toLowerCase(),
-								(match) => `\`${match}\``
-							)
-							.replace(
-								"[server]".toLowerCase(),
-								(match) => `\`${match}\``
-							),
+							.replace("[member]", (match) => `\`${match}\``)
+							.replace("[channel]", (match) => `\`${match}\``)
+							.replace("[server]", (match) => `\`${match}\``)
+							.replace("[embed_t]", (match) => `\`${match}\``)
+							.replace("[embed_d]", (match) => `\`${match}\``),
 					},
 				]);
 
@@ -463,15 +456,23 @@ module.exports = {
 												long: true,
 										  })
 								}\n__Message:__ ${value.Title.replace(
-									"[member]".toLowerCase(),
+									"[member]",
 									(match) => `\`${match}\``
 								)
 									.replace(
-										"[channel]".toLowerCase(),
+										"[channel]",
 										(match) => `\`${match}\``
 									)
 									.replace(
-										"[server]".toLowerCase(),
+										"[server]",
+										(match) => `\`${match}\``
+									)
+									.replace(
+										"[embed_t]",
+										(match) => `\`${match}\``
+									)
+									.replace(
+										"[embed_d]",
 										(match) => `\`${match}\``
 									)}`,
 							});

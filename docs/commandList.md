@@ -262,7 +262,8 @@ Sends a copy of the message in DM (with attachments) (**DEPRECATED**).
 ### countdown
 Count down to a given time, then send a message.
 - Options:
-	- `epoch` *(optional)* - The amount of seconds since 1970-01-01T00:00:00Z (use /epoch to get the number)
+	- `epoch` - The amount of seconds since 1970-01-01T00:00:00Z (use /epoch date_to_epoch to get the number)
+	- `message` - The message to send when the countdown ends.
 - Required user permissions: `USE_APPLICATION_COMMANDS`, `MANAGE_MESSAGES`
 
 ### epoch
@@ -315,7 +316,7 @@ Lists user stats.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-- Last update: Wed, 25 Aug 2021 10:44:28 GMT
+- Last update: Fri, 27 Aug 2021 07:52:04 GMT
 *~by [KifoPL](https://bio.link/KifoPL)*
 
 [<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)
