@@ -11,7 +11,7 @@ const now = new Date(Date.now());
 module.exports = {
 	name: "menu",
 	description:
-		"This powerful command allows you to create role menu or channel perms menu with optional timeout",
+		"This powerful command allows you to create a role menu or channel perms menu with an optional timeout",
 	usage: [
 		"`menu` - DMs you with channel aliases and syntax of the command.",
 		"`menu list` - lists active menus in the server (requires `MANAGE_GUILD`)",

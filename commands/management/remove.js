@@ -1,7 +1,8 @@
 const Discord = require("discord.js");
 module.exports = {
 	name: "remove",
-	description: "This command allows you to (temporarily) remove user role.",
+	description:
+		"This command allows you to (temporarily) remove the user role.",
 	usage: [
 		"`remove` - Informs you of syntax.",
 		"`remove <user> <role>` - permanently removes role from user.",
@@ -18,35 +19,61 @@ module.exports = {
 		//precheck
 		if (!message.guild == null)
 			return message
-				.reply({ embeds: [kifo.embed(`you can only run this command in a server!`)] })
+				.reply({
+					embeds: [
+						kifo.embed(
+							`you can only run this command in a server!`
+						),
+					],
+				})
 				.catch(() => {});
 
 		//perms check
-		if (!message.guild?.me.permissions.has(Discord.Permissions.FLAGS.MANAGE_ROLES)) {
+		if (
+			!message.guild?.me.permissions.has(
+				Discord.Permissions.FLAGS.MANAGE_ROLES
+			)
+		) {
 			return message
-				.reply({ embeds: [kifo.embed("I don't have `MANAGE_ROLES` permission!")] })
+				.reply({
+					embeds: [
+						kifo.embed("I don't have `MANAGE_ROLES` permission!"),
+					],
+				})
 				.catch(() => {});
 		}
-		if (!message.member.permissions.has(Discord.Permissions.FLAGS.MANAGE_ROLES)) {
+		if (
+			!message.member.permissions.has(
+				Discord.Permissions.FLAGS.MANAGE_ROLES
+			)
+		) {
 			return message
-				.reply({ embeds: [kifo.embed("You don't have `MANAGE_ROLES` permission!")] })
+				.reply({
+					embeds: [
+						kifo.embed("You don't have `MANAGE_ROLES` permission!"),
+					],
+				})
 				.catch(() => {});
 		}
 
 		if (!args[0]) {
 			return message
-				.reply({ embeds: [kifo.embed(`- ${this.usage.join("\n- ")}`, "Usage:")] })
+				.reply({
+					embeds: [
+						kifo.embed(`- ${this.usage.join("\n- ")}`, "Usage:"),
+					],
+				})
 				.catch(() => {});
 		}
 		if (!args[1]) {
 			return message
 				.reply({
 					embeds: [
-					kifo.embed(
-						`Usage: ${this.usage.join("\n")}`,
-						"Incorrect syntax!"
-					)
-					]
+						kifo.embed(
+							`Usage: ${this.usage.join("\n")}`,
+							"Incorrect syntax!"
+						),
+					],
 				})
 				.catch(() => {});
 		}
@@ -67,7 +94,9 @@ module.exports = {
 
 		if (message.guild.roles.resolve(args[1]) == null)
 			if (message.mentions.roles.first() == null)
-				return message.reply({ embeds: [kifo.embed("Incorrect role!")] });
+				return message.reply({
+					embeds: [kifo.embed("Incorrect role!")],
+				});
 			else role = message.mentions.roles.first();
 		else role = message.guild.roles.resolve(args[1]);
 
@@ -77,7 +106,11 @@ module.exports = {
 			message.member.roles.highest.rawPosition
 		) {
 			return message
-				.reply({ embeds: [kifo.embed(`You can't remove <@!${member.id}>'s role!`)] })
+				.reply({
+					embeds: [
+						kifo.embed(`You can't remove <@!${member.id}>'s role!`),
+					],
+				})
 				.catch(() => {});
 		}
 		if (
@@ -85,12 +118,18 @@ module.exports = {
 			message.guild.me.roles.highest.rawPosition
 		) {
 			return message
-				.reply({ embeds: [kifo.embed(`I can't remove <@!${member.id}>'s role!`)] })
+				.reply({
+					embeds: [
+						kifo.embed(`I can't remove <@!${member.id}>'s role!`),
+					],
+				})
 				.catch(() => {});
 		}
 		if (member == message.member && role == member.roles.highest)
 			return message
-				.reply({ embeds: [kifo.embed(`You can't remove your highest role!`)] })
+				.reply({
+					embeds: [kifo.embed(`You can't remove your highest role!`)],
+				})
 				.catch(() => {});
 
 		const now = new Date(Date.now());
@@ -111,10 +150,10 @@ module.exports = {
 				return message
 					.reply({
 						embeds: [
-						kifo.embed(
-							"Please set the time period to at least a minute!"
-						)
-						]
+							kifo.embed(
+								"Please set the time period to at least a minute!"
+							),
+						],
 					})
 					.catch(() => {});
 			}
@@ -127,14 +166,15 @@ module.exports = {
 				.then(() => {
 					message.channel
 						.send({
-							content:
-							`I'll re-add the role at: <t:${Math.floor(
+							content: `I'll re-add the role at: <t:${Math.floor(
 								end.getTime() / 1000
 							)}>, <t:${Math.floor(end.getTime() / 1000)}:R>`,
-							embeds: [kifo.embed(
-								`Issued by: <@!${message.member.id}>\nRole removed: <@&${role.id}>\nFrom: <@!${member.id}>`,
-								`Role remove command`
-							)]
+							embeds: [
+								kifo.embed(
+									`Issued by: <@!${message.member.id}>\nRole removed: <@&${role.id}>\nFrom: <@!${member.id}>`,
+									`Role remove command`
+								),
+							],
 						})
 						.catch(() => {});
 					con.query(
@@ -154,7 +194,14 @@ module.exports = {
 				})
 				.catch((err) => {
 					message.channel
-						.send({ embeds: [kifo.embed(err.message, "Could not remove role!")] })
+						.send({
+							embeds: [
+								kifo.embed(
+									err.message,
+									"Could not remove role!"
+								),
+							],
+						})
 						.catch(() => {});
 				});
 		} else {
@@ -167,17 +214,24 @@ module.exports = {
 					message.channel
 						.send({
 							embeds: [
-							kifo.embed(
-								`Issued by: <@!${message.member.id}>\nRole removed: <@&${role.id}>\nFrom: <@!${member.id}>`,
-								`Role remove command`
-							)
-							]
+								kifo.embed(
+									`Issued by: <@!${message.member.id}>\nRole removed: <@&${role.id}>\nFrom: <@!${member.id}>`,
+									`Role remove command`
+								),
+							],
 						})
 						.catch(() => {});
 				})
 				.catch((err) => {
 					message.channel
-						.send({ embeds: [kifo.embed(err.message, "Could not remove role!")] })
+						.send({
+							embeds: [
+								kifo.embed(
+									err.message,
+									"Could not remove role!"
+								),
+							],
+						})
 						.catch(() => {});
 				});
 		}

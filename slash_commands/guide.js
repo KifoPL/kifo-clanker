@@ -5,15 +5,16 @@ const main = require("../index.js")
 module.exports = {
 	name: "guide",
 	description:
-		"Receive link for command list, or guide regarding speficic topic.",
+		"Receive a link for the command list, or guide regarding a specific topic.",
 	options: [
 		{
 			name: "choice",
 			type: "STRING",
-			description: "Select topic, which you want to learn about.",
+			description: "Select a topic, which you want to learn about.",
 			choices: [
 				{ name: "Slash commands", value: "slash" },
-				{ name: "Context menus", value: "contextmenus"},
+				{ name: "Context menus", value: "contextmenus" },
+				{ name: "Epoch converter", value: "epoch" },
 				{ name: "Using /ticket", value: "ticket" },
 				{ name: "Ticketing system", value: "ticketing" },
 				{ name: "Auto-threading system", value: "autothreading" },
@@ -38,7 +39,7 @@ module.exports = {
 					.setStyle("LINK")
 					.setLabel(text)
 					.setURL(
-						`https://kifopl.github.io/kifo-clanker/guides/${choice.value}`
+						`https://kifopl.github.io/kifo-clanker/docs/guides/${choice.value}`
 					)
 			);
 			itr.reply({
