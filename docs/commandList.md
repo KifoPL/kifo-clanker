@@ -238,6 +238,8 @@ Manage threads in this channel.
 		- `silent` *(optional)* - Do you want the output to be visible only by you? Defaults to false.
 - Required user permissions: `USE_APPLICATION_COMMANDS`, `MANAGE_THREADS`
 
+[test](#list-of-context-menus-used-with-right-click)
+
 ### ticketing
 Set up ticketing system in a channel.
 - Options:

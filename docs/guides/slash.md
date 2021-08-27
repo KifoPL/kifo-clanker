@@ -20,7 +20,7 @@ Thanks to the features above, **there is no need for the `/help` command** - sim
 
 ## List of `/` commands
 
-The complete and auto-updated list of commands can be found [here](https://kifopl.github.io/kifo-clanker/commandList#list-of-slash-commands-used-with-).
+The complete and auto-updated list of commands can be found [here](../commandList.md#list-of-slash-commands-used-with-).
 
 ## Using `/` commands on `PC`
 

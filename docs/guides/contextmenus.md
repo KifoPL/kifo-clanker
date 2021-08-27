@@ -1,6 +1,7 @@
 # How to use context menus?
 
 ## Table of Contents:
+
 - [How to use context menus?](#how-to-use-context-menus)
 	- [Table of Contents:](#table-of-contents)
 	- [What are context menus?](#what-are-context-menus)
@@ -18,7 +19,7 @@ Context menus are the latest feature of integrating applications directly into y
 
 # List of context menu actions
 
-The complete and auto-updated list of context menus can be found [here](https://kifopl.github.io/kifo-clanker/commandList#todo-fix-this-link).
+The complete and auto-updated list of context menus can be found [here](../commandList.md#list-of-context-menus-used-with-right-click).
 
 ## Using context menus on `PC`
 
@@ -34,7 +35,8 @@ Either <kbd>Right-Click</kbd> on the message or <kbd>Left-Click</kbd> on the <kb
 
 ## Using context menus on `Mobile`
 
-*Currently there is no support for context menus via mobile app. I will update this guide once this feature is implemented.*
+_Currently there is no support for context menus via mobile app. I will update this guide once this feature is implemented._
+
 <hr/>
 
 ~by [KifoPL](https://bio.link/KifoPL)
