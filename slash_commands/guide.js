@@ -56,7 +56,7 @@ module.exports = {
 				new Discord.MessageButton()
 					.setStyle("LINK")
 					.setLabel("Guide List")
-					.setURL(`https://kifopl.github.io/kifo-clanker/guideList`)
+					.setURL(`https://kifopl.github.io/kifo-clanker/docs/guideList`)
 			);
 			itr.reply({
 				embeds: [

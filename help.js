@@ -98,7 +98,7 @@ module.exports = {
 							`Bot is created and developed solely by KifoPL#3358 - <@289119054130839552>. Click on the title to get full list of commands.`
 						)
 						.setURL(
-							"https://kifopl.github.io/kifo-clanker/commandList"
+							"https://kifopl.github.io/kifo-clanker/docs/commandList"
 						)
 						.addFields(FieldArr);
 
@@ -182,9 +182,9 @@ module.exports = {
 				`List of ${commandCount} commands in ${CategoryCount} categories, by KifoPL:`
 			)
 			.setDescription(
-				`**Click on the text above** for full and detailed list of commands.\nType \`${prefix}help <category>\` to get detailed list of commands within a category, or \`${prefix}help <command>\` to get help for that command.\n\n*Looking for \`/\` commands? Run \`/guide Slash commands\`, or click [here](https://kifopl.github.io/kifo-clanker/commandList#list-of-slash-commands-used-with-).*`
+				`**Click on the text above** for full and detailed list of commands.\nType \`${prefix}help <category>\` to get detailed list of commands within a category, or \`${prefix}help <command>\` to get help for that command.\n\n*Looking for \`/\` commands? Run \`/guide Slash commands\`, or click [here](https://kifopl.github.io/kifo-clanker/docs/commandList#list-of-slash-commands-used-with-).*`
 			)
-			.setURL("https://kifopl.github.io/kifo-clanker/commandList")
+			.setURL("https://kifopl.github.io/kifo-clanker/docs/commandList")
 			.setFooter(
 				`Bot is created and developed solely by KifoPL#3358 - <@289119054130839552>. Click on the title to see full list of commands.`
 			)
