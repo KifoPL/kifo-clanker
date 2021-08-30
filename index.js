@@ -2469,10 +2469,10 @@ client.on("guildCreate", async (guild) => {
 		.setColor("a039a0")
 		.setThumbnail(guild.iconURL({ dynamic: true }))
 		.setTitle("New Server!")
-		.addField("Server Name", guild.name, true)
-		.addField("Server Id", guild.id, true)
-		.addField("Owner", `<@${guild.ownerId}>`, true)
-		.addField("Member Count", guild.memberCount, true)
+		.addField("Server Name", guild?.name ?? "unknown", true)
+		.addField("Server Id", guild?.id ?? "unknown", true)
+		.addField("Owner", `<@${guild?.ownerId ?? "unknown"}>`, true)
+		.addField("Member Count", guild?.memberCount ?? "unknown", true)
 		.setFooter("Joined at: " + date.toUTCString());
 
 	channel.send({ embeds: [embed] }).catch((err) => {
@@ -2487,12 +2487,12 @@ client.on("guildDelete", (guild) => {
 		.channels?.resolve("863769411700785152");
 	const embed = new Discord.MessageEmbed()
 		.setColor("a039a0")
-		.setThumbnail(guild.iconURL({ dynamic: true }))
+		.setThumbnail(guild?.iconURL({ dynamic: true }))
 		.setTitle("Removed from a server :(")
-		.addField("Server Name", guild.name, true)
-		.addField("Server Id", guild.id, true)
-		.addField("Owner", `<@${guild.ownerId}>`, true)
-		.addField("Member Count", guild.memberCount, true)
+		.addField("Server Name", guild?.name ?? "unknown", true)
+		.addField("Server Id", guild?.id ?? "unknown", true)
+		.addField("Owner", `<@${guild?.ownerId ?? "unknown"}>`, true)
+		.addField("Member Count", guild?.memberCount ?? "unknown", true)
 		.setFooter("Left at: " + date.toUTCString());
 
 	channel.send({ embeds: [embed] }).catch((err) => {
@@ -2524,7 +2524,11 @@ client.on("guildUnavailable", async (guild) => {
 		.send({
 			embeds: [
 				kifo.embed(
-					`A guild "${guild.name}", Id ${guild.id}, Owner: <@${guild.ownerId}>, ${owner.tag} has become unavailable!`
+					`A guild "${guild?.name ?? "unknown"}", Id ${
+						guild.id
+					}, Owner: <@${guild?.ownerId ?? "unknown"}>, ${
+						owner.tag
+					} has become unavailable!`
 				),
 			],
 		})
