@@ -99,7 +99,7 @@ module.exports = {
 					.setLabel("Auto-threading Guide")
 					.setStyle("LINK")
 					.setURL(
-						"https://kifopl.github.io/kifo-clanker/guides/autothreading"
+						"https://kifopl.github.io/kifo-clanker/docs/guides/autothreading"
 					)
 			);
 			itr.reply({

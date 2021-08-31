@@ -238,8 +238,6 @@ Manage threads in this channel.
 		- `silent` *(optional)* - Do you want the output to be visible only by you? Defaults to false.
 - Required user permissions: `USE_APPLICATION_COMMANDS`, `MANAGE_THREADS`
 
-[test](#list-of-context-menus-used-with-right-click)
-
 ### ticketing
 Set up ticketing system in a channel.
 - Options:
@@ -322,7 +320,7 @@ Lists user stats.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-- Last update: Fri, 27 Aug 2021 11:30:53 GMT
+- Last update: Mon, 30 Aug 2021 21:15:38 GMT
 *~by [KifoPL](https://bio.link/KifoPL)*
 
 [<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)

@@ -102,7 +102,7 @@ module.exports = {
 					.setLabel("Ticketing Guide")
 					.setStyle("LINK")
 					.setURL(
-						"https://kifopl.github.io/kifo-clanker/guides/ticketing"
+						"https://kifopl.github.io/kifo-clanker/docs/guides/ticketing"
 					)
 			);
 			itr.reply({

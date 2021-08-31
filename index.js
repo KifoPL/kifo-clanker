@@ -496,7 +496,7 @@ async function ticketing(message) {
 						.setStyle("LINK")
 						.setLabel("Guide")
 						.setURL(
-							"https://kifopl.github.io/kifo-clanker/guides/ticket"
+							"https://kifopl.github.io/kifo-clanker/docs/guides/ticket"
 						)
 				);
 				message.author

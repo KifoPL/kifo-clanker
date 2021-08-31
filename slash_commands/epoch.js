@@ -55,7 +55,7 @@ module.exports = {
 					.setLabel("Epoch Converter Guide")
 					.setStyle("LINK")
 					.setURL(
-						"https://kifopl.github.io/kifo-clanker/guides/epoch"
+						"https://kifopl.github.io/kifo-clanker/docs/guides/epoch"
 					)
 			);
 			return itr.reply({
@@ -65,6 +65,7 @@ module.exports = {
 						"Click the button to learn more about epoch converter."
 					),
 				],
+				ephemeral: true,
 			});
 		}
 		subcmd = itr.options.data.find((d) => d.name === "date_to_epoch");
@@ -107,6 +108,7 @@ module.exports = {
 						"Unrecognized output. For help, see `/epoch help`."
 					),
 				],
+				ephemeral: true,
 			});
 		}
 		subcmd = itr.options.data.find((d) => d.name === "epoch_to_date");
