@@ -12,7 +12,7 @@ module.exports = {
 		"`list` - lists all users on the server",
 		"`list <user>` - lists roles of specified user.",
 		"`list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.",
-		'`list <channel/"here"> <role> <optional_role2> <optional_role_n>` - lists users with specified roles in specified channel.',
+		'~~`list <channel/"here"> <role> <optional_role2> <optional_role_n>` - lists users with specified roles in specified channel.~~ NOT IMPLEMENTED YET.',
 		//"`list <message_id>` - pastes raw message content *(with formatting, works with embeds and all types of messages)*.",
 	],
 	adminonly: false,
@@ -291,7 +291,7 @@ async function stats(message, args, prefix, isList = true) {
 					message.guild.roles.resolve(kifo.mentionTrim(args[i])) !=
 					undefined
 				) {
-					roleIds.push(args[i]);
+					roleIds.push(kifo.mentionTrim(args[i]));
 					args[i] = kifo.mentionTrim(args[i]);
 				} else
 					return message.reply({
@@ -684,7 +684,7 @@ async function stats(message, args, prefix, isList = true) {
 					params: { hex: entity.hexColor.slice(1) },
 				});
 
-				return newEmbed
+				newEmbed = newEmbed
 					.setColor("a039a0")
 					.setTitle(`${entity.name} stats:`)
 					.setDescription(
@@ -1045,20 +1045,16 @@ async function stats(message, args, prefix, isList = true) {
 				],
 			})
 			.catch((err) => main.log(err));
-	} else
-		await message.reply({ embeds: [newEmbed] }).catch((err) => {
-			main.log(err);
-		});
-	if (isList) {
 		fs.unlink(
-			`${__dirname}/../../${time
-				.toISOString()
-				.replace(/:/g, () => "_")}_list.txt`,
+			`./${time.toISOString().replace(/:/g, () => "_")}_list.txt`,
 			(err) => {
 				main.log(err);
 			}
 		);
-	}
+	} else
+		await message.reply({ embeds: [newEmbed] }).catch((err) => {
+			main.log(err);
+		});
 }
 
 async function userstats(

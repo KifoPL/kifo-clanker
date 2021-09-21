@@ -8,13 +8,13 @@ module.exports = {
 		"`stats` - shows stats of the server",
 		"`stats <user>` - shows stats of specified user.",
 		"`stats <role>` - shows stats of specified role.",
-		"`stats <message_id>` - shows stats of specified message.",
+		"~~`stats <message_id>` - shows stats of specified message.~~ NOT IMPLEMENTED YET.",
 		"`stats me` - shows your stats.",
 	],
 	adminonly: false,
 	perms: ["SEND_MESSAGES"],
 	async execute(message, args, prefix) {
 		const list = require("./list.js");
-		list.stats(message, args, prefix, false)
+		list.stats(message, args, prefix, false);
 	},
 };
