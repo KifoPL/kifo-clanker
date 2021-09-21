@@ -1322,14 +1322,17 @@ async function onmessage(message) {
 		message.content === `<@!${client.user.id}>` ||
 		(message.content === `<@${client.user.id}>` && !message.author.bot)
 	) {
+		let now = new Date(Date.now());
+
+		let startDate = new Date(now.getTime() - client.uptime);
+
 		return message
 			.reply({
 				embeds: [
 					kifo.embed(
-						`<:KifoClanker:863793928377729065> My prefix is: \`${prefix}\`\n\n<:online:823658022974521414> I'm online for **${ms(
-							client.uptime,
-							{ long: true }
-						)}**.`,
+						`<:KifoClanker:863793928377729065> My prefix is: \`${prefix}\`\n\n<:online:823658022974521414> I'm online since <t:${Math.floor(
+							startDate.getTime() / 1000
+						)}:R>.`,
 						"Hello there!"
 					),
 				],
