@@ -130,18 +130,18 @@ module.exports = {
 		let end;
 		if (time != 0) end = new Date(now.getTime() + ms(time));
 		else end = null;
-		let rEmbed = kifo.embed(
+		let rEmbed = kifo.embed(question.value, `Question:`);
+		rEmbed.setTitle(
 			`React to the option you choose!${
 				end != null
 					? `\nPoll ends at <t:${Math.floor(
 							end.getTime() / 1000
 					  )}>, <t:${Math.floor(end.getTime() / 1000)}:R>`
 					: ""
-			}`,
-			question.value
+			}`
 		);
 		for (i = 0; i < options.length; i++) {
-			rEmbed.addField(options[i].value, `React with ${reactions[i]}!`);
+			rEmbed.addField(`Option ${reactions[i]}:`, options[i].value);
 		}
 		itr.editReply({
 			embeds: [rEmbed],
