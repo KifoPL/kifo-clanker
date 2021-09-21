@@ -37,7 +37,7 @@ If the bot doesn't see some channels, lists ~~may~~ will be incorrect.
 	- `list` - lists all users on the server
 	- `list <user>` - lists roles of specified user.
 	- `list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.
-	- `list <channel/"here"> <role> <optional_role2> <optional_role_n>` - lists users with specified roles in specified channel.
+	- ~~`list <channel/"here"> <role> <optional_role2> <optional_role_n>` - lists users with specified roles in specified channel.~~ NOT IMPLEMENTED YET.
 - Required user permissions: `SEND_MESSAGES`, `MANAGE_GUILD`
 
 ### menu
@@ -320,7 +320,7 @@ Lists user stats.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-- Last update: Tue, 21 Sep 2021 13:53:14 GMT
+- Last update: Tue, 21 Sep 2021 22:02:35 GMT
 *~by [KifoPL](https://bio.link/KifoPL)*
 
 [<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)
