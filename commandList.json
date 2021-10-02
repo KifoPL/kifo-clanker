@@ -1,0 +1,72 @@
+{
+"test": {
+	"file": "test.js",
+	"path": "commands/debug/test.js",
+	"relativepath": "../debug/test.js"
+	},
+"clean": {
+	"file": "clean.js",
+	"path": "commands/management/clean.js",
+	"relativepath": "../management/clean.js"
+	},
+"list": {
+	"file": "list.js",
+	"path": "commands/management/list.js",
+	"relativepath": "../management/list.js"
+	},
+"menu": {
+	"file": "menu.js",
+	"path": "commands/management/menu.js",
+	"relativepath": "../management/menu.js"
+	},
+"perms": {
+	"file": "perms.js",
+	"path": "commands/management/perms.js",
+	"relativepath": "../management/perms.js"
+	},
+"remove": {
+	"file": "remove.js",
+	"path": "commands/management/remove.js",
+	"relativepath": "../management/remove.js"
+	},
+"stats": {
+	"file": "stats.js",
+	"path": "commands/management/stats.js",
+	"relativepath": "../management/stats.js"
+	},
+"top": {
+	"file": "top.js",
+	"path": "commands/management/top.js",
+	"relativepath": "../management/top.js"
+	},
+"giveaway": {
+	"file": "giveaway.js",
+	"path": "commands/utility/giveaway.js",
+	"relativepath": "../utility/giveaway.js"
+	},
+"lang": {
+	"file": "lang.js",
+	"path": "commands/utility/lang.js",
+	"relativepath": "../utility/lang.js"
+	},
+"prefix": {
+	"file": "prefix.js",
+	"path": "commands/utility/prefix.js",
+	"relativepath": "../utility/prefix.js"
+	},
+"react": {
+	"file": "react.js",
+	"path": "commands/utility/react.js",
+	"relativepath": "../utility/react.js"
+	},
+"superslow": {
+	"file": "superslow.js",
+	"path": "commands/utility/superslow.js",
+	"relativepath": "../utility/superslow.js"
+	},
+"todo": {
+	"file": "todo.js",
+	"path": "commands/utility/todo.js",
+	"relativepath": "../utility/todo.js"
+	}
+}

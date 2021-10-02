@@ -81,7 +81,7 @@ If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
 	- `stats` - shows stats of the server
 	- `stats <user>` - shows stats of specified user.
 	- `stats <role>` - shows stats of specified role.
-	- `stats <message_id>` - shows stats of specified message.
+	- ~~`stats <message_id>` - shows stats of specified message.~~ NOT IMPLEMENTED YET.
 	- `stats me` - shows your stats.
 - Required user permissions: `SEND_MESSAGES`
 
@@ -276,6 +276,13 @@ Easily convert dates to epoch and vice versa.
 	- `help` - Receive link to guide that helps you use this command.
 - Required user permissions: `USE_APPLICATION_COMMANDS`
 
+### ticket
+Create a ticket
+- Options:
+	- `title` - The problem, or question you have.
+	- `description` *(optional)* - Provide any additional information about your question/problem
+- Required user permissions: `USE_APPLICATION_COMMANDS`
+
 ### poll
 Create a poll.
 - Options:
@@ -291,13 +298,6 @@ Create a poll.
 	- `eight` *(optional)* - Option 8
 	- `nine` *(optional)* - Option 9
 	- `ten` *(optional)* - Option 10
-- Required user permissions: `USE_APPLICATION_COMMANDS`
-
-### ticket
-Create a ticket
-- Options:
-	- `title` - The problem, or question you have.
-	- `description` *(optional)* - Provide any additional information about your question/problem
 - Required user permissions: `USE_APPLICATION_COMMANDS`
 
 # List of context menus (used with <kbd>Right-Click</kbd>):
@@ -320,7 +320,7 @@ Lists user stats.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-- Last update: Tue, 21 Sep 2021 22:02:35 GMT
+- Last update: Sat, 02 Oct 2021 12:37:46 GMT
 *~by [KifoPL](https://bio.link/KifoPL)*
 
 [<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)

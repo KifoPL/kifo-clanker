@@ -2557,6 +2557,10 @@ exports.prefix = async function (guildId) {
  * @returns Promise, in case something breaks
  */
 exports.log = function (log, ...args) {
+
+	if (!client?.isReady()) {
+		return console.log(log, ...args);
+	}
 	let channel = client.guilds
 		.resolve("822800862581751848")
 		.channels?.resolve("864112365896466432");
