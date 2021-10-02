@@ -1375,7 +1375,7 @@ function setCommandList() {
 		help.description
 	}\n- Usage:\n\t- ${help.usage.join(
 		"\n\t- "
-	)}\n- Required user permissions: \`${command.perms.join("`, `")}\`\n\n`;
+	)}\n- Required user permissions: \`${help.perms.join("`, `")}\`\n\n`;
 	cmdListJSON += `{\n`;
 	for (const folder of commandFolders) {
 		cmdListMD += `## ${folder.toUpperCase()}\n\n`;
@@ -1400,6 +1400,7 @@ function setCommandList() {
 	}
 	cmdListMD += `# List of slash commands (used with \`/\`):\n`;
 	let cmdMap = new Map();
+	const cmdFiles = fs.readdirSync(`./slash_commands`);
 	for (const cmd of cmdFiles) {
 		const command = require(`./slash_commands/${cmd}`);
 		if (cmdMap.has(command.category)) {
@@ -2042,7 +2043,7 @@ function menusCheck() {
 function pollsCheck() {
 	con.query(
 		/*sql*/
-		`SELECT Id, GuildId, ChannelId, MessageId, EndTime FROM polls WHERE EndTime <= NOW()`,
+		`SELECT Id, UserId, GuildId, ChannelId, MessageId, EndTime FROM polls WHERE EndTime <= NOW()`,
 		[],
 		function (err, result) {
 			if (err) throw err;
@@ -2071,9 +2072,10 @@ function pollsCheck() {
 							);
 							pos++;
 						});
-					msg.reply({ embeds: [questionEmbed, resultEmbed] }).catch(
-						() => {}
-					);
+					msg.reply({
+						content: `<@!${row.UserId}>`,
+						embeds: [questionEmbed, resultEmbed],
+					}).catch(() => {});
 				});
 				con.query(
 					"DELETE FROM polls WHERE EndTime <= NOW()",
