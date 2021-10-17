@@ -151,9 +151,9 @@ async function stats(message, args, prefix, isList = true) {
 	let newEmbed = new Discord.MessageEmbed();
 	let time = new Date(Date.now());
 
-	//if you provide multiple role Ids you get a list of members with these roles
+	//*if you provide multiple role Ids you get a list of members with these roles
 	if (args[1] != undefined) {
-		//if you want to get list of members witin specific channel.
+		//*if you want to get list of members witin specific channel.
 		if (
 			args[0].toLowerCase() == "here" ||
 			message.guild.channels.resolve(kifo.mentionTrim(args[0]))
@@ -247,7 +247,7 @@ async function stats(message, args, prefix, isList = true) {
 
 			var roleList = "";
 			for (i = 0; i < roleIds.length; i++) {
-				roleList += `${roleIds[i]} - <@!${roleIds[i]}>\n`;
+				roleList += `${roleIds[i]} - <@&${roleIds[i]}>\n`;
 			}
 
 			newEmbed
@@ -268,7 +268,7 @@ async function stats(message, args, prefix, isList = true) {
 				.setFooter(`State of members as of ${time.toUTCString()}.`)
 				.addFields(
 					{
-						name: `${thisChannel.name}`,
+						name: `Channel filter:`,
 						value: `Showing people who are in <#${thisChannel.id}>.`,
 					},
 					{
@@ -346,7 +346,7 @@ async function stats(message, args, prefix, isList = true) {
 
 			var roleList = "";
 			for (i = 0; i < roleIds.length; i++) {
-				roleList += `${roleIds[i]} - <@!${roleIds[i]}>\n`;
+				roleList += `${roleIds[i]} - <@&${roleIds[i]}>\n`;
 			}
 
 			newEmbed
