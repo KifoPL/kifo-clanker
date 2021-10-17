@@ -153,10 +153,10 @@ async function stats(message, args, prefix, isList = true) {
 
 	//if you provide multiple role Ids you get a list of members with these roles
 	if (args[1] != undefined) {
+		//if you want to get list of members witin specific channel.
 		if (
 			args[0].toLowerCase() == "here" ||
-			message.guild.channels.resolve(args[0]) ||
-			args[0].match(Discord.MessageMentions.CHANNELS_PATTERN)
+			message.guild.channels.resolve(kifo.mentionTrim(args[0]))
 		) {
 			if (!isList)
 				return message
@@ -174,7 +174,9 @@ async function stats(message, args, prefix, isList = true) {
 				message.guild.channels.resolve(kifo.mentionTrim(args[0])) !=
 				undefined
 			) {
-				thisChannel = message.guild.channels.resolve(args[0]);
+				thisChannel = message.guild.channels.resolve(
+					kifo.mentionTrim(args[0])
+				);
 			}
 			if (thisChannel == null)
 				return message.reply({
@@ -188,7 +190,7 @@ async function stats(message, args, prefix, isList = true) {
 					message.guild.roles.resolve(kifo.mentionTrim(args[i])) !=
 					undefined
 				) {
-					roleIds.push(args[i]);
+					roleIds.push(kifo.mentionTrim(args[i]));
 				} else
 					return message.reply({
 						embeds: [kifo.embed(`${args[i]} is not a valid role!`)],
@@ -245,11 +247,7 @@ async function stats(message, args, prefix, isList = true) {
 
 			var roleList = "";
 			for (i = 0; i < roleIds.length; i++) {
-				roleList += `${roleIds[i]} - ${
-					message.guild.roles.cache.find(
-						(role) => role.id == roleIds[i]
-					).name
-				}\n`;
+				roleList += `${roleIds[i]} - <@!${roleIds[i]}>\n`;
 			}
 
 			newEmbed
@@ -276,6 +274,10 @@ async function stats(message, args, prefix, isList = true) {
 					{
 						name: `Role filter (${i} role${i > 1 ? "s" : ""}):`,
 						value: `${roleList}`,
+					},
+					{
+						name: `Result:`,
+						value: `Found ${Count} members with given criteria.`,
 					},
 					//{name: "Also:", value: `You can check your own stats with "stats me", or someone else's stats by ${this.usage}`},
 					{
@@ -344,11 +346,7 @@ async function stats(message, args, prefix, isList = true) {
 
 			var roleList = "";
 			for (i = 0; i < roleIds.length; i++) {
-				roleList += `${roleIds[i]} - ${
-					message.guild.roles.cache.find(
-						(role) => role.id == roleIds[i]
-					).name
-				}\n`;
+				roleList += `${roleIds[i]} - <@!${roleIds[i]}>\n`;
 			}
 
 			newEmbed
@@ -373,6 +371,10 @@ async function stats(message, args, prefix, isList = true) {
 						value: `${roleList}`,
 					},
 					{
+						name: `Result:`,
+						value: `Found ${Count} members with given criteria.`,
+					},
+					{
 						name: "More",
 						value: "❗ If you want this command to have more stats, reach out to bot developer (KifoPL#3358, <@289119054130839552>)!",
 					}
@@ -388,7 +390,10 @@ async function stats(message, args, prefix, isList = true) {
 				})
 				.catch(() => {});
 		}
+		args[1] =
+			"This is one of the funniest workaround to my shit boolean logic. Lol.";
 	}
+
 	let guildcount = 0;
 
 	message.client.guilds.cache.each(() => {
