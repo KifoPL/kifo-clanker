@@ -150,10 +150,10 @@ module.exports = {
 		});
 
 		await itr.fetchReply().then((itreply) => {
-			if (end != null) {
-				main.con.query(
+			if (end != null) {s
+				main.con.query(					
 					"INSERT INTO polls (UserId, GuildId, ChannelId, MessageId, EndTime)  VALUES (?, ?, ?, ?, ?)",
-					[itr.userId, itr.guildId, itr.channelId, itreply.id, end],
+					[itr.user.id, itr.guildId, itr.channelId, itreply.id, end],
 					function (err) {
 						if (err) throw err;
 					}

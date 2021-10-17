@@ -29,17 +29,6 @@ This command cleans any permission overwrites that don't have `DENY` (<:RedX:857
 	- `clean all` - clean permission overwrites for `all` channels in the server.
 - Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`, `MANAGE_ROLES`
 
-### list
-Lists all users in the server, or users having a certain role.
-To list more than 1000 users you need `MANAGE_GUILD` perms.
-If the bot doesn't see some channels, lists ~~may~~ will be incorrect.
-- Usage:
-	- `list` - lists all users on the server
-	- `list <user>` - lists roles of specified user.
-	- `list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.
-	- ~~`list <channel/"here"> <role> <optional_role2> <optional_role_n>` - lists users with specified roles in specified channel.~~ NOT IMPLEMENTED YET.
-- Required user permissions: `SEND_MESSAGES`, `MANAGE_GUILD`
-
 ### menu
 This powerful command allows you to create a role menu or channel perms menu with an optional timeout
 - Usage:
@@ -90,6 +79,18 @@ This command lists x messages with the most reactions from another channel.
 - Usage:
 	- `top <x> <time_period> <other_channel> <reaction>` - lists top x messages with most reactions from other channel. Sends x embeds (don't set it too large).
 - Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`
+
+### list
+Lists all users in the server, or users having a certain role.
+To list more than 1000 users you need `MANAGE_GUILD` perms.
+If the bot doesn't see some channels, lists ~~may~~ will be incorrect.
+- Usage:
+	- `list` - lists all users on the server
+	- `list <user>` - lists roles of specified user.
+	- `list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.
+	- `list <channel/"here"> <role> <optional_role2> <optional_role_n>` - lists users with specified roles in specified channel.
+	- ~~`list <message_id>` - pastes raw message content *(with formatting, works with embeds and all types of messages)*.~~ NOT IMPLEMENTED YET.
+- Required user permissions: `SEND_MESSAGES`, `MANAGE_GUILD`
 
 ## UTILITY
 
@@ -320,7 +321,7 @@ Lists user stats.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-- Last update: Sat, 02 Oct 2021 12:37:46 GMT
+- Last update: Sun, 17 Oct 2021 12:06:24 GMT
 *~by [KifoPL](https://bio.link/KifoPL)*
 
 [<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)
