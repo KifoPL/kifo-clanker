@@ -6,7 +6,7 @@ const main = require("../../index.js");
 const fs = require("fs");
 const ms = require("ms");
 const { SSL_OP_EPHEMERAL_RSA } = require("constants");
-const now = new Date(Date.now());
+
 
 module.exports = {
 	name: "menu",
@@ -36,6 +36,8 @@ module.exports = {
 };
 
 async function revert(message, menu, isPerm, obj, permName = null) {
+
+	const now = new Date(Date.now());
 	//obj is either channel or role
 	if (isPerm) {
 		if (!menu.deleted) {
