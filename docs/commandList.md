@@ -160,6 +160,16 @@ test out if the `/` commands work properly.
 	- `input2` *(optional)* - The text to return.
 - Required user permissions: `USE_APPLICATION_COMMANDS`
 
+### hangman
+Play hangman inside of Discord chat!
+- Options:
+	- `help` - Instructions on how to play hangman
+	- `start` - Start a game of hangman!
+		- `word` *(optional)* - The word to guess
+	- `guess` - Guess a letter in current hangman game
+		- `letter` - The letter to guess
+- Required user permissions: `USE_APPLICATION_COMMANDS`
+
 ## FUN
 
 ### cringe
@@ -321,7 +331,7 @@ Lists user stats.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-- Last update: Sun, 17 Oct 2021 12:14:50 GMT
+- Last update: Sat, 13 Nov 2021 16:42:58 GMT
 *~by [KifoPL](https://bio.link/KifoPL)*
 
 [<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)

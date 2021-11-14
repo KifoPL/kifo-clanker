@@ -12,9 +12,11 @@
 
 ### [How to use `/ticketing` and how to set up channel permissions?](./guides/ticketing)
 
+### [How to play hangman?](./guides/hangman)
+
 <hr/>
 
-Last update: Sun, 17 Oct 2021 12:14:50 GMT.
+Last update: Sat, 13 Nov 2021 16:42:58 GMT.
 
 *~by [KifoPL](https://bio.link/KifoPL)*
 
