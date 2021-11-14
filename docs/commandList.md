@@ -29,6 +29,18 @@ This command cleans any permission overwrites that don't have `DENY` (<:RedX:857
 	- `clean all` - clean permission overwrites for `all` channels in the server.
 - Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`, `MANAGE_ROLES`
 
+### list
+Lists all users in the server, or users having a certain role.
+To list more than 1000 users you need `MANAGE_GUILD` perms.
+If the bot doesn't see some channels, lists ~~may~~ will be incorrect.
+- Usage:
+	- `list` - lists all users on the server
+	- `list <user>` - lists roles of specified user.
+	- `list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.
+	- `list <channel/"here"> <role> <optional_role2> <optional_role_n>` - lists users with specified roles in specified channel.
+	- ~~`list <message_id>` - pastes raw message content *(with formatting, works with embeds and all types of messages)*.~~ NOT IMPLEMENTED YET.
+- Required user permissions: `SEND_MESSAGES`, `MANAGE_GUILD`
+
 ### menu
 This powerful command allows you to create a role menu or channel perms menu with an optional timeout
 - Usage:
@@ -79,18 +91,6 @@ This command lists x messages with the most reactions from another channel.
 - Usage:
 	- `top <x> <time_period> <other_channel> <reaction>` - lists top x messages with most reactions from other channel. Sends x embeds (don't set it too large).
 - Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`
-
-### list
-Lists all users in the server, or users having a certain role.
-To list more than 1000 users you need `MANAGE_GUILD` perms.
-If the bot doesn't see some channels, lists ~~may~~ will be incorrect.
-- Usage:
-	- `list` - lists all users on the server
-	- `list <user>` - lists roles of specified user.
-	- `list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.
-	- `list <channel/"here"> <role> <optional_role2> <optional_role_n>` - lists users with specified roles in specified channel.
-	- ~~`list <message_id>` - pastes raw message content *(with formatting, works with embeds and all types of messages)*.~~ NOT IMPLEMENTED YET.
-- Required user permissions: `SEND_MESSAGES`, `MANAGE_GUILD`
 
 ## UTILITY
 
@@ -147,6 +147,17 @@ Creates an issue on GitHub and pings KifoPL. Do not spam this command.
 	- `description` - Provide a brief description of how and when this error occurred.
 - Required user permissions: `USE_APPLICATION_COMMANDS`
 
+### hangman
+Play hangman inside of Discord chat!
+- Options:
+	- `help` - Instructions on how to play hangman
+	- `start` - Start a game of hangman!
+		- `word` - The word to guess
+	- `stop` - Stop a game of hangman!
+	- `guess` - Guess a letter in current hangman game
+		- `letters` - The letter (or letters) to guess
+- Required user permissions: `USE_APPLICATION_COMMANDS`
+
 ### ping
 ...pong?
 - Options:
@@ -158,16 +169,6 @@ test out if the `/` commands work properly.
 - Options:
 	- `input` *(optional)* - The text to return.
 	- `input2` *(optional)* - The text to return.
-- Required user permissions: `USE_APPLICATION_COMMANDS`
-
-### hangman
-Play hangman inside of Discord chat!
-- Options:
-	- `help` - Instructions on how to play hangman
-	- `start` - Start a game of hangman!
-		- `word` *(optional)* - The word to guess
-	- `guess` - Guess a letter in current hangman game
-		- `letter` - The letter to guess
 - Required user permissions: `USE_APPLICATION_COMMANDS`
 
 ## FUN
@@ -287,13 +288,6 @@ Easily convert dates to epoch and vice versa.
 	- `help` - Receive link to guide that helps you use this command.
 - Required user permissions: `USE_APPLICATION_COMMANDS`
 
-### ticket
-Create a ticket
-- Options:
-	- `title` - The problem, or question you have.
-	- `description` *(optional)* - Provide any additional information about your question/problem
-- Required user permissions: `USE_APPLICATION_COMMANDS`
-
 ### poll
 Create a poll.
 - Options:
@@ -309,6 +303,13 @@ Create a poll.
 	- `eight` *(optional)* - Option 8
 	- `nine` *(optional)* - Option 9
 	- `ten` *(optional)* - Option 10
+- Required user permissions: `USE_APPLICATION_COMMANDS`
+
+### ticket
+Create a ticket
+- Options:
+	- `title` - The problem, or question you have.
+	- `description` *(optional)* - Provide any additional information about your question/problem
 - Required user permissions: `USE_APPLICATION_COMMANDS`
 
 # List of context menus (used with <kbd>Right-Click</kbd>):
@@ -331,7 +332,7 @@ Lists user stats.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-- Last update: Sat, 13 Nov 2021 16:42:58 GMT
+- Last update: Sun, 14 Nov 2021 21:17:35 GMT
 *~by [KifoPL](https://bio.link/KifoPL)*
 
 [<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)

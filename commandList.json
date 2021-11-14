@@ -9,6 +9,11 @@
 	"path": "commands/management/clean.js",
 	"relativepath": "../management/clean.js"
 	},
+"list": {
+	"file": "list.js",
+	"path": "commands/management/list.js",
+	"relativepath": "../management/list.js"
+	},
 "menu": {
 	"file": "menu.js",
 	"path": "commands/management/menu.js",
@@ -33,11 +38,6 @@
 	"file": "top.js",
 	"path": "commands/management/top.js",
 	"relativepath": "../management/top.js"
-	},
-"list": {
-	"file": "list.js",
-	"path": "commands/management/list.js",
-	"relativepath": "../management/list.js"
 	},
 "giveaway": {
 	"file": "giveaway.js",
