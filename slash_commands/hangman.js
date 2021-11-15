@@ -20,7 +20,7 @@ class Hangman {
 	guess(letter) {
 		if (this.status === "won" || this.status === "lost") return;
 		if (this.guesses.includes(letter))
-			return `This letter \`${letter}\` was already guessed!`;
+			return `- letter \`${letter}\` was already guessed!`;
 		if (this.word.includes(letter)) {
 			this.guesses.push(letter);
 			this.hiddenWord = this.word.replace(/[a-zA-Z]/g, (char) => {
@@ -31,7 +31,7 @@ class Hangman {
 				this.status = "won";
 				return "You won!";
 			}
-			return `\`${letter}\` is correct!`;
+			return `- \`${letter}\` is correct!`;
 		} else {
 			this.guesses.push(letter);
 			this.lives--;
@@ -40,7 +40,7 @@ class Hangman {
 				this.status = "lost";
 				return "You lost!";
 			}
-			return `\`${letter}\` is incorrect!`;
+			return `- \`${letter}\` is incorrect!`;
 		}
 	}
 	//guess many letters
@@ -52,7 +52,7 @@ class Hangman {
 		return message;
 	}
 	updateMessage() {
-		this.message = `Word: ${this.hiddenWord}\n__Guesses:__ ${
+		this.message = `__Word:__ ${this.hiddenWord}\n__Guesses:__ ${
 			this.guesses.length === 0
 				? ""
 				: `\`${this.guesses.join(`\`, \``)}\``
@@ -203,6 +203,7 @@ module.exports = {
 							"There is no game in progress in this channel!"
 						),
 					],
+					ephemeral: true,
 				});
 
 			let game = games.get(itr.channelId);
@@ -213,6 +214,7 @@ module.exports = {
 							"You are not the game creator! Only the creator can stop the game!"
 						),
 					],
+					ephemeral: true,
 				});
 
 			games.delete(itr.channelId);
@@ -232,7 +234,7 @@ module.exports = {
 			if (letter == undefined)
 				return itr.reply({
 					embeds: [
-						kifo.embed("channelId specify a letter to guess!"),
+						kifo.embed("Specify a letter to guess!"),
 					],
 					ephemeral: true,
 				});
@@ -240,7 +242,7 @@ module.exports = {
 			//validate letter
 			if (letter.match(/[^a-z]/i))
 				return itr.reply({
-					embeds: [kifo.embed("Please type only letters a-z!")],
+					embeds: [kifo.embed("Please type only letters a-z (ex. `/hangman guess abcd`)!")],
 					ephemeral: true,
 				});
 
@@ -278,6 +280,7 @@ module.exports = {
 							`**<@!${itr.user.id}> has guessed the word!**\n\n${game.message}`
 						),
 					],
+					ephemeral: true,
 				});
 				games.delete(itr.channelId);
 				itr.channel.send({
@@ -286,6 +289,15 @@ module.exports = {
 							`**<@!${itr.user.id}> has guessed the word!**\n\n${game.message}`
 						),
 					],
+					ephemeral: true,
+				});
+				itr.reply({
+					embeds: [
+						kifo.embed(
+							`You have won the game of hangman!\n\nThe word was: ${game.word}`
+						),
+					],
+					ephemeral: true,
 				});
 				return;
 			}
@@ -299,15 +311,31 @@ module.exports = {
 					],
 				});
 				games.delete(itr.channelId);
-				itr.channel.send(
-					`**<@!${itr.user.id}> has lost the game!**\n\n${game.message}`
-				);
+				itr.channel.send({
+					embeds: [
+						kifo.embed(
+							`**<@!${itr.user.id}> has lost the game!**\n\n${game.message}`
+						),
+					],
+				});
+				itr.reply({
+					embeds: [
+						kifo.embed(
+							`You have lost the game of hangman!\n\nThe word was: ${game.word}`
+						),
+					],
+					ephemeral: true,
+				});
 				return;
 			}
 
 			//send the game
 			game.gameMessage.edit({
-				embeds: [kifo.embed(`${result}\n\n${game.message}`)],
+				embeds: [
+					kifo.embed(
+						`<@!${itr.user.id}>,\n${result}\n\n${game.message}`
+					),
+				],
 			});
 
 			itr.reply({

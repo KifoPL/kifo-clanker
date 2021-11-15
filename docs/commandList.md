@@ -332,7 +332,7 @@ Lists user stats.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-- Last update: Sun, 14 Nov 2021 21:17:35 GMT
+- Last update: Sun, 14 Nov 2021 22:14:21 GMT
 *~by [KifoPL](https://bio.link/KifoPL)*
 
 [<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)
