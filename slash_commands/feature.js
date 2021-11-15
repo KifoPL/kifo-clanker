@@ -64,7 +64,7 @@ module.exports = {
 				repo: repo,
 				title: title,
 				body: kiforeply,
-				labels: ["feature"],
+				labels: ["enhancement"],
 				assignee: "KifoPL",
 			})
 			.then((response) => {
