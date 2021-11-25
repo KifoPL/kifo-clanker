@@ -1292,6 +1292,13 @@ async function commands(message, prefix) {
 	}
 }
 async function onmessage(message) {
+	if (
+		!message.guild?.me
+			.permissionsIn(message.channel)
+			?.has(Discord.Permissions.FLAGS.SEND_MESSAGES)
+	)
+		return;
+
 	const prefix = await main.prefix(message.guild?.id);
 	let t = await ticketing(message);
 	if (t === "deleted") return;
@@ -1303,12 +1310,56 @@ async function onmessage(message) {
 
 	autothreading(message);
 
-	if (
-		!message.guild?.me
-			.permissionsIn(message.channel)
-			?.has(Discord.Permissions.FLAGS.SEND_MESSAGES)
-	)
-		return;
+	speakcheck = checks(message, prefix);
+
+	let hasEmbedPerms = message.guild?.me
+		.permissionsIn(message.channel)
+		?.has(Discord.Permissions.FLAGS.EMBED_LINKS);
+
+	if (speakcheck) {
+		if (
+			message.content.toLowerCase().startsWith(prefix.toLowerCase()) &&
+			!message.author.bot
+		) {
+			if (
+				message.content
+					.toLowerCase()
+					.startsWith(prefix.toLowerCase().trim()) &&
+				message.content.length > prefix.length &&
+				hasEmbedPerms
+			) {
+				commands(message, prefix);
+			}
+		}
+		if (
+			kifo.mentionTrim(message.content) === client.user.id &&
+			!message.author.bot
+		) {
+			let now = new Date(Date.now());
+
+			let startDate = new Date(now.getTime() - client.uptime);
+
+			if (!hasEmbedPerms) {
+				return message.reply(
+					`Hello there! This bot is communicating using embeds, yet it doesn't have the right perms. If you have the permissions, please give me *Embed links* perm - ${Discord.Permissions.FLAGS.EMBED_LINKS}.`
+				);
+			}
+
+			return message
+				.reply({
+					embeds: [
+						kifo.embed(
+							`<:KifoClanker:863793928377729065> My prefix is: \`${prefix}\`\n\n<:online:823658022974521414> I'm online since <t:${Math.floor(
+								startDate.getTime() / 1000
+							)}:R>.`,
+							"Hello there!"
+						),
+					],
+				})
+				.catch(() => {});
+		}
+	}
+
 	if (
 		!message.guild?.me
 			.permissionsIn(message.channel)
@@ -1317,47 +1368,6 @@ async function onmessage(message) {
 		return message
 			.reply("I need `EMBED_LINKS` permission to operate!")
 			.catch(() => {});
-
-	if (
-		message.content === `<@!${client.user.id}>` ||
-		(message.content === `<@${client.user.id}>` && !message.author.bot)
-	) {
-		let now = new Date(Date.now());
-
-		let startDate = new Date(now.getTime() - client.uptime);
-
-		return message
-			.reply({
-				embeds: [
-					kifo.embed(
-						`<:KifoClanker:863793928377729065> My prefix is: \`${prefix}\`\n\n<:online:823658022974521414> I'm online since <t:${Math.floor(
-							startDate.getTime() / 1000
-						)}:R>.`,
-						"Hello there!"
-					),
-				],
-			})
-			.catch(() => {});
-	}
-
-	speakcheck = checks(message, prefix);
-
-	if (speakcheck) {
-		if (
-			!message.content.toLowerCase().startsWith(prefix.toLowerCase()) ||
-			message.author.bot
-		)
-			return;
-
-		if (
-			message.content
-				.toLowerCase()
-				.startsWith(prefix.toLowerCase().trim()) &&
-			message.content.length > prefix.length
-		) {
-			commands(message, prefix);
-		}
-	}
 }
 
 let debug;
@@ -2466,6 +2476,8 @@ client.on("messageReactionRemove", async (msgReaction, user) => {
 
 //kifo-advanced-logs
 client.on("guildCreate", async (guild) => {
+	guild = await guild.fetch();
+
 	let date = new Date(Date.now());
 	let channel = client.guilds
 		.resolve("822800862581751848")
@@ -2559,7 +2571,6 @@ exports.prefix = async function (guildId) {
  * @returns Promise, in case something breaks
  */
 exports.log = function (log, ...args) {
-
 	if (!client?.isReady()) {
 		return console.log(log, ...args);
 	}
