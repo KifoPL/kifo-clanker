@@ -147,6 +147,17 @@ Creates an issue on GitHub and pings KifoPL. Do not spam this command.
 	- `description` - Provide a brief description of how and when this error occurred.
 - Required user permissions: `USE_APPLICATION_COMMANDS`
 
+### hangman
+Play hangman inside of Discord chat!
+- Options:
+	- `help` - Instructions on how to play hangman
+	- `start` - Start a game of hangman!
+		- `word` - The word to guess
+	- `stop` - Stop a game of hangman!
+	- `guess` - Guess a letter in current hangman game
+		- `letters` - The letter (or letters) to guess
+- Required user permissions: `USE_APPLICATION_COMMANDS`
+
 ### ping
 ...pong?
 - Options:
@@ -321,7 +332,7 @@ Lists user stats.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-- Last update: Sun, 17 Oct 2021 20:10:51 GMT
+- Last update: Sun, 14 Nov 2021 22:14:21 GMT
 *~by [KifoPL](https://bio.link/KifoPL)*
 
 [<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)
