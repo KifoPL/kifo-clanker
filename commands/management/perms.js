@@ -3,7 +3,6 @@ const { MessageMentions } = require("discord.js");
 const kifo = require("kifo");
 const fs = require("fs");
 const ms = require("ms");
-const now = new Date(Date.now());
 const Discord = require("discord.js");
 const { resolve } = require("path");
 
@@ -22,6 +21,8 @@ module.exports = {
 	adminonly: true,
 	perms: ["SEND_MESSAGES", "MANAGE_CHANNELS"],
 	async execute(message, args, prefix) {
+
+		const now = new Date(Date.now());
 		const { con } = require("../../index.js");
 		//precheck
 		if (!message.guild == null)
