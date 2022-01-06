@@ -167,6 +167,10 @@ module.exports = {
 						) {
 							cmdListString += `**${cmd.command.name}**, `;
 						}
+						else
+						{
+							cmdListString += `~~*${cmd.command.name}*~~, `;
+						}
 					});
 				cmdListString.trimRight();
 				cmdListString =
@@ -182,7 +186,7 @@ module.exports = {
 				`List of ${commandCount} commands in ${CategoryCount} categories, by KifoPL:`
 			)
 			.setDescription(
-				`**Click on the text above** for full and detailed list of commands.\nType \`${prefix}help <category>\` to get detailed list of commands within a category, or \`${prefix}help <command>\` to get help for that command.\n\n*Looking for \`/\` commands? Run \`/guide Slash commands\`, or click [here](https://kifopl.github.io/kifo-clanker/docs/commandList#list-of-slash-commands-used-with-).*`
+				`**Click on the text above** for full and detailed list of commands.\nType \`${prefix}help <category>\` to get detailed list of commands within a category, or \`${prefix}help <command>\` to get help for that command.\n\nIf a command is ~~crossed out~~, you have insufficient perms to run it.\n\n*Looking for \`/\` commands? Run \`/guide Slash commands\`, or click [here](https://kifopl.github.io/kifo-clanker/docs/commandList#list-of-slash-commands-used-with-).*`
 			)
 			.setURL("https://kifopl.github.io/kifo-clanker/docs/commandList")
 			.setFooter(

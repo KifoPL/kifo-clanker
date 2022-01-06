@@ -2562,7 +2562,7 @@ client.on("guildUnavailable", async (guild) => {
  * @returns prefix for the guild (default "!kifo ")
  */
 exports.prefix = async function (guildId) {
-	//if (client.user.id == "796447999747948584") return "!ktest ";
+	if (client.user.id == "796447999747948584") return "!ktest ";
 	if (prefixes.has(guildId)) return prefixes.get(guildId);
 	return "!kifo ";
 };
