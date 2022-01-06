@@ -1343,11 +1343,25 @@ async function onmessage(message) {
 	speakcheck = checks(message, prefix);
 
 	if (speakcheck) {
-		if (
-			!message.content.toLowerCase().startsWith(prefix.toLowerCase()) ||
-			message.author.bot
-		)
-			return;
+		if (!message.content.toLowerCase().startsWith(prefix.toLowerCase()))
+			if (
+				message.content.toLowerCase().startsWith("!kifo") ||
+				message.content.toLowerCase().startsWith("!ktest")
+			) {
+				return message
+					.reply({
+						embeds: [
+							kifo.embed(
+								`This server has a custom prefix. Try \`${message.content.replace(
+									/^!kifo|ktest/im, prefix.trim()
+								)}\` instead.`
+							),
+						],
+					})
+					.catch(() => {});
+			}
+
+		if (message.author.bot) return;
 
 		if (
 			message.content
@@ -2548,7 +2562,7 @@ client.on("guildUnavailable", async (guild) => {
  * @returns prefix for the guild (default "!kifo ")
  */
 exports.prefix = async function (guildId) {
-	if (client.user.id == "796447999747948584") return "!ktest ";
+	//if (client.user.id == "796447999747948584") return "!ktest ";
 	if (prefixes.has(guildId)) return prefixes.get(guildId);
 	return "!kifo ";
 };
@@ -2559,7 +2573,6 @@ exports.prefix = async function (guildId) {
  * @returns Promise, in case something breaks
  */
 exports.log = function (log, ...args) {
-
 	if (!client?.isReady()) {
 		return console.log(log, ...args);
 	}

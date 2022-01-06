@@ -147,6 +147,12 @@ Creates an issue on GitHub and pings KifoPL. Do not spam this command.
 	- `description` - Provide a brief description of how and when this error occurred.
 - Required user permissions: `USE_APPLICATION_COMMANDS`
 
+### feature
+Creates a feature suggestion on GitHub and pings KifoPL. Do not spam this command.
+- Options:
+	- `description` - Provide a brief description of what kind of improvement you'd like to see in the bot.
+- Required user permissions: `USE_APPLICATION_COMMANDS`
+
 ### hangman
 Play hangman inside of Discord chat!
 - Options:
@@ -332,7 +338,7 @@ Lists user stats.
 <hr/>
 
 > - *Some commands may require additional perms for the bot.*
-- Last update: Sun, 14 Nov 2021 22:14:21 GMT
+- Last update: Thu, 06 Jan 2022 19:29:54 GMT
 *~by [KifoPL](https://bio.link/KifoPL)*
 
 [<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)
