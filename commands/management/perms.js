@@ -162,7 +162,7 @@ module.exports = {
 
 				//LIST CHANNEL PERMS
 				if (whatami == "channel") {
-					channelPermsfunc(message, entity, Discord);
+					channelPermsfunc(message, entity, Discord, now);
 				} else if (whatami == "member" || whatami == "role") {
 					let description = `${
 						whatami == "member" ? "User <@" : "Role <@&"
@@ -584,6 +584,7 @@ async function channelPermsfunc(
 	message,
 	entity,
 	Discord,
+	now,
 	justFileContent = false
 ) {
 	if (entity.type == "GUILD_STORE")
@@ -592,8 +593,6 @@ async function channelPermsfunc(
 		});
 	let description =
 		"Detailed list of permissions is attached in `.txt` file.\n";
-	//console.log(`${entity.parent?.name}\n${entity.permissionsLocked}`);
-	//TODO THIS DOES NOT WORK, WEIRD BEHAVIOUR
 	if (entity.parent != null && entity.permissionsLocked) {
 		description += `Permissions are synchronised with **"${entity.parent.name}"** category.\n`;
 	}
