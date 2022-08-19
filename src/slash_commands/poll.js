@@ -79,7 +79,7 @@ module.exports = {
 
 	//itr = interaction
 	async execute(itr) {
-		const main = require(`../index.js`);
+		const main = require(`src/index`);
 		if (
 			!itr.guild.me
 				.permissionsIn(itr.channel)

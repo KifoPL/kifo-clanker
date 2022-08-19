@@ -78,7 +78,7 @@ module.exports = {
 
 	//itr = interaction
 	async execute(itr) {
-		const main = require(`../index.js`)
+		const main = require(`src/index`)
 		if (
 			itr.channel.type !== "GUILD_TEXT" &&
 			itr.channel.type !== "GUILD_NEWS"

@@ -3,7 +3,7 @@ const Discord = require("discord.js");
 const fs = require("fs");
 const https = require("https");
 
-const cmdPaths = require("../commandList.json");
+const cmdPaths = require("../../commandList.json");
 const list = require(`../${cmdPaths.list.path}`);
 
 module.exports = {

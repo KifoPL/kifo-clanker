@@ -5,7 +5,7 @@ const octokit = new Octokit({
 });
 const owner = "KifoPL";
 const repo = "kifo-clanker";
-const main = require(`../index.js`);
+const main = require(`src/index`);
 const kifo = require("kifo");
 module.exports = {
 	name: "error",
