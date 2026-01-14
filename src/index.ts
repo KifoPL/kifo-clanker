@@ -2324,8 +2324,8 @@ let reactreturn;
 client.on("interactionCreate", async (interaction) => {
     let now = new Date(Date.now());
     if (!interaction.inGuild()) {
-        if (interaction.isRepliable()) {
-            interaction.reply({
+        if ('reply' in interaction) {
+            (interaction as any).reply({
                 embeds: [
                     kifo.embed(
                         "Currently interactions only work in guilds. Sorry!"
@@ -2549,20 +2549,21 @@ client.on("messageReactionAdd", async (msgReaction, user) => {
                     }
                 });
         } else {
-            let role = msg.guild?.roles.resolve(menu?.RoleId ?? "");
+            let roleMenu = menu as MenuRolesInterface | undefined;
+            let role = msg.guild?.roles.resolve(roleMenu?.RoleId ?? "");
             let member = msg.guild?.members.resolve(user.id);
             if (member != undefined) {
                 if (menu?.isPerm) {
                     return;
                 }
                 member.roles
-                    .add(menu?.RoleId ?? "", "Used Role Menu!")
+                    .add(roleMenu?.RoleId ?? "", "Used Role Menu!")
                     .then(() =>
                         member?.send({
                             embeds: [
                                 kifo.embed(
                                     // @ts-ignore
-                                    `Gave you __**${role?.name}**__ role! (Id: ${menu?.RoleId})`
+                                    `Gave you __**${role?.name}**__ role! (Id: ${roleMenu?.RoleId})`
                                 ),
                             ],
                         })
@@ -2576,7 +2577,7 @@ client.on("messageReactionAdd", async (msgReaction, user) => {
                         msg.reply({
                             embeds: [
                                 kifo.embed(
-                                    `Could not give <@&${menu?.RoleId}> to <@!${user.id}>!\n${err.message}`
+                                    `Could not give <@&${roleMenu?.RoleId}> to <@!${user.id}>!\n${err.message}`
                                 ),
                             ],
                         }).catch(() => {
@@ -2634,20 +2635,21 @@ client.on("messageReactionRemove", async (msgReaction, user) => {
                     });
                 });
         } else {
-            let role = msg.guild?.roles.resolve(menu?.RoleId ?? "");
+            let roleMenu = menu as MenuRolesInterface | undefined;
+            let role = msg.guild?.roles.resolve(roleMenu?.RoleId ?? "");
             let member = msg.guild?.members.resolve(user.id);
             if (member != undefined) {
                 if (menu?.isPerm) {
                     return;
                 }
                 member.roles
-                    .remove(menu?.RoleId ?? "", "Used Role Menu!")
+                    .remove(roleMenu?.RoleId ?? "", "Used Role Menu!")
                     .then(() =>
                         member?.send({
                             embeds: [
                                 kifo.embed(
                                     // @ts-ignore
-                                    `Removed **__${role?.name}__** role! (Id: ${menu?.RoleId})`
+                                    `Removed **__${role?.name}__** role! (Id: ${roleMenu?.RoleId})`
                                 ),
                             ],
                         })
@@ -2661,7 +2663,7 @@ client.on("messageReactionRemove", async (msgReaction, user) => {
                         msg.reply({
                             embeds: [
                                 kifo.embed(
-                                    `Could not remove <@&${menu?.RoleId}> from <@!${user.id}>!\n${err.message}`
+                                    `Could not remove <@&${roleMenu?.RoleId}> from <@!${user.id}>!\n${err.message}`
                                 ),
                             ],
                         }).catch(() => {
