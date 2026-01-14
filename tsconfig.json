@@ -24,7 +24,6 @@
     // Emit
     "declaration": true,
     "importHelpers": true,
-    "verbatimModuleSyntax": false,
     "inlineSources": true,
     "newLine": "lf",
     "noEmitHelpers": true,

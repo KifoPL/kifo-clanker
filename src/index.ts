@@ -31,7 +31,8 @@ import {
     Partials,
     ButtonStyle,
     ChannelType,
-    ActivityType
+    ActivityType,
+    InteractionType
 } from "discord.js";
 
 import {channelMention, time} from "@discordjs/builders";
@@ -79,7 +80,8 @@ export function GetArchiveDuration(duration: ArchiveType): ThreadAutoArchiveDura
         case "1w":
             return 10080;
         default:
-            return 10080; // MAX is now just the highest value
+            // 10080 minutes = 7 days (1 week), which is the maximum archive duration
+            return 10080;
     }
 }
 
@@ -645,7 +647,7 @@ async function ticketing(message: Message) {
         if (message.author.id !== message.client?.user?.id)
             if (
                 !message.member?.permissionsIn(message.channelId).has(PermissionFlagsBits.ManageMessages)
-                && message.interactionMetadata?.type !== 2
+                && message.interactionMetadata?.type !== InteractionType.ApplicationCommand
             ) {
                 let actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
                     new ButtonBuilder()
@@ -1593,6 +1595,7 @@ function setCommandList() {
             if (command.options != undefined) {
                 cmdListMD += `\t- ${command?.options
                     .map((x: any) => {
+                        // Check for both v14 enum and legacy v13 string format for backward compatibility with JS files
                         if (x.type === ApplicationCommandOptionType.Subcommand || x.type === "SUB_COMMAND") {
                             return `\`${x.name}\` - ${x.description}${
                                 x.options != undefined
