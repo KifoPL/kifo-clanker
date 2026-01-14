@@ -9,24 +9,42 @@ import ms from "ms";
 import {
     ApplicationCommandOptionType,
     BaseGuildTextChannel,
+    Client,
     ClientApplication,
-    Collection, CommandInteraction,
-    EmbedField, Guild,
-    GuildChannel, GuildMember, Message,
-    MessageActionRow,
-    MessageButton,
-    MessageEmbed, MessageReaction,
+    Collection,
+    EmbedBuilder,
+    APIEmbedField,
+    Guild,
+    GuildChannel,
+    GuildMember,
+    Message,
+    ActionRowBuilder,
+    ButtonBuilder,
     NewsChannel,
-    Permissions, PermissionString, Snowflake,
+    PermissionFlagsBits,
+    Snowflake,
     TextChannel,
     ThreadAutoArchiveDuration,
     ThreadChannel,
-    User
+    User,
+    GatewayIntentBits,
+    Partials,
+    ButtonStyle,
+    ChannelType,
+    ActivityType,
+    InteractionType
 } from "discord.js";
 
 import {channelMention, time} from "@discordjs/builders";
 
-const {Client, Intents} = require("discord.js");
+// Extend Client type to include custom collections
+declare module 'discord.js' {
+    interface Client {
+        commands: Collection<string, any>;
+        slash_commands: Collection<string, any>;
+        context_menus: Collection<string, any>;
+    }
+}
 
 
 require("dotenv")?.config();
@@ -62,7 +80,8 @@ export function GetArchiveDuration(duration: ArchiveType): ThreadAutoArchiveDura
         case "1w":
             return 10080;
         default:
-            return "MAX";
+            // 10080 minutes = 7 days (1 week), which is the maximum archive duration
+            return 10080;
     }
 }
 
@@ -80,7 +99,7 @@ export interface MenuPermsInterface {
     GuildId: Snowflake,
     isPerm: true,
     DestinationChannelId: Snowflake,
-    PermName: PermissionString
+    PermName: string
 }
 
 export type MenuType = MenuRolesInterface | MenuPermsInterface
@@ -131,27 +150,28 @@ export interface KifoCommandInterface {
 
 //client login
 const client = new Client({
-    partials: [`MESSAGE`, `CHANNEL`, `REACTION`],
+    partials: [Partials.Message, Partials.Channel, Partials.Reaction],
     intents: [
-        Intents.FLAGS.GUILDS,
-        Intents.FLAGS.GUILD_MEMBERS,
-        Intents.FLAGS.GUILD_INTEGRATIONS,
-        Intents.FLAGS.GUILD_WEBHOOKS,
-        Intents.FLAGS.GUILD_INVITES,
-        Intents.FLAGS.GUILD_PRESENCES,
-        Intents.FLAGS.GUILD_MESSAGES,
-        Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-        Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
-        Intents.FLAGS.GUILD_MESSAGE_TYPING,
-        Intents.FLAGS.DIRECT_MESSAGES,
-        Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
-        Intents.FLAGS.DIRECT_MESSAGE_TYPING,
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildIntegrations,
+        GatewayIntentBits.GuildWebhooks,
+        GatewayIntentBits.GuildInvites,
+        GatewayIntentBits.GuildPresences,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.GuildMessageReactions,
+        GatewayIntentBits.DirectMessageReactions,
+        GatewayIntentBits.GuildMessageTyping,
+        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.DirectMessageReactions,
+        GatewayIntentBits.DirectMessageTyping,
+        GatewayIntentBits.MessageContent,
     ]
 });
 
 //Owner is Discord User @KifoPL#3358 - <@289119054130839552>
 async function loadOwner() {
-    clientapp = await client.application.fetch();
+    clientapp = await client.application!.fetch();
     clientapp.commands.fetch().then(() => console.log("Fetched / commands!"));
     Owner = clientapp.owner as User;
     console.log("Bot owner object loaded!");
@@ -325,8 +345,9 @@ client.commands.set(command.name, command);
 async function hello(message: Message, prefix: string) {
     //I have to do it here too
     if (message.content.toLowerCase().trim() === prefix.toLowerCase().trim()) {
-        message.channel.sendTyping().catch(() => {
-        });
+        if ('sendTyping' in message.channel) {
+            message.channel.sendTyping().catch(() => {});
+        }
         const event = new Date(Date.now());
         if (message.channel instanceof TextChannel || message.channel instanceof NewsChannel) {
             main.log(
@@ -337,46 +358,45 @@ async function hello(message: Message, prefix: string) {
                 event.toUTCString()
             );
         }
-        const helloEmbed = new MessageEmbed()
-            .setAuthor(
-                "Hello there (click for bot invite link)!",
-                undefined,
-                "https://discord.com/api/oauth2/authorize?client_id=795638549730295820&permissions=120528432320&scope=bot%20applications.commands"
-            )
+        const helloEmbed = new EmbedBuilder()
+            .setAuthor({
+                name: "Hello there (click for bot invite link)!",
+                url: "https://discord.com/api/oauth2/authorize?client_id=795638549730295820&permissions=120528432320&scope=bot%20applications.commands"
+            })
             .setColor("#a039a0")
             .setTitle(
                 "See what's new! (click for invite to my bot-dev Discord Server)"
             )
             .setURL("https://discord.gg/HxUFQCxPFp")
             .setThumbnail(
-                message.guild?.me?.user?.avatarURL({
-                    format: "png",
-                    dynamic: true,
+                message.guild?.members.me?.user?.avatarURL({
+                    extension: "png",
                     size: 64,
                 }) ?? ""
             )
-            .addField(
-                `Follow my GitHub repo`,
-                "[LINK](https://github.com/KifoPL/kifo-clanker) - if you find a bug / have a cool idea for a new feature, please [create a ticket](https://github.com/KifoPL/kifo-clanker/issues/new/choose)."
-            )
-            .addField(
-                `Check out top.gg page`,
-                "[LINK](https://top.gg/bot/795638549730295820) - feel free to vote up and leave a 5 star review <a:done:828097348545544202>"
-            )
-            .addField(
-                `try "${prefix}help"`,
-                "This will list all commands available to you (you can see more commands if you're an Admin)!"
-            )
-            .addField(
-                "\u200B",
-                "This bot is developed by [KifoPL](https://bio.link/kifopl)."
+            .addFields(
+                {
+                    name: `Follow my GitHub repo`,
+                    value: "[LINK](https://github.com/KifoPL/kifo-clanker) - if you find a bug / have a cool idea for a new feature, please [create a ticket](https://github.com/KifoPL/kifo-clanker/issues/new/choose)."
+                },
+                {
+                    name: `Check out top.gg page`,
+                    value: "[LINK](https://top.gg/bot/795638549730295820) - feel free to vote up and leave a 5 star review <a:done:828097348545544202>"
+                },
+                {
+                    name: `try "${prefix}help"`,
+                    value: "This will list all commands available to you (you can see more commands if you're an Admin)!"
+                },
+                {
+                    name: "\u200B",
+                    value: "This bot is developed by [KifoPL](https://bio.link/kifopl)."
+                }
             );
 
-        helloEmbed.author = {
+        helloEmbed.setAuthor({
             name: "KifoClanker",
-            iconURL: undefined,
             url: "https://discord.com/api/oauth2/authorize?client_id=795638549730295820&permissions=120528432320&scope=bot%20applications.commands"
-        };
+        });
 
         message.reply({embeds: [helloEmbed]}).catch(() => {
         });
@@ -398,14 +418,14 @@ async function react(message: Message, prefix: string) {
             if (result.length > 0) {
                 if (!message.content.startsWith(prefix)) {
                     //It will react to his own messages that have attachments, this is so #kenoc-hall-of-fame looks better
-                    if (message.author.id != client.user.id) {
+                    if (message.author.id != client.user?.id) {
                         if (message.author.bot) return;
                     } else {
                         if (message.embeds[0] === null) return;
                     }
                     if (
-                        !message.guild?.me?.permissionsIn(message.channel.id)
-                            .has(Permissions.FLAGS.ADD_REACTIONS)
+                        !message.guild?.members.me?.permissionsIn(message.channel.id)
+                            .has(PermissionFlagsBits.AddReactions)
                     ) {
                         await message.reply({
                             embeds: [
@@ -446,34 +466,32 @@ async function superslow(message: Message, prefix: string) {
             if (err) throw err;
             if (result.length > 0) {
                 if (
-                    !message.guild?.me?.permissionsIn(message.channel.id)
-                        .has(Permissions.FLAGS.MANAGE_CHANNELS)
+                    !message.guild?.members.me?.permissionsIn(message.channel.id)
+                        .has(PermissionFlagsBits.ManageChannels)
                 ) {
-                    const embedreply = new MessageEmbed();
+                    const embedreply = new EmbedBuilder();
                     embedreply
                         .setColor("#a039a0")
-                        .setAuthor(
-                            "Powered by Kifo Clanker™",
-                            undefined,
-                            `https://discord.gg/HxUFQCxPFp`
-                        )
+                        .setAuthor({
+                            name: "Powered by Kifo Clanker™",
+                            url: `https://discord.gg/HxUFQCxPFp`
+                        })
                         .setTitle(
                             "Missing `MANAGE_CHANNELS` permission. Please turn off `superslow` module in this channel, or enable `MANAGE_CHANNELS` for me."
                         );
                     await message.reply({embeds: [embedreply]});
                 }
                 if (
-                    !message.guild?.me?.permissionsIn(message.channel.id)
-                        .has(Permissions.FLAGS.MANAGE_MESSAGES)
+                    !message.guild?.members.me?.permissionsIn(message.channel.id)
+                        .has(PermissionFlagsBits.ManageMessages)
                 ) {
-                    const embedreply = new MessageEmbed();
+                    const embedreply = new EmbedBuilder();
                     embedreply
                         .setColor("#a039a0")
-                        .setAuthor(
-                            "Powered by Kifo Clanker™",
-                            undefined,
-                            `https://discord.gg/HxUFQCxPFp`
-                        )
+                        .setAuthor({
+                            name: "Powered by Kifo Clanker™",
+                            url: `https://discord.gg/HxUFQCxPFp`
+                        })
                         .setTitle(
                             "Missing `MANAGE_MESSAGES` permission. Please turn off `superslow` module in this channel, or enable `MANAGE_MESSAGES` for me."
                         );
@@ -481,7 +499,7 @@ async function superslow(message: Message, prefix: string) {
                 }
                 if (
                     !message.member?.permissionsIn(message.channel.id)
-                        .has(Permissions.FLAGS.MANAGE_MESSAGES)
+                        .has(PermissionFlagsBits.ManageMessages)
                 ) {
                     let slowmode = result[0].Time;
                     con.query(
@@ -628,12 +646,12 @@ async function ticketing(message: Message) {
     if (ticketings.has(message.channel.id)) {
         if (message.author.id !== message.client?.user?.id)
             if (
-                !message.member?.permissionsIn(message.channelId).has(Permissions.FLAGS.MANAGE_MESSAGES)
-                && message.interaction?.type !== "APPLICATION_COMMAND"
+                !message.member?.permissionsIn(message.channelId).has(PermissionFlagsBits.ManageMessages)
+                && message.interactionMetadata?.type !== InteractionType.ApplicationCommand
             ) {
-                let actionRow = new MessageActionRow().addComponents(
-                    new MessageButton()
-                        .setStyle("LINK")
+                let actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+                    new ButtonBuilder()
+                        .setStyle(ButtonStyle.Link)
                         .setLabel("Guide")
                         .setURL(
                             "https://kifopl.github.io/kifo-clanker/docs/guides/ticket"
@@ -721,7 +739,7 @@ function checks(message: Message, prefix: string) {
     //Only me and @Tester can use Offline test
     if (
         message.content.startsWith(prefix.trim()) &&
-        message.guild?.me?.id === "796447999747948584"
+        message.guild?.members.me?.id === "796447999747948584"
     )
         if (
             message.author.id != "289119054130839552" &&
@@ -752,9 +770,9 @@ async function commands(message: Message, prefix: string) {
     if (command === "serverlist" && message.author === Owner) {
         let channel = client.guilds
             .resolve("822800862581751848")
-            .channels?.resolve("864178555457372191");
-        let serversarr: EmbedField[] = [];
-        let serverembed = new MessageEmbed();
+            ?.channels?.resolve("864178555457372191") as TextChannel;
+        let serversarr: APIEmbedField[] = [];
+        let serverembed = new EmbedBuilder();
         await message.client.guilds.cache
             .sort((a, b) => b.memberCount - a.memberCount)
             .each(async (guild) => {
@@ -774,11 +792,11 @@ async function commands(message: Message, prefix: string) {
         serverembed
             .addFields(serversarr.slice(0, 10))
             .setTitle("Server list (top 10 by member count):")
-            .setFooter(
-                `I am in ${serversarr.length} servers as of ${new Date(
+            .setFooter({
+                text: `I am in ${serversarr.length} servers as of ${new Date(
                     Date.now()
                 ).toUTCString()}`
-            )
+            })
             .setColor("#a039a0");
         if (serversarr.length > 10) {
             fs.writeFileSync(
@@ -803,49 +821,50 @@ async function commands(message: Message, prefix: string) {
         return;
     }
     if (command === "deploy" && message.author === Owner) {
-        const btnRow1 = new MessageActionRow().addComponents(
-            new MessageButton()
+        const btnRow1 = new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
                 .setCustomId("deploy_guild")
                 .setLabel("Test")
-                .setStyle("PRIMARY"),
-            new MessageButton()
+                .setStyle(ButtonStyle.Primary),
+            new ButtonBuilder()
                 .setCustomId("deploy_global")
                 .setLabel("Production")
-                .setStyle("SECONDARY")
+                .setStyle(ButtonStyle.Secondary)
         );
-        const btnRow2 = new MessageActionRow().addComponents(
-            new MessageButton()
+        const btnRow2 = new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
                 .setCustomId("undeploy_guild")
                 .setLabel("Delete Test")
-                .setStyle("DANGER"),
-            new MessageButton()
+                .setStyle(ButtonStyle.Danger),
+            new ButtonBuilder()
                 .setCustomId("undeploy_global")
                 .setLabel("Delete Production")
-                .setStyle("DANGER"),
-            new MessageButton()
+                .setStyle(ButtonStyle.Danger),
+            new ButtonBuilder()
                 .setCustomId("undeploy_all")
                 .setLabel("Delete Both")
-                .setStyle("DANGER")
+                .setStyle(ButtonStyle.Danger)
         );
-        message.channel
-            .send({
-                embeds: [
-                    kifo.embed(
-                        "Where would you like to deploy all `/ commands?"
-                    ),
-                ],
-                components: [btnRow1, btnRow2],
-            })
-            .then((msg) =>
-                msg
-                    .awaitMessageComponent({time: 15000})
-                    .then((btnItr) => {
-                        if (btnItr.customId.startsWith("deploy_")) {
-                            const commandFolders = fs
-                                .readdirSync("./slash_commands")
-                                .filter((file) => file.endsWith(".js"));
-                            console.log("Loading / commands...");
-                            let i = 0;
+        if ('send' in message.channel) {
+            message.channel
+                .send({
+                    embeds: [
+                        kifo.embed(
+                            "Where would you like to deploy all `/ commands?"
+                        ),
+                    ],
+                    components: [btnRow1, btnRow2],
+                })
+                .then((msg: Message) =>
+                    msg
+                        .awaitMessageComponent({time: 15000})
+                        .then((btnItr: any) => {
+                            if (btnItr.customId.startsWith("deploy_")) {
+                                const commandFolders = fs
+                                    .readdirSync("./slash_commands")
+                                    .filter((file: string) => file.endsWith(".js"));
+                                console.log("Loading / commands...");
+                                let i = 0;
                             let data = [];
                             for (const cmd of commandFolders) {
                                 const command = require(`./src/slash_commands/${cmd}`);
@@ -960,6 +979,7 @@ async function commands(message: Message, prefix: string) {
                         msg.edit({components: []});
                     })
             );
+        }
         return;
     }
     if (command === "cmdlist" && message.author === Owner) {
@@ -968,21 +988,21 @@ async function commands(message: Message, prefix: string) {
             .fetch({guildId: `${message.guildId}`})
             .then((cmds) => {
                 cmds.each((cmd) => {
-                    reply.addField(
-                        `${cmd.name}`,
-                        `Guild: ${cmd.guildId}\nOptions: ${cmd.options
+                    reply.addFields({
+                        name: `${cmd.name}`,
+                        value: `Guild: ${cmd.guildId}\nOptions: ${cmd.options
                             .map((o) => `${o.name}`)
                             .join(", ")}`
-                    );
+                    });
                 });
                 clientapp.commands.fetch().then((cmds1) => {
                     cmds1.each((cmd) => {
-                        reply.addField(
-                            `${cmd.name}`,
-                            `Guild: ${cmd.guildId}\nOptions: ${cmd.options
+                        reply.addFields({
+                            name: `${cmd.name}`,
+                            value: `Guild: ${cmd.guildId}\nOptions: ${cmd.options
                                 .map((o) => `${o.name}`)
                                 .join(", ")}`
-                        );
+                        });
                     });
                     message.reply({embeds: [reply]});
                 });
@@ -990,9 +1010,9 @@ async function commands(message: Message, prefix: string) {
         return;
     }
 
-    if (!client.commands.has(command)) {
+    if (!command || !client.commands.has(command)) {
         let cmds = await clientapp.commands.fetch();
-        if (cmds.find((cmd) => cmd.name === command) != undefined) {
+        if (command && cmds.find((cmd) => cmd.name === command) != undefined) {
             return message
                 .reply({
                     embeds: [
@@ -1005,19 +1025,18 @@ async function commands(message: Message, prefix: string) {
                 .catch(() => {
                 });
         }
-        const embedreply = new MessageEmbed();
+        const embedreply = new EmbedBuilder();
         embedreply
             .setColor("#a039a0")
-            .setAuthor(
-                "Powered by Kifo Clanker™",
-                undefined,
-                `https://discord.gg/HxUFQCxPFp`
-            )
+            .setAuthor({
+                name: "Powered by Kifo Clanker™",
+                url: `https://discord.gg/HxUFQCxPFp`
+            })
             .setTitle(`Command ${command} not found.`)
-            .addField(
-                `Run \`${prefix}help\` to get list of available commands.`,
-                `If you have a suggestion for a new command, please reach out to KifoPL#3358 - <@289119054130839552>`
-            );
+            .addFields({
+                name: `Run \`${prefix}help\` to get list of available commands.`,
+                value: `If you have a suggestion for a new command, please reach out to KifoPL#3358 - <@289119054130839552>`
+            });
         return message.reply({embeds: [embedreply]}).catch(() => {
         });
     }
@@ -1054,14 +1073,13 @@ async function commands(message: Message, prefix: string) {
             return;
         } else if (command === "react") {
             const command2 = require(`./${jsonCmdList.react.path}`);
-            const embedreactreply = new MessageEmbed();
+            const embedreactreply = new EmbedBuilder();
             embedreactreply
                 .setColor("#a039a0")
-                .setAuthor(
-                    "Powered by Kifo Clanker™",
-                    undefined,
-                    `https://discord.gg/HxUFQCxPFp`
-                )
+                .setAuthor({
+                    name: "Powered by Kifo Clanker™",
+                    url: `https://discord.gg/HxUFQCxPFp`
+                })
                 .setTitle(
                     `Command "${command.toUpperCase()}" issued by ${
                         message.author.tag
@@ -1069,7 +1087,7 @@ async function commands(message: Message, prefix: string) {
                 );
             if (
                 !message.member?.permissionsIn(message.channelId)
-                    .has(Permissions.FLAGS.MANAGE_CHANNELS)
+                    .has(PermissionFlagsBits.ManageChannels)
             )
                 return message.reply({
                     embeds: [
@@ -1085,16 +1103,16 @@ async function commands(message: Message, prefix: string) {
                     function (err, result) {
                         if (err) throw err;
                         if (result.length > 0) {
-                            embedreactreply.addField(
-                                "Warning:",
-                                "React is already **ON**!"
-                            );
+                            embedreactreply.addFields({
+                                name: "Warning:",
+                                value: "React is already **ON**!"
+                            });
                             return message.reply({embeds: [embedreactreply]});
                         } else {
-                            embedreactreply.addField(
-                                "React is **Off**.",
-                                `Syntax:\n${command2.usage.join("\n")}`
-                            );
+                            embedreactreply.addFields({
+                                name: "React is **Off**.",
+                                value: `Syntax:\n${command2.usage.join("\n")}`
+                            });
                             return message.reply({embeds: [embedreactreply]});
                         }
                     }
@@ -1108,9 +1126,9 @@ async function commands(message: Message, prefix: string) {
                 } issued \`${prefix}${command}\` in ${channelMention(message.channelId)} at ${time(event)}, ${time(event, "R")}.`
             );
             if (args[0].toUpperCase() === "LIST") {
-                const newReactChannelsEmbed = new MessageEmbed()
+                const newReactChannelsEmbed = new EmbedBuilder()
                     .setColor("#a039a0")
-                    .setAuthor("Powered by Kifo Clanker™")
+                    .setAuthor({ name: "Powered by Kifo Clanker™" })
                     .setTitle("List of channels, where command is active:");
 
                 con.query(
@@ -1128,24 +1146,24 @@ async function commands(message: Message, prefix: string) {
                         if (guildChannels.length > 0) {
                             if (guildChannels.length < 25) {
                                 guildChannels.forEach((row) => {
-                                    newReactChannelsEmbed.addField(
-                                        `${row.emotes}`,
-                                        `<#${row.ChannelId}>`
-                                    );
+                                    newReactChannelsEmbed.addFields({
+                                        name: `${row.emotes}`,
+                                        value: `<#${row.ChannelId}>`
+                                    });
                                 });
                             } else {
-                                newReactChannelsEmbed.addField(
-                                    `Channels:`,
-                                    `<#${guildChannels
+                                newReactChannelsEmbed.addFields({
+                                    name: `Channels:`,
+                                    value: `<#${guildChannels
                                         .map((e) => e.ChannelId)
                                         .join(">, <#")}>`
-                                );
+                                });
                             }
                         } else {
-                            newReactChannelsEmbed.addField(
-                                `INFO:`,
-                                `\`react\` is not enabled on your server yet.`
-                            );
+                            newReactChannelsEmbed.addFields({
+                                name: `INFO:`,
+                                value: `\`react\` is not enabled on your server yet.`
+                            });
                         }
                         return message.reply({
                             embeds: [newReactChannelsEmbed],
@@ -1188,14 +1206,13 @@ async function commands(message: Message, prefix: string) {
             }
             return;
         } else if (command === "superslow") {
-            const embedsuperslowreply = new MessageEmbed();
+            const embedsuperslowreply = new EmbedBuilder();
             embedsuperslowreply
                 .setColor("#a039a0")
-                .setAuthor(
-                    "Powered by Kifo Clanker™",
-                    undefined,
-                    `https://discord.gg/HxUFQCxPFp`
-                )
+                .setAuthor({
+                    name: "Powered by Kifo Clanker™",
+                    url: `https://discord.gg/HxUFQCxPFp`
+                })
                 .setTitle(
                     `Command "${command.toUpperCase()}" issued by ${
                         message.author.tag
@@ -1205,7 +1222,7 @@ async function commands(message: Message, prefix: string) {
             const commandfile = require(`./${jsonCmdList.superslow.path}`);
             if (
                 !message.member?.permissionsIn(message.channel.id)
-                    .has(Permissions.FLAGS.MANAGE_CHANNELS)
+                    .has(PermissionFlagsBits.ManageChannels)
             )
                 return message.reply({
                     embeds: [
@@ -1258,7 +1275,7 @@ async function commands(message: Message, prefix: string) {
                 )}:R>.`
             );
             if (args[0]?.toUpperCase() === "LIST") {
-                const newSuperslowChannelsEmbed = new MessageEmbed()
+                const newSuperslowChannelsEmbed = new EmbedBuilder()
                     .setColor("#a039a0")
                     .setTitle("List of channels, where command is active:");
                 con.query(
@@ -1276,24 +1293,24 @@ async function commands(message: Message, prefix: string) {
                         if (guildChannels.length > 0) {
                             if (guildChannels.length < 25) {
                                 guildChannels.forEach((row) => {
-                                    newSuperslowChannelsEmbed.addField(
-                                        `${ms(row.Time, {long: true})}`,
-                                        `<#${row.ChannelId}>`
-                                    );
+                                    newSuperslowChannelsEmbed.addFields({
+                                        name: `${ms(row.Time, {long: true})}`,
+                                        value: `<#${row.ChannelId}>`
+                                    });
                                 });
                             } else {
-                                newSuperslowChannelsEmbed.addField(
-                                    `Channels:`,
-                                    `<#${guildChannels
+                                newSuperslowChannelsEmbed.addFields({
+                                    name: `Channels:`,
+                                    value: `<#${guildChannels
                                         .map((e) => e.ChannelId)
                                         .join(">, <#")}>`
-                                );
+                                });
                             }
                         } else {
-                            newSuperslowChannelsEmbed.addField(
-                                `INFO:`,
-                                `\`superslow\` is not enabled on your server yet.`
-                            );
+                            newSuperslowChannelsEmbed.addFields({
+                                name: `INFO:`,
+                                value: `\`superslow\` is not enabled on your server yet.`
+                            });
                         }
                         return message.reply({
                             embeds: [newSuperslowChannelsEmbed],
@@ -1424,7 +1441,7 @@ async function commands(message: Message, prefix: string) {
             );
             try {
                 const debug = client.commands
-                    .get(command)
+                    .get(command!)
                     .execute(message, args, prefix);
                 debug;
             } catch (error) {
@@ -1443,24 +1460,21 @@ async function onmessage(message: Message) {
     const prefix = await main.prefix(message.guild?.id);
     let t = await ticketing(message);
     if (t === "deleted") return;
-    if (message.deleted) return;
     react(message, prefix).catch(() => {
     });
     await superslow(message, prefix).catch(() => {
     });
 
-    if (message.deleted) return;
-
     autothreading(message);
 
     if (
-        !message.guild?.me?.permissionsIn(message.channel.id)
-            ?.has(Permissions.FLAGS.SEND_MESSAGES)
+        !message.guild?.members.me?.permissionsIn(message.channel.id)
+            ?.has(PermissionFlagsBits.SendMessages)
     )
         return;
     if (
-        !message.guild?.me?.permissionsIn(message.channel.id)
-            ?.has(Permissions.FLAGS.EMBED_LINKS)
+        !message.guild?.members.me?.permissionsIn(message.channel.id)
+            ?.has(PermissionFlagsBits.EmbedLinks)
     )
         return message
             .reply("I need `EMBED_LINKS` permission to operate!")
@@ -1468,12 +1482,12 @@ async function onmessage(message: Message) {
             });
 
     if (
-        message.content === `<@!${client.user.id}>` ||
-        (message.content === `<@${client.user.id}>` && !message.author.bot)
+        message.content === `<@!${client.user?.id}>` ||
+        (message.content === `<@${client.user?.id}>` && !message.author.bot)
     ) {
         let now = new Date(Date.now());
 
-        let startDate = new Date(now.getTime() - client.uptime);
+        let startDate = new Date(now.getTime() - (client.uptime ?? 0));
 
         return message
             .reply({
@@ -1580,13 +1594,14 @@ function setCommandList() {
             cmdListMD += `- Options:\n`;
             if (command.options != undefined) {
                 cmdListMD += `\t- ${command?.options
-                    .map((x) => {
-                        if (x.type === "SUB_COMMAND") {
+                    .map((x: any) => {
+                        // Check for both v14 enum and legacy v13 string format for backward compatibility with JS files
+                        if (x.type === ApplicationCommandOptionType.Subcommand || x.type === "SUB_COMMAND") {
                             return `\`${x.name}\` - ${x.description}${
                                 x.options != undefined
                                     ? `\n\t\t- ${x.options
                                         .map(
-                                            (o) =>
+                                            (o: any) =>
                                                 `\`${o.name}\`${
                                                     !o.required
                                                         ? " *(optional)*"
@@ -1794,11 +1809,11 @@ function giveawayCheck() {
                 result.forEach(async (row: any) => {
                     let link = `https://discord.com/channels/${row.GuildId}/${row.ChannelId}/${row.MessageId}`;
                     let msg: Message
-                    let msgs = await client.guilds
+                    let channel = client.guilds
                         .resolve(row.GuildId)
-                        .channels.resolve(row.ChannelId)
-                        .messages.fetch({cache: true});
-                    msg = msgs.get(row.MessageId);
+                        ?.channels.resolve(row.ChannelId) as TextChannel;
+                    let msgs = await channel?.messages.fetch({cache: true});
+                    msg = msgs?.get(row.MessageId) as Message;
                     if (msg === null)
                         Owner.send({
                             embeds: [
@@ -1840,26 +1855,24 @@ function giveawayCheck() {
                         }
                     });
 
-                    const giveEmbed = new MessageEmbed()
+                    const giveEmbed = new EmbedBuilder()
                         .setTitle("Giveaway results:")
-                        .setAuthor(
-                            `Powered by Kifo Clanker™`,
-                            client.user.avatarURL({
-                                format: "png",
-                                dynamic: true,
+                        .setAuthor({
+                            name: `Powered by Kifo Clanker™`,
+                            iconURL: client.user?.avatarURL({
+                                extension: "png",
                                 size: 64,
-                            })
-                        )
+                            }) ?? undefined
+                        })
                         .setColor("#a039a0")
-                        .setFooter(
-                            "Giveaway ended at: " + row.EndTime.toUTCString()
-                        )
+                        .setFooter({
+                            text: "Giveaway ended at: " + row.EndTime.toUTCString()
+                        })
                         .setThumbnail(
                             client.guilds.resolve(row.GuildId)?.iconURL({
-                                format: "png",
-                                dynamic: true,
+                                extension: "png",
                                 size: 64,
-                            })
+                            }) ?? null
                         );
                     if (row.Winners > 25) {
                         fs.writeFileSync(
@@ -1868,33 +1881,32 @@ function giveawayCheck() {
                         );
                         giveEmbed.setDescription("Results are in .txt file!");
                     } else giveEmbed.setDescription(output);
-                    let msgOptions: { files: string[]; embeds: MessageEmbed[]; content: string } = {
+                    let msgOptions: { files: string[]; embeds: EmbedBuilder[]; content: string } = {
                         content: authorM,
                         embeds: [giveEmbed],
                         files: [],
                     };
                     if (row.Winners > 25)
                         msgOptions.files = [`./${row.MessageId}.txt`];
-                    await client.channels
-                        .resolve(row.ChannelId)
-                        .send(msgOptions)
+                    await (client.channels.resolve(row.ChannelId) as TextChannel)
+                        ?.send(msgOptions)
                         .catch(async () => {
                             await client.guilds
                                 .resolve(row.GuildId)
-                                .members.resolve(row.UserId)
-                                .send(msgOptions)
+                                ?.members.resolve(row.UserId)
+                                ?.send(msgOptions)
                                 .catch(async () => {
                                     await Owner.send({
                                         content: `Can't send giveaway info at Server ${
                                             client.guilds.resolve(row.GuildId)
-                                                .name
+                                                ?.name
                                         }, Channel ${
-                                            client.channels.resolve(
+                                            (client.channels.resolve(
                                                 row.ChannelId
-                                            ).name
+                                            ) as TextChannel)?.name
                                         }. Server owner: <@${
                                             client.guilds.resolve(row.GuildId)
-                                                .ownerId
+                                                ?.ownerId
                                         }>`,
                                         embeds: [giveEmbed],
                                     }).catch((err) => {
@@ -1938,20 +1950,20 @@ function removeCheck() {
                     let member: GuildMember =
                         (await client.guilds
                             .resolve(row.GuildId)
-                            .members.resolve(row.UserId)
-                            .fetch()).member;
+                            ?.members.resolve(row.UserId)
+                            ?.fetch());
                     let channel = client.guilds
                         .resolve(row.GuildId)
-                        .channels.resolve(row.ChannelId);
-                    member.roles
+                        ?.channels.resolve(row.ChannelId) as TextChannel;
+                    member?.roles
                         .add(row.RoleId)
                         .then(() => {
                             channel
-                                .send({
-                                    content: `<@!${member.id}>, <@!${row.PerpetratorId}>`,
+                                ?.send({
+                                    content: `<@!${member?.id}>, <@!${row.PerpetratorId}>`,
                                     embeds: [
                                         kifo.embed(
-                                            `Issued by: <@!${row.PerpetratorId}>\nRole added: <@&${row.RoleId}>\nTo: <@!${member.id}>`,
+                                            `Issued by: <@!${row.PerpetratorId}>\nRole added: <@&${row.RoleId}>\nTo: <@!${member?.id}>`,
                                             `Role remove command (role readded)`
                                         ),
                                     ],
@@ -1959,11 +1971,11 @@ function removeCheck() {
                                 .catch((err1: string) => {
                                     client.guilds
                                         .resolve(row.GuildId)
-                                        .members.resolve(row.PerpetratorId)
-                                        .send({
+                                        ?.members.resolve(row.PerpetratorId)
+                                        ?.send({
                                             embeds: [
                                                 kifo.embed(
-                                                    `Issued by: <@!${row.PerpetratorId}>\nRole added: <@&${row.RoleId}>\nTo: <@!${member.id}>`,
+                                                    `Issued by: <@!${row.PerpetratorId}>\nRole added: <@&${row.RoleId}>\nTo: <@!${member?.id}>`,
                                                     `Role remove command (role readded)`
                                                 ),
                                             ],
@@ -1975,11 +1987,10 @@ function removeCheck() {
                         })
                         .catch((err1) => {
                             channel
-                                .send({
+                                ?.send({
                                     embeds: [
-                                        `<@!${member.id}>, <@!${row.PerpetratorId}>`,
                                         kifo.embed(
-                                            `Issued by: <@!${row.PerpetratorId}>\nRole added: <@&${row.RoleId}>\nTo: <@!${member.id}>`,
+                                            `Issued by: <@!${row.PerpetratorId}>\nRole added: <@&${row.RoleId}>\nTo: <@!${member?.id}>`,
                                             `UNABLE TO ADD ROLE BACK`
                                         ),
                                     ],
@@ -1987,11 +1998,11 @@ function removeCheck() {
                                 .catch((err2:string) => {
                                     client.guilds
                                         .resolve(row.GuildId)
-                                        .members.resolve(row.PerpetratorId)
-                                        .send({
+                                        ?.members.resolve(row.PerpetratorId)
+                                        ?.send({
                                             embeds: [
                                                 kifo.embed(
-                                                    `Issued by: <@!${row.PerpetratorId}>\nRole added: <@&${row.RoleId}>\nTo: <@!${member.id}>`,
+                                                    `Issued by: <@!${row.PerpetratorId}>\nRole added: <@&${row.RoleId}>\nTo: <@!${member?.id}>`,
                                                     `UNABLE TO ADD ROLE BACK`
                                                 ),
                                             ],
@@ -2033,16 +2044,16 @@ function permsCheck() {
                 let failureMap = new Map();
                 result.forEach(async (row: any) => {
                     if (failureMap.has(row.MessageId)) return;
-                    let Current = client.guilds
+                    let Current = (client.guilds
                         .resolve(row.GuildId)
-                        ?.channels.resolve(row.ChannelId)
-                        ?.permissionOverwrites.resolve(row.PermId)
+                        ?.channels.resolve(row.ChannelId) as GuildChannel)
+                        ?.permissionOverwrites?.resolve(row.PermId)
                         ?.allow.has(row.PermFlag)
                         ? "allow"
-                        : client.guilds
+                        : (client.guilds
                             .resolve(row.GuildId)
-                            ?.channels.resolve(row.ChannelId)
-                            ?.permissionOverwrites.resolve(row.PermId)
+                            ?.channels.resolve(row.ChannelId) as GuildChannel)
+                            ?.permissionOverwrites?.resolve(row.PermId)
                             ?.deny.has(row.PermFlag)
                             ? "deny"
                             : "neutral";
@@ -2050,10 +2061,10 @@ function permsCheck() {
                     if (!previousMap.has(row.MessageId)) {
                         previousMap.set(row.MessageId, Current);
                     }
-                    client.guilds
+                    (client.guilds
                         .resolve(row.GuildId)
-                        ?.channels.resolve(row.ChannelId)
-                        ?.permissionOverwrites.edit(row.PermId, {
+                        ?.channels.resolve(row.ChannelId) as GuildChannel)
+                        ?.permissionOverwrites?.edit(row.PermId, {
                         [row.PermFlag]:
                             row.Command === "add"
                                 ? true
@@ -2066,8 +2077,8 @@ function permsCheck() {
                         // })
                         .catch((err:string) => {
                             failureMap.set(row.MessageId, true);
-                            client.channels
-                                .resolve(row.ChannelId)
+                            (client.channels
+                                .resolve(row.ChannelId) as TextChannel)
                                 ?.send({
                                     content: `<@!${row.PerpetratorId}>`,
                                     embeds: [
@@ -2104,8 +2115,8 @@ function permsCheck() {
                                 : "&"
                         }${rr.PermId}>\n`;
                     });
-                    client.channels
-                        .resolve(r.ChannelId)
+                    (client.channels
+                        .resolve(r.ChannelId) as TextChannel)
                         ?.send({
                             content: `<@!${r.PerpetratorId}>`,
                             embeds: [kifo.embed(Description, Title)],
@@ -2145,14 +2156,14 @@ function menusCheck() {
             if (err) throw err;
             if (result.length > 0) {
                 result.forEach(async (row:any) => {
-                    let msg = await client.guilds
+                    let msg = await (client.guilds
                         .resolve(row.GuildId)
-                        .channels?.resolve(row.CmdChId)
-                        .messages?.fetch(row.CmdMsgId);
-                    let menu = await client.guilds
+                        ?.channels?.resolve(row.CmdChId) as TextChannel)
+                        ?.messages?.fetch(row.CmdMsgId);
+                    let menu = await (client.guilds
                         .resolve(row.GuildId)
-                        .channels?.resolve(row.CmdChId)
-                        .messages?.fetch(row.MessageId);
+                        ?.channels?.resolve(row.CmdChId) as TextChannel)
+                        ?.messages?.fetch(row.MessageId);
                     client.commands
                         .get("menu")
                         .revert(
@@ -2161,7 +2172,7 @@ function menusCheck() {
                             true,
                             client.guilds
                                 .resolve(row.GuildId)
-                                .channels?.resolve(row.ChannelId),
+                                ?.channels?.resolve(row.ChannelId),
                             row.PermName
                         );
                 });
@@ -2177,14 +2188,14 @@ function menusCheck() {
             if (err) throw err;
             if (result.length > 0) {
                 result.forEach(async (row:any) => {
-                    let msg = await client.guilds
+                    let msg = await (client.guilds
                         .resolve(row.GuildId)
-                        .channels?.resolve(row.CmdChId)
-                        .messages?.fetch(row.CmdMsgId);
-                    let menu = await client.guilds
+                        ?.channels?.resolve(row.CmdChId) as TextChannel)
+                        ?.messages?.fetch(row.CmdMsgId);
+                    let menu = await (client.guilds
                         .resolve(row.GuildId)
-                        .channels?.resolve(row.CmdChId)
-                        .messages?.fetch(row.MessageId);
+                        ?.channels?.resolve(row.CmdChId) as TextChannel)
+                        ?.messages?.fetch(row.MessageId);
                     client.commands
                         .get("menu")
                         .revert(
@@ -2193,7 +2204,7 @@ function menusCheck() {
                             false,
                             client.guilds
                                 .resolve(row.GuildId)
-                                .roles?.resolve(row.RoleId)
+                                ?.roles?.resolve(row.RoleId)
                         );
                 });
                 main.log(`${result.length} role menus found!`);
@@ -2213,10 +2224,10 @@ function pollsCheck() {
                 main.log(`${result.length} role menus found!`);
                 result.forEach(async (row:any) => {
                     //fetch message, then show results of reactions desc, paste link to the original message
-                    let msg: Message = await client.guilds
+                    let msg: Message = await (client.guilds
                         .resolve(row.GuildId)
-                        .channels?.resolve(row.ChannelId)
-                        .messages.fetch(row.MessageId);
+                        ?.channels?.resolve(row.ChannelId) as TextChannel)
+                        ?.messages.fetch(row.MessageId);
 
                     let questionEmbed = msg.embeds[0];
 
@@ -2228,10 +2239,10 @@ function pollsCheck() {
                     msg.reactions.cache
                         .sort((a, b) => b.count - a.count)
                         .each((r) => {
-                            resultEmbed.addField(
-                                `${kifo.place(pos)} place:`,
-                                `${r.emoji} - ${r.count} votes`
-                            );
+                            resultEmbed.addFields({
+                                name: `${kifo.place(pos)} place:`,
+                                value: `${r.emoji} - ${r.count} votes`
+                            });
                             pos++;
                         });
                     msg.reply({
@@ -2261,10 +2272,10 @@ function countdownCheck() {
             if (err) throw err;
             if (result.length > 0) {
                 result.forEach(async (row: any) => {
-                    let msg = await client.guilds
+                    let msg = await (client.guilds
                         .resolve(row.GuildId)
-                        .channels?.resolve(row.ChannelId)
-                        .messages.fetch(row.MessageId);
+                        ?.channels?.resolve(row.ChannelId) as TextChannel)
+                        ?.messages.fetch(row.MessageId);
                     await msg.fetch();
                     msg.reply({
                         content: `<@!${row.AuthorId}>`,
@@ -2276,7 +2287,7 @@ function countdownCheck() {
                                 ),
                         ],
                     }).catch(() => {
-                        msg.member.send({
+                        msg.member?.send({
                             embeds: [
                                 kifo.embed(
                                     `Unable to send countdown finish message in <#${row.ChannelId}>!\n\n[__--Original message--__](${msg.url})`
@@ -2300,37 +2311,40 @@ function countdownCheck() {
 }
 
 function updatePresence() {
-    client.user.setStatus("online");
-    client.user.setActivity({
+    client.user?.setStatus("online");
+    client.user?.setActivity({
         name: `Type "!kifo" to interact with me! I'm online for ${ms(
-            client.uptime,
+            client.uptime ?? 0,
             {long: true}
         )}.`,
-        type: "PLAYING",
+        type: ActivityType.Playing,
     });
 }
 
 //USED BY REACT COMMAND
 let reactreturn;
 
-client.on("interactionCreate", async (interaction: CommandInteraction) => {
+client.on("interactionCreate", async (interaction) => {
     let now = new Date(Date.now());
     if (!interaction.inGuild()) {
-        interaction.reply({
-            embeds: [
-                kifo.embed(
-                    "Currently interactions only work in guilds. Sorry!"
-                ),
-            ],
-        });
+        if ('reply' in interaction) {
+            (interaction as any).reply({
+                embeds: [
+                    kifo.embed(
+                        "Currently interactions only work in guilds. Sorry!"
+                    ),
+                ],
+            });
+        }
+        return;
     }
-    if (interaction.isCommand()) {
+    if (interaction.isChatInputCommand()) {
         main.log(
             `${interaction.user.tag} issued \`/${
                 interaction.commandName
             }\` with these options:\n${interaction.options.data
                 .map((o) => {
-                    if (o.type === "SUB_COMMAND") {
+                    if (o.type === ApplicationCommandOptionType.Subcommand) {
                         return `${o.name}: ${o.options
                             ?.map((subo) => `**${subo.name}** - ${subo.value}`)
                             .join(", ")}`;
@@ -2368,7 +2382,7 @@ client.on("interactionCreate", async (interaction: CommandInteraction) => {
             });
         }
     }
-    if (interaction.isContextMenu()) {
+    if (interaction.isContextMenuCommand()) {
         if (client.context_menus.has(interaction.commandName)) {
             main.log(
                 `${interaction.user.tag} issued \`${
@@ -2407,7 +2421,7 @@ client.on("messageCreate", async (message: Message) => {
     });
 });
 
-client.on("messageDelete", (message: Message) => {
+client.on("messageDelete", (message) => {
     try {
         if (menus.has(message.id)) {
             if (menus.get(message.id)?.isPerm) {
@@ -2442,7 +2456,7 @@ client.on("messageDelete", (message: Message) => {
     }
 });
 
-client.on("messageDeleteBulk", (messages: Collection<Snowflake, Message>) => {
+client.on("messageDeleteBulk", (messages) => {
     messages
         .filter((msg) => menus.has(msg.id))
         .each((message) => {
@@ -2478,7 +2492,7 @@ client.on("messageDeleteBulk", (messages: Collection<Snowflake, Message>) => {
 });
 
 //USED BY TODO COMMAND
-client.on("messageReactionAdd", async (msgReaction: MessageReaction, user: User) => {
+client.on("messageReactionAdd", async (msgReaction, user) => {
     let msg = msgReaction.message;
     if (msg.partial) {
         await msg.fetch().catch(() => {
@@ -2488,8 +2502,8 @@ client.on("messageReactionAdd", async (msgReaction: MessageReaction, user: User)
         await user.fetch().catch(() => {
         });
     }
-    if (msg.channel.type === "DM" && msg.author?.bot) {
-        if (user.id !== client.user.id) {
+    if (msg.channel.type === ChannelType.DM && msg.author?.bot) {
+        if (user.id !== client.user?.id) {
             if (msg.embeds[0]?.author?.name === `TODO`) {
                 msg.delete().catch(() => {
                 });
@@ -2507,7 +2521,7 @@ client.on("messageReactionAdd", async (msgReaction: MessageReaction, user: User)
             );
             //If someone has specifically denied perms, they shouldn't be able to use the menu
             if (
-                channel?.permissionOverwrites?.resolve(user.id)?.deny.has(menu?.PermName)
+                channel?.permissionOverwrites?.resolve(user.id)?.deny.has(BigInt(PermissionFlagsBits[menu?.PermName as keyof typeof PermissionFlagsBits] ?? 0))
             )
                 return;
             await channel?.permissionOverwrites.create(user.id, {
@@ -2538,20 +2552,21 @@ client.on("messageReactionAdd", async (msgReaction: MessageReaction, user: User)
                     }
                 });
         } else {
-            let role = msg.guild?.roles.resolve(menu?.RoleId ?? "");
+            let roleMenu = menu as MenuRolesInterface | undefined;
+            let role = msg.guild?.roles.resolve(roleMenu?.RoleId ?? "");
             let member = msg.guild?.members.resolve(user.id);
             if (member != undefined) {
                 if (menu?.isPerm) {
                     return;
                 }
                 member.roles
-                    .add(menu?.RoleId ?? "", "Used Role Menu!")
+                    .add(roleMenu?.RoleId ?? "", "Used Role Menu!")
                     .then(() =>
                         member?.send({
                             embeds: [
                                 kifo.embed(
                                     // @ts-ignore
-                                    `Gave you __**${role?.name}**__ role! (Id: ${menu?.RoleId})`
+                                    `Gave you __**${role?.name}**__ role! (Id: ${roleMenu?.RoleId})`
                                 ),
                             ],
                         })
@@ -2565,7 +2580,7 @@ client.on("messageReactionAdd", async (msgReaction: MessageReaction, user: User)
                         msg.reply({
                             embeds: [
                                 kifo.embed(
-                                    `Could not give <@&${menu?.RoleId}> to <@!${user.id}>!\n${err.message}`
+                                    `Could not give <@&${roleMenu?.RoleId}> to <@!${user.id}>!\n${err.message}`
                                 ),
                             ],
                         }).catch(() => {
@@ -2576,7 +2591,7 @@ client.on("messageReactionAdd", async (msgReaction: MessageReaction, user: User)
     }
 });
 
-client.on("messageReactionRemove", async (msgReaction: MessageReaction, user: User) => {
+client.on("messageReactionRemove", async (msgReaction, user) => {
     let msg = msgReaction.message;
     if (msg.partial) {
         await msg.fetch().catch(() => {
@@ -2592,7 +2607,7 @@ client.on("messageReactionRemove", async (msgReaction: MessageReaction, user: Us
             // @ts-ignore
             let channel: GuildChannel = msg.guild?.channels.resolve(
                 menu.DestinationChannelId
-            );
+            ) as GuildChannel;
             channel?.permissionOverwrites.create(user.id, {
                     [menu.PermName]: null,
                 })
@@ -2623,20 +2638,21 @@ client.on("messageReactionRemove", async (msgReaction: MessageReaction, user: Us
                     });
                 });
         } else {
-            let role = msg.guild?.roles.resolve(menu?.RoleId ?? "");
+            let roleMenu = menu as MenuRolesInterface | undefined;
+            let role = msg.guild?.roles.resolve(roleMenu?.RoleId ?? "");
             let member = msg.guild?.members.resolve(user.id);
             if (member != undefined) {
                 if (menu?.isPerm) {
                     return;
                 }
                 member.roles
-                    .remove(menu?.RoleId ?? "", "Used Role Menu!")
+                    .remove(roleMenu?.RoleId ?? "", "Used Role Menu!")
                     .then(() =>
                         member?.send({
                             embeds: [
                                 kifo.embed(
                                     // @ts-ignore
-                                    `Removed **__${role?.name}__** role! (Id: ${menu?.RoleId})`
+                                    `Removed **__${role?.name}__** role! (Id: ${roleMenu?.RoleId})`
                                 ),
                             ],
                         })
@@ -2650,7 +2666,7 @@ client.on("messageReactionRemove", async (msgReaction: MessageReaction, user: Us
                         msg.reply({
                             embeds: [
                                 kifo.embed(
-                                    `Could not remove <@&${menu?.RoleId}> from <@!${user.id}>!\n${err.message}`
+                                    `Could not remove <@&${roleMenu?.RoleId}> from <@!${user.id}>!\n${err.message}`
                                 ),
                             ],
                         }).catch(() => {
@@ -2666,18 +2682,20 @@ client.on("guildCreate", async (guild: Guild) => {
     let date = new Date(Date.now());
     let channel = client.guilds
         .resolve("822800862581751848")
-        .channels?.resolve("863769411700785152");
-    const embed = new MessageEmbed()
+        ?.channels?.resolve("863769411700785152");
+    const embed = new EmbedBuilder()
         .setColor("#a039a0")
-        .setThumbnail(guild.iconURL({dynamic: true}) ?? "")
+        .setThumbnail(guild.iconURL() ?? "")
         .setTitle("New Server!")
-        .addField("Server Name", guild?.name ?? "unknown", true)
-        .addField("Server Id", guild?.id ?? "unknown", true)
-        .addField("Owner", `<@${guild?.ownerId ?? "unknown"}>`, true)
-        .addField("Member Count", guild?.memberCount.toString() ?? "unknown", true)
-        .setFooter("Joined at: " + date.toUTCString());
+        .addFields(
+            { name: "Server Name", value: guild?.name ?? "unknown", inline: true },
+            { name: "Server Id", value: guild?.id ?? "unknown", inline: true },
+            { name: "Owner", value: `<@${guild?.ownerId ?? "unknown"}>`, inline: true },
+            { name: "Member Count", value: guild?.memberCount.toString() ?? "unknown", inline: true }
+        )
+        .setFooter({ text: "Joined at: " + date.toUTCString() });
 
-    channel.send({embeds: [embed]}).catch((err: any) => {
+    (channel as TextChannel)?.send({embeds: [embed]}).catch((err: any) => {
         main.log(err);
     });
 });
@@ -2686,18 +2704,20 @@ client.on("guildDelete", (guild: Guild) => {
     let date = new Date(Date.now());
     let channel = client.guilds
         .resolve("822800862581751848")
-        .channels?.resolve("863769411700785152");
-    const embed = new MessageEmbed()
+        ?.channels?.resolve("863769411700785152");
+    const embed = new EmbedBuilder()
         .setColor("#a039a0")
-        .setThumbnail(guild?.iconURL({dynamic: true}) ?? "")
+        .setThumbnail(guild?.iconURL() ?? "")
         .setTitle("Removed from a server :(")
-        .addField("Server Name", guild?.name ?? "unknown", true)
-        .addField("Server Id", guild?.id ?? "unknown", true)
-        .addField("Owner", `<@${guild?.ownerId ?? "unknown"}>`, true)
-        .addField("Member Count", guild?.memberCount.toString() ?? "unknown", true)
-        .setFooter("Left at: " + date.toUTCString());
+        .addFields(
+            { name: "Server Name", value: guild?.name ?? "unknown", inline: true },
+            { name: "Server Id", value: guild?.id ?? "unknown", inline: true },
+            { name: "Owner", value: `<@${guild?.ownerId ?? "unknown"}>`, inline: true },
+            { name: "Member Count", value: guild?.memberCount.toString() ?? "unknown", inline: true }
+        )
+        .setFooter({ text: "Left at: " + date.toUTCString() });
 
-    channel.send({embeds: [embed]}).catch((err: any) => {
+    (channel as TextChannel)?.send({embeds: [embed]}).catch((err: any) => {
         main.log(err);
     });
 });
@@ -2709,9 +2729,9 @@ client.on("error", (err: Error) => {
 client.on("warn", (info: string) => {
     let channel = client.guilds
         .resolve("822800862581751848")
-        .channels?.resolve("864112365896466432");
-    return channel
-        .send({embeds: [kifo.embed(`${info}`, "WARNING")]})
+        ?.channels?.resolve("864112365896466432");
+    return (channel as TextChannel)
+        ?.send({embeds: [kifo.embed(`${info}`, "WARNING")]})
         .catch((err: any) => {
             main.log(err);
         });
@@ -2720,10 +2740,10 @@ client.on("warn", (info: string) => {
 client.on("guildUnavailable", async (guild: Guild) => {
     let channel = client.guilds
         .resolve("822800862581751848")
-        .channels("863769411700785152");
+        ?.channels?.resolve("863769411700785152");
     let owner = await guild.fetchOwner();
-    channel
-        .send({
+    (channel as TextChannel)
+        ?.send({
             embeds: [
                 kifo.embed(
                     `A guild "${guild?.name ?? "unknown"}", Id ${
@@ -2745,7 +2765,7 @@ client.on("guildUnavailable", async (guild: Guild) => {
  * @returns prefix for the guild (default "!kifo ")
  */
 exports.prefix = async function (guildId: Snowflake) {
-    if (client.user.id === "796447999747948584") return "!ktest ";
+    if (client.user?.id === "796447999747948584") return "!ktest ";
     if (prefixes.has(guildId)) return prefixes.get(guildId);
     return "!kifo ";
 };
@@ -2762,12 +2782,12 @@ exports.log = function (log: any, ...args: any[][]) {
     }
     let channel = client.guilds
         .resolve("822800862581751848")
-        .channels?.resolve("864112365896466432");
+        ?.channels?.resolve("864112365896466432") as TextChannel;
 
     if (log instanceof Error) {
         const now = new Date(Date.now());
         return channel
-            .send({
+            ?.send({
                 content: `<@!289119054130839552>`,
                 embeds: [
                     kifo.embed(
@@ -2783,7 +2803,7 @@ exports.log = function (log: any, ...args: any[][]) {
             .catch((err: any) => console.log(err));
     }
     return channel
-        .send({embeds: [kifo.embed(`${log} ${args.join(" ")}`, "LOG")]})
+        ?.send({embeds: [kifo.embed(`${log} ${args.join(" ")}`, "LOG")]})
         .catch((err: any) => {
             main.log(err);
         });
