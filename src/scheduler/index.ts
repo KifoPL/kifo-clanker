@@ -1,6 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import type { Pool } from 'pg';
 import { query } from '../db/query.js';
+import { recordScheduledLag, recordScheduledOutcome } from '../observability.js';
+
+export class PermanentJobError extends Error {
+  constructor(message: string) { super(message); this.name = 'PermanentJobError'; }
+}
 
 export interface ScheduledJob {
   id: string;
@@ -20,10 +25,12 @@ interface Options {
   batchSize?: number;
   leaseMs?: number;
   handlerTimeoutMs?: number;
+  onTick?: () => Promise<void>;
 }
 
 interface ClaimedJob extends ScheduledJob {
   lease_token: string;
+  run_at?: Date;
 }
 
 const claimSql = `
@@ -52,7 +59,7 @@ const claimSql = `
   SET status = 'running', attempts = jobs.attempts + 1, lease_token = $3,
       lease_until = clock_timestamp() + $4 * interval '1 millisecond'
   FROM candidates WHERE jobs.id = candidates.id
-  RETURNING jobs.id, jobs.type, jobs.payload, jobs.attempts, jobs.lease_token
+  RETURNING jobs.id, jobs.type, jobs.payload, jobs.attempts, jobs.lease_token, jobs.run_at
 `;
 
 export class DurableScheduler {
@@ -64,6 +71,7 @@ export class DurableScheduler {
   private running = false;
   private loopPromise: Promise<void> | undefined;
   private wake: (() => void) | undefined;
+  private readonly active = new Set<AbortController>();
 
   constructor(private readonly options: Options) {
     this.pollIntervalMs = options.pollIntervalMs ?? 1_000;
@@ -89,12 +97,15 @@ export class DurableScheduler {
   async stop(): Promise<void> {
     this.running = false;
     this.wake?.();
+    for (const controller of this.active) controller.abort(new Error('Scheduler stopping'));
     await this.loopPromise;
   }
 
   private async loop(): Promise<void> {
     while (this.running) {
       try {
+        await this.options.onTick?.();
+        if (!this.running) break;
         if (this.types.length > 0) {
           const result = await query<ClaimedJob>(this.options.pool, claimSql,
             [this.types, this.batchSize, randomUUID(), this.leaseMs]);
@@ -123,36 +134,78 @@ export class DurableScheduler {
   }
 
   private async execute(job: ClaimedJob): Promise<void> {
+    if (job.run_at instanceof Date) recordScheduledLag(Math.max(0, Date.now() - job.run_at.getTime()));
     const controller = new AbortController();
+    this.active.add(controller);
     const timer = setTimeout(() => controller.abort(new Error('Scheduled handler timed out')), this.handlerTimeoutMs);
+    let settled = false;
+    let leaseLost = false;
+    let renewalTimer: ReturnType<typeof setTimeout> | undefined;
+    let renewal: Promise<void> | undefined;
+    const scheduleRenewal = (): void => {
+      renewalTimer = setTimeout(() => {
+        renewal = (async () => {
+          try {
+            const result = await query(this.options.pool, `UPDATE scheduled_jobs
+              SET lease_until = clock_timestamp() + $3 * interval '1 millisecond'
+              WHERE id=$1 AND lease_token=$2 AND status='running' AND lease_until > clock_timestamp()`,
+            [job.id, job.lease_token, this.leaseMs]);
+            if (result.rowCount === 0) {
+              leaseLost = true;
+              controller.abort(new Error('Scheduled job lease lost'));
+            }
+          } catch (error) {
+            leaseLost = true;
+            controller.abort(new Error('Scheduled job lease renewal failed'));
+            this.options.logger.error('Scheduled job lease renewal failed', error);
+          }
+          // Keep an ignored cancellation fenced until actual I/O settles; never resurrect an expired lease.
+          if (!settled && !leaseLost) scheduleRenewal();
+        })();
+      }, Math.max(1, Math.floor(this.leaseMs / 3)));
+    };
+    scheduleRenewal();
     let failed = false;
+    let terminal = false;
     try {
       await this.options.handlers[job.type]!(job, controller.signal);
       failed = controller.signal.aborted;
-    } catch {
+    } catch (error) {
       failed = true;
+      terminal = error instanceof PermanentJobError;
     } finally {
+      settled = true;
       clearTimeout(timer);
+      clearTimeout(renewalTimer);
+      await renewal;
+      this.active.delete(controller);
     }
+    failed ||= controller.signal.aborted;
 
     try {
       if (failed) {
-        await query(this.options.pool, `
+        const result = await query<{ status: string }>(this.options.pool, `
           UPDATE scheduled_jobs
-          SET status = CASE WHEN attempts >= max_attempts THEN 'failed' ELSE 'pending' END,
+          SET status = CASE WHEN attempts >= max_attempts OR $5 THEN 'failed' ELSE 'pending' END,
               run_at = clock_timestamp() + $3 * interval '1 millisecond',
-              completed_at = CASE WHEN attempts >= max_attempts THEN clock_timestamp() ELSE NULL END,
+              completed_at = CASE WHEN attempts >= max_attempts OR $5 THEN clock_timestamp() ELSE NULL END,
               lease_token = NULL, lease_until = NULL, last_error = $4
           WHERE id = $1 AND lease_token = $2 AND status = 'running' AND lease_until > clock_timestamp()
+          RETURNING status
         `, [job.id, job.lease_token, Math.min(60_000, 1_000 * 2 ** Math.min(job.attempts - 1, 6)),
-          controller.signal.aborted ? 'Scheduled handler timed out' : 'Scheduled handler failed']);
+          controller.signal.aborted
+            ? (controller.signal.reason instanceof Error && controller.signal.reason.message === 'Scheduled handler timed out'
+              ? 'Scheduled handler timed out' : 'Scheduled handler cancelled')
+            : 'Scheduled handler failed', terminal]);
+        if (result.rowCount) recordScheduledOutcome(result.rows[0]?.status === 'failed' ? 'failed' : 'retry');
       } else {
-        await query(this.options.pool, `
+        const result = await query(this.options.pool, `
           UPDATE scheduled_jobs
           SET status = 'completed', completed_at = clock_timestamp(),
               lease_token = NULL, lease_until = NULL, last_error = NULL
           WHERE id = $1 AND lease_token = $2 AND status = 'running' AND lease_until > clock_timestamp()
         `, [job.id, job.lease_token]);
+        if (result.rowCount) recordScheduledOutcome('completed');
       }
     } catch (error) {
       this.options.logger.error('Scheduled job completion failed', error);

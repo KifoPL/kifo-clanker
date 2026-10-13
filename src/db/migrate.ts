@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import type { Pool, PoolClient } from 'pg';
 import { DatabaseError, query } from './query.js';
 
-export async function runMigrations(pool: Pool, directory = resolve('migrations')): Promise<void> {
+export async function readMigrations(directory = resolve('migrations')) {
   const names = (await readdir(directory)).filter((name) => name.endsWith('.sql')).sort();
   if (names.some((name) => !/^\d{3}_[a-z0-9_]+\.sql$/.test(name))) {
     throw new Error('Migration filenames must use NNN_name.sql.');
@@ -16,6 +16,11 @@ export async function runMigrations(pool: Pool, directory = resolve('migrations'
   if (new Set(migrations.map((migration) => migration.version)).size !== migrations.length) {
     throw new Error('Migration versions must be unique.');
   }
+  return migrations;
+}
+
+export async function runMigrations(pool: Pool, directory = resolve('migrations')): Promise<void> {
+  const migrations = await readMigrations(directory);
   let client: PoolClient;
   try {
     client = await pool.connect();

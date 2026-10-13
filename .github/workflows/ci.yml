@@ -30,6 +30,7 @@ jobs:
           node-version: '24.21.0'
           cache: npm
       - run: npm ci
+      - run: npm run lint
       - run: npm run typecheck
       - run: npm test
       - run: npm run test:integration

@@ -1,5 +1,5 @@
 import { REST, Routes } from 'discord.js';
-import { slashCommands } from '../src/commands/index.js';
+import { applicationCommandData } from '../src/registry.js';
 import { logger } from '../src/logger.js';
 
 const { DISCORD_TOKEN, DISCORD_APPLICATION_ID, DISCORD_TEST_GUILD_ID } = process.env;
@@ -12,7 +12,7 @@ for (const id of [DISCORD_APPLICATION_ID, DISCORD_TEST_GUILD_ID]) {
 try {
   await new REST({ version: '10', timeout: 15_000 }).setToken(DISCORD_TOKEN).put(
     Routes.applicationGuildCommands(DISCORD_APPLICATION_ID, DISCORD_TEST_GUILD_ID),
-    { body: slashCommands.map(command => command.data) },
+    { body: applicationCommandData },
   );
   logger.info('Migrated commands registered in the test guild');
 } catch (error) {

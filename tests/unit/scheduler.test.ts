@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { Pool } from 'pg';
-import { DurableScheduler, type ScheduledHandler } from '../../src/scheduler/index.js';
+import { DurableScheduler, PermanentJobError, type ScheduledHandler } from '../../src/scheduler/index.js';
 
 function deferred<T = void>() {
   let resolve!: (value: T | PromiseLike<T>) => void;
@@ -64,6 +64,7 @@ test('each job in a claimed batch settles independently and uses its lease token
   const entered = deferred();
   const release = deferred();
   const settlements: Array<{ sql: string; values: unknown[] }> = [];
+  const completed = deferred();
   let started = 0;
   const instance = scheduler(async (current) => {
     if (++started === 2) entered.resolve();
@@ -72,13 +73,14 @@ test('each job in a claimed batch settles independently and uses its lease token
   }, async (sql, values) => {
     if (sql.includes('WITH exhausted')) return { rows: [job('1'), job('2')] };
     settlements.push({ sql, values });
+    if (settlements.length === 2) completed.resolve();
     return { rows: [] };
   });
   instance.start();
   await entered.promise;
-  const stopping = instance.stop();
   release.resolve();
-  await stopping;
+  await completed.promise;
+  await instance.stop();
   assert.equal(settlements.length, 2);
   const retry = settlements.find((item) => item.values[0] === '1')!;
   const completion = settlements.find((item) => item.values[0] === '2')!;
@@ -136,4 +138,61 @@ test('handler timeout must fit inside a positive lease', () => {
   assert.throws(() => scheduler(async () => {}, async () => ({ rows: [] }), {
     leaseMs: -1,
   }), /positive integers/);
+});
+
+test('a cancelled handler stays leased until its underlying work settles', async () => {
+  const renewed = deferred();
+  const release = deferred();
+  let renewals = 0;
+  let settlements = 0;
+  let signal: AbortSignal | undefined;
+  const instance = scheduler(async (_job, cancellation) => {
+    signal = cancellation;
+    await release.promise;
+  }, async (sql) => {
+    if (sql.includes('WITH exhausted')) return { rows: [job('1')] };
+    if (sql.includes('SET lease_until')) {
+      if (++renewals >= 3) renewed.resolve();
+      return { rows: [], rowCount: 1 };
+    }
+    settlements++;
+    return { rows: [] };
+  }, { handlerTimeoutMs: 40, leaseMs: 90 });
+  instance.start();
+  await renewed.promise;
+  assert.equal(signal?.aborted, true);
+  assert.equal(settlements, 0);
+  const stopping = instance.stop();
+  release.resolve();
+  await stopping;
+  assert.equal(settlements, 1);
+});
+
+test('PermanentJobError writes a terminal failure without exhausting retries', async () => {
+  const finished = deferred();
+  let permanent: unknown;
+  const instance = scheduler(async () => { throw new PermanentJobError('Deleted resource'); }, async (sql, values) => {
+    if (sql.includes('WITH exhausted')) return { rows: [job('1')] };
+    permanent = values[4];
+    finished.resolve();
+    return { rows: [{ status: 'failed' }], rowCount: 1 };
+  });
+  instance.start();
+  await finished.promise;
+  await instance.stop();
+  assert.equal(permanent, true);
+});
+
+test('onTick shares the scheduler loop even with no registered durable handlers', async () => {
+  const ticked = deferred();
+  let claims = 0;
+  const instance = new DurableScheduler({
+    pool: { async query() { claims++; return { rows: [] }; } } as unknown as Pool,
+    handlers: {}, logger: { error() {} },
+    onTick: async () => { ticked.resolve(); },
+  });
+  instance.start();
+  await ticked.promise;
+  await instance.stop();
+  assert.equal(claims, 0);
 });

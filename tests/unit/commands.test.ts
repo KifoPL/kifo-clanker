@@ -3,7 +3,6 @@ import test from 'node:test';
 import { ApplicationCommandOptionType, EmbedBuilder, MessageFlags } from 'discord.js';
 import type { InteractionReplyOptions, MessageReplyOptions } from 'discord.js';
 import { epochDateReply, epochIsoReply, epochToIso, parseEpochInput } from '../../src/commands/epoch.js';
-import { createHelpCommand, helpReply } from '../../src/commands/help.js';
 import { slashCommands } from '../../src/commands/index.js';
 import { pingReply } from '../../src/commands/ping.js';
 import { reverseReply, reverseText } from '../../src/commands/reverse.js';
@@ -77,15 +76,4 @@ test('epoch returns copyable seconds and ISO output, including zero and negative
     assert.equal(epochToIso(epoch), undefined);
     assert.equal(epochIsoReply(epoch).flags, MessageFlags.Ephemeral);
   }
-});
-
-test('prefix help is generated from migrated commands and supports details and custom prefixes', () => {
-  assert.equal(createHelpCommand().name, 'help');
-  const help = embedData(helpReply([]));
-  assert.deepEqual(help.fields?.map(field => field.name), ['/ping', '/reverse', '/epoch', '!kifo help']);
-  assert.match(help.description ?? '', /!kifo help <command>/);
-  const detail = embedData(helpReply(['/EPOCH']));
-  assert.equal(detail.title, '/epoch');
-  assert.deepEqual(detail.fields?.map(field => field.name), ['date_to_epoch', 'epoch_to_date', 'help']);
-  assert.match(embedData(helpReply(['removed-command'], '?')).description ?? '', /\?help/);
 });

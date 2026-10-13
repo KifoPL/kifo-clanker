@@ -1,6 +1,7 @@
 import { startApp } from './app.js';
 import { readConfig } from './config.js';
 import { logger } from './logger.js';
+import { startTelemetry } from './observability.js';
 
 let close: (() => Promise<void>) | undefined;
 let closing = false;
@@ -22,6 +23,15 @@ process.once('SIGINT', () => { void shutdown(0); });
 process.on('uncaughtException', error => { logger.error('Fatal exception', error); void shutdown(1); });
 process.on('unhandledRejection', error => { logger.error('Unhandled rejection', error); void shutdown(1); });
 startup = (async () => {
-  try { close = await startApp(readConfig(process.env)); }
-  catch (error) { logger.error('Startup failed; check configuration and database migrations', error); process.exitCode = 1; }
+  let stopTelemetry: (() => Promise<void>) | undefined;
+  try {
+    const config = readConfig(process.env);
+    stopTelemetry = startTelemetry(process.env);
+    const stopApp = await startApp(config);
+    close = async () => { try { await stopApp(); } finally { await stopTelemetry?.(); } };
+  } catch (error) {
+    logger.error('Startup failed; check configuration and database migrations', error);
+    await stopTelemetry?.();
+    process.exitCode = 1;
+  }
 })();

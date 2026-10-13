@@ -1,4 +1,4 @@
-> **TypeScript migration in progress.** The root package runs the new development runtime with `/ping`, `/reverse`, `/epoch`, and prefix help. The original MySQL bot is preserved under `legacy/`. See [migration status and setup](docs/MIGRATION.md) before running either bot. The new runtime is not ready for production cutover.
+> **TypeScript rewrite implemented.** The root package contains all commands, passive features, and durable scheduled workflows, with PostgreSQL and Docker/Aspire orchestration. See [setup, migration, and release gates](docs/MIGRATION.md). Live Discord and production-data validation are required before cutover; the original bot remains under `legacy/` for reference.
 
 ![Kifo Clanker™ - When general-purpose bots
 fail, run !kifo](https://i.imgur.com/hWkoxmm.jpg)
