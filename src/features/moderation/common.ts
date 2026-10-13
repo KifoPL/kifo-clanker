@@ -1,6 +1,8 @@
+import type { CommandInvocation } from '../../contracts/invocation.js';
 import { randomUUID } from 'node:crypto';
 import ms from 'ms';
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, type GuildChannel, type GuildMember, type Message } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, ComponentType, type GuildChannel, type GuildMember } from 'discord.js';
+export const overwriteChannelTypes = [ChannelType.GuildText, ChannelType.GuildAnnouncement, ChannelType.GuildVoice, ChannelType.GuildStageVoice, ChannelType.GuildCategory, ChannelType.GuildForum, ChannelType.GuildMedia] as const;
 export function snowflake(input: string): string {
   const match = /^(?:([0-9]{17,20})|<[@#]([0-9]{17,20})>|<@(?:!|&)([0-9]{17,20})>)$/.exec(input);
   const id = match?.[1] ?? match?.[2] ?? match?.[3];
@@ -14,14 +16,14 @@ export function restorationDate(input: string | undefined, now = Date.now()): Da
   if (!Number.isFinite(duration) || duration < 60_000 || duration > 100 * 365.25 * 86400000 || !Number.isSafeInteger(now + duration)) throw new Error('Duration must be at least one minute and at most 100 years (for example 10m or 2d).');
   return new Date(now + duration);
 }
-export async function guildContext(message: Message): Promise<{channel: GuildChannel; actor: GuildMember; bot: GuildMember}> {
-  if (!message.guild) throw new Error('Use this command in a server.');
-  const channel = await message.guild.channels.fetch(message.channelId,{force:true});
+export async function guildContext(invocation: CommandInvocation, channelId = invocation.channelId): Promise<{channel: GuildChannel; actor: GuildMember; bot: GuildMember}> {
+  if (!invocation.guild) throw new Error('Use this command in a server.');
+  const channel = await invocation.guild.channels.fetch(channelId,{force:true});
   if (!channel || !('permissionOverwrites' in channel)) throw new Error('This command requires a server channel with permission overwrites.');
-  const [actor,bot] = await Promise.all([message.guild.members.fetch({user:message.author.id,force:true}),message.guild.members.fetchMe({force:true})]);
+  const [actor,bot] = await Promise.all([invocation.guild.members.fetch({user:invocation.author.id,force:true}),invocation.guild.members.fetchMe({force:true})]);
   return {channel,actor,bot};
 }
-export async function confirm(message: Message, action: string): Promise<boolean> {
+export async function confirm(invocation: CommandInvocation, action: string): Promise<boolean> {
   const id = `moderation:${randomUUID()}`;
   const cancelId = `${id}:cancel`;
   const expires = Date.now() + 30_000;
@@ -29,16 +31,16 @@ export async function confirm(message: Message, action: string): Promise<boolean
     new ButtonBuilder().setCustomId(id).setLabel('Confirm').setStyle(ButtonStyle.Danger),
     new ButtonBuilder().setCustomId(cancelId).setLabel('Cancel').setStyle(ButtonStyle.Secondary),
   );
-  const prompt = await message.reply({content:`Confirm: ${action}\nThis confirmation expires in 30 seconds.`,components:[row],allowedMentions:{parse:[]}});
+  const prompt = await invocation.reply({content:`Confirm: ${action}\nThis confirmation expires in 30 seconds.`,components:[row],allowedMentions:{parse:[]}});
   try {
-    const interaction = await prompt.awaitMessageComponent({componentType:ComponentType.Button,time:30_000,filter: value => value.user.id === message.author.id && value.message.id === prompt.id && Date.now() <= expires && (value.customId === id || value.customId === cancelId)});
+    const interaction = await prompt.awaitMessageComponent({componentType:ComponentType.Button,time:30_000,filter: value => value.user.id === invocation.author.id && value.message.id === prompt.id && Date.now() <= expires && (value.customId === id || value.customId === cancelId)});
     await interaction.update({content:interaction.customId === id ? `Confirmed: ${action}` : 'Cancelled.',components:[]});
     return interaction.customId === id;
   } catch {
-    await prompt.edit({content:'Confirmation expired.',components:[]});
+    await invocation.editReply(prompt.id,{content:'Confirmation expired.',components:[]});
     return false;
   }
 }
-export async function commandError(message: Message, error: unknown): Promise<void> {
-  await message.reply({content:error instanceof Error ? error.message.slice(0,1800) : 'Command failed.',allowedMentions:{parse:[]}});
+export async function commandError(invocation: CommandInvocation, error: unknown): Promise<void> {
+  await invocation.reply({content:error instanceof Error ? error.message.slice(0,1800) : 'Command failed.',allowedMentions:{parse:[]}});
 }

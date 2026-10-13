@@ -1,5 +1,7 @@
 import { AttachmentBuilder, ChannelType, EmbedBuilder, PermissionFlagsBits, type Client, type Message, type TextBasedChannel, type User } from 'discord.js';
 
+import type { CommandInvocation } from '../../contracts/invocation.js';
+
 export const color = 0xa039a0;
 export const safeMentions = { parse: [] as const };
 const snowflake = /^\d{16,22}$/u;
@@ -93,6 +95,6 @@ export function canDeleteUtilityDm(message: Message, userId: string): boolean {
   return embed?.author?.name === 'TODO' || embed?.title?.startsWith('BOOKMARK - ') === true;
 }
 
-export async function utilityError(message: Message, error: unknown): Promise<void> {
-  await message.reply({ content: error instanceof Error ? error.message : 'The command failed. Please try again.', allowedMentions: safeMentions });
+export async function utilityError(invocation: CommandInvocation, error: unknown): Promise<void> {
+  await invocation.reply({ content: error instanceof Error ? error.message : 'The command failed. Please try again.', allowedMentions: safeMentions });
 }

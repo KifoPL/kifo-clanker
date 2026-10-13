@@ -67,7 +67,7 @@ test('all legacy slash command names, option paths, types and required inputs re
   const files = (await readdir('legacy/slash_commands')).filter(name => name.endsWith('.js'));
   assert.equal(files.length, 19);
   const registered = applicationCommandData.filter(command => !command.type || command.type === 1);
-  assert.equal(registered.length, 19);
+  assert.equal(registered.length, 37);
   for (const file of files) {
     const name = file.slice(0, -3);
     const command = registered.find(item => item.name === name);
@@ -78,13 +78,14 @@ test('all legacy slash command names, option paths, types and required inputs re
   }
 });
 
-test('registry includes all 15 prefix commands, three context menus, owners and business job handlers without opening connections', async () => {
+test('registry exposes every former text command as slash commands, three context menus and durable handlers without connections', async () => {
   const client = new Client({ intents: [GatewayIntentBits.Guilds] });
   const pool = createPool('postgresql://localhost/parity_no_connection');
   try {
-    const registry = createRegistry({ client, pool, ownerIds: new Set(), prefixes: new Map(), logger, startedAt: Date.now(), env: {} });
-    const names = new Set(registry.prefix.map(command => command.name));
-    for (const name of ['clean','list','menu','perms','remove','stats','top','giveaway','lang','prefix','react','superslow','todo','test','help','serverlist','deploy','cmdlist']) assert.ok(names.has(name), `Missing prefix ${name}`);
+    const registry = createRegistry({ client, pool, ownerIds: new Set(), logger, startedAt: Date.now(), env: {} });
+    const names = new Set(registry.slash.map(command => command.data.name));
+    for (const name of ['clean','list','menu','perms','remove','stats','top','giveaway','lang','prefix','react','superslow','todo','test','help','serverlist','deploy','cmdlist']) assert.ok(names.has(name), `Missing slash /${name}`);
+    assert.equal('prefix' in registry, false);
     assert.deepEqual(registry.context.map(command => command.data.name).sort(), ['detect language', 'save', 'user stats']);
     assert.deepEqual(registry.slash.map(command => command.data.name).sort(), applicationCommandData.filter(command => !command.type || command.type === 1).map(command => command.name).sort());
     for (const type of ['role_restore','permission_restore','menu.expire','menu.participant','poll.complete','giveaway.complete','countdown.complete','countdown.expire']) assert.ok(registry.handlers[type], `Missing scheduled ${type}`);

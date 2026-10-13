@@ -1,4 +1,5 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, ComponentType, MessageFlags, PermissionFlagsBits, type ChatInputCommandInteraction, type TextChannel, type NewsChannel, type Message } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, ComponentType, MessageFlags, PermissionFlagsBits, type ChatInputCommandInteraction, type TextChannel, type NewsChannel } from 'discord.js';
+import type { CommandInvocation } from '../../contracts/invocation.js';
 import type { RuntimeServices } from '../../contracts/features.js';
 
 export interface ReactionSettings { channel_id: string; guild_id: string | null; emojis: string[] }
@@ -43,7 +44,7 @@ export async function confirm(interaction: ChatInputCommandInteraction, content:
     await interaction.editReply({ content: 'Confirmation expired; no change applied.', components: [] }); return false;
   }
 }
-export async function requirePrefixPermissions(message: Message, botPermissions: bigint[]): Promise<boolean> {
+export async function requireCommandPermissions(message: CommandInvocation, botPermissions: bigint[]): Promise<boolean> {
   if (!message.guild || !message.member) { await message.reply('Use this command in a server.'); return false; }
   const bot = await message.guild.members.fetchMe();
   if (!message.member.permissionsIn(message.channelId).has(PermissionFlagsBits.ManageChannels) || !bot.permissionsIn(message.channelId).has(botPermissions)) {

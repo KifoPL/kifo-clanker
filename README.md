@@ -1,7 +1,6 @@
-> **TypeScript rewrite implemented.** The root package contains all commands, passive features, and durable scheduled workflows, with PostgreSQL and Docker/Aspire orchestration. See [setup, migration, and release gates](docs/MIGRATION.md). Live Discord and production-data validation are required before cutover; the original bot remains under `legacy/` for reference.
+> **TypeScript rewrite implemented.** The root package provides 37 native slash commands and three context menus, passive features, and durable scheduled workflows, with PostgreSQL and Docker/Aspire orchestration. Text commands and custom prefixes are disabled: use `/help` to explore the commands. `/prefix` explains this change; `/test arguments` includes the former text argument test. See [setup, migration, and release gates](docs/MIGRATION.md). Live Discord and production-data validation are required before cutover; the original bot remains under `legacy/` for reference.
 
-![Kifo Clanker™ - When general-purpose bots
-fail, run !kifo](https://i.imgur.com/hWkoxmm.jpg)
+![Kifo Clanker™ - Unorthodox Discord commands](https://i.imgur.com/hWkoxmm.jpg)
 
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/kifopl/kifo-clanker?label=latest)
 ![GitHub](https://img.shields.io/github/license/kifopl/kifo-clanker)
@@ -24,10 +23,10 @@ fail, run !kifo](https://i.imgur.com/hWkoxmm.jpg)
 **!** If you find any bugs (or have an awesome idea), please notify me on Discord: @KifoPL#3358 `<@289119054130839552>`, or submit a [ticket](https://github.com/KifoPL/kifo-clanker/issues/new/choose).
 
 ## Useful Lists
-- **[List of Commands](https://kifopl.github.io/kifo-clanker/docs/commandList)**
+- **[List of Commands](docs/commandList.md)**
 - **[List of Guides](https://kifopl.github.io/kifo-clanker/docs/guideList)**
 
-> The lists are always up-to-date with the latest release.
+> The command reference is generated from the current slash and context menu registry. Historical guides and the screenshots below may show retired text commands.
 
 # Showcase:
 
@@ -48,8 +47,8 @@ fail, run !kifo](https://i.imgur.com/hWkoxmm.jpg)
 ## [Top.gg Bot Website](https://top.gg/bot/795638549730295820)
 > *Feel free to leave a vote and 5-star review!*
 
-## [Donate for custom bot prefix](https://www.buymeacoffee.com/kifoPL)
-> *VPS, electricity, and the internet cost a lot of money, donations motivate me to continue my work developing this bot, plus you get a custom prefix for your server in return.*
+## [Support the bot](https://www.buymeacoffee.com/kifoPL)
+> *VPS, electricity, and the internet cost a lot of money; donations help me continue developing this bot.*
 
 # Self-promotion:
 

@@ -1,11 +1,12 @@
-import type { ChatInputCommandInteraction, ContextMenuCommandInteraction, Message, PermissionResolvable, RESTPostAPIChatInputApplicationCommandsJSONBody, RESTPostAPIContextMenuApplicationCommandsJSONBody } from 'discord.js';
+import type { ChatInputCommandInteraction, ContextMenuCommandInteraction, PermissionResolvable, RESTPostAPIChatInputApplicationCommandsJSONBody, RESTPostAPIContextMenuApplicationCommandsJSONBody } from 'discord.js';
+import type { CommandInvocation } from './invocation.js';
 
 export interface SlashCommand {
   readonly data: RESTPostAPIChatInputApplicationCommandsJSONBody;
   execute(interaction: ChatInputCommandInteraction): Promise<void>;
 }
 
-export interface PrefixCommand {
+export interface InvocationCommand {
   readonly name: string;
   readonly description: string;
   readonly usage?: readonly string[];
@@ -13,7 +14,7 @@ export interface PrefixCommand {
   readonly permissions?: readonly PermissionResolvable[];
   readonly guildOnly?: boolean;
   readonly ownerOnly?: boolean;
-  execute(message: Message, args: readonly string[]): Promise<void>;
+  execute(invocation: CommandInvocation, args: readonly string[]): Promise<void>;
 }
 
 export interface ContextCommand {

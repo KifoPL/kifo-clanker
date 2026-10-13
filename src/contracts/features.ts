@@ -1,14 +1,14 @@
 import type { Client, Guild, Interaction, Message, MessageReaction, PartialMessage, PartialMessageReaction, PartialUser, RESTPostAPIApplicationCommandsJSONBody, User } from 'discord.js';
 import type { Pool } from 'pg';
-import type { ContextCommand, PrefixCommand, SlashCommand } from './commands.js';
+import type { ContextCommand, SlashCommand } from './commands.js';
 import type { ScheduledHandler } from '../scheduler/index.js';
 import type { logger } from '../logger.js';
 
 export interface RuntimeServices {
   client: Client;
   pool: Pool;
-  prefixes: Map<string, string>;
   ownerIds: Set<string>;
+  applicationCommands?: readonly RESTPostAPIApplicationCommandsJSONBody[];
   logger: typeof logger;
   startedAt: number;
   env: Readonly<NodeJS.ProcessEnv>;
@@ -16,7 +16,6 @@ export interface RuntimeServices {
 }
 
 export interface FeatureRuntime {
-  prefixCommands?: readonly PrefixCommand[];
   slashCommands?: readonly SlashCommand[];
   contextCommands?: readonly ContextCommand[];
   handlers?: Readonly<Record<string, ScheduledHandler>>;

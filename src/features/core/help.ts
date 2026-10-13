@@ -1,50 +1,47 @@
-import { EmbedBuilder, PermissionsBitField, type RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
-import type { PrefixCommand } from '../../contracts/commands.js';
+import { EmbedBuilder, InteractionContextType, MessageFlags, SlashCommandBuilder, type RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
+import type { SlashCommand } from '../../contracts/commands.js';
 import type { RuntimeServices } from '../../contracts/features.js';
 
-export function createRegistryHelp(services: RuntimeServices, prefixCommands: readonly PrefixCommand[], data: readonly RESTPostAPIApplicationCommandsJSONBody[]): PrefixCommand {
-  return {
-    name: 'help', description: 'List categories, commands, and detailed usage.', category: 'UTILITY',
-    usage: ['help [category|command]', '<command> help'],
-    async execute(message, args) {
-      const prefix = (message.guildId && services.prefixes.get(message.guildId)) || '!kifo ';
-      const available = prefixCommands.filter(command => {
-        if (command.ownerOnly && !services.ownerIds.has(message.author.id)) return false;
-        if (command.guildOnly && !message.guild) return false;
-        return !command.permissions || !message.guild || Boolean(message.member?.permissionsIn(message.channelId).has(new PermissionsBitField([...command.permissions])));
-      });
-      const requested = args[0]?.toLowerCase().replace(/^\//, '');
-      const prefixCommand = available.find(command => command.name === requested);
-      const applicationCommand = data.find(command => command.name === requested);
-      const embed = new EmbedBuilder().setColor(0xa039a0);
-      if (prefixCommand) {
-        embed.setTitle(`${prefix}${prefixCommand.name}`).setDescription(prefixCommand.description.slice(0, 4_096));
-        if (prefixCommand.usage?.length) embed.addFields({ name: 'Usage', value: prefixCommand.usage.join('\n').slice(0, 1_024) });
-        if (prefixCommand.permissions?.length) embed.addFields({ name: 'Permissions', value: new PermissionsBitField([...prefixCommand.permissions]).toArray().join(', ') });
-      } else if (applicationCommand) {
-        embed.setTitle(applicationCommand.name).setDescription(('description' in applicationCommand && applicationCommand.description) || 'Application context menu command.');
-        if ('options' in applicationCommand && applicationCommand.options?.length) {
-          embed.addFields(applicationCommand.options.slice(0, 25).map(option => ({ name: option.name, value: option.description.slice(0, 1_024) })));
-        }
-      } else {
-        const groups = [...new Set(available.map(command => (command.category || 'UTILITY').toUpperCase()))];
-        const category = groups.find(group => group.toLowerCase() === requested);
-        if (requested && !category) {
-          embed.setDescription(`Command or category not available. Use \`${prefix}help\` to see your commands.`);
-        } else {
-          embed.setTitle(category ? `${category} commands` : 'Available commands');
-          for (const group of category ? [category] : groups) {
-            const names = available.filter(command => (command.category || 'UTILITY').toUpperCase() === group).map(command => `\`${prefix}${command.name}\``);
-            embed.addFields({ name: group, value: names.join(', ').slice(0, 1_024) || 'None' });
-          }
-          if (!category) embed.addFields(
-            { name: 'Slash commands', value: data.filter(command => !command.type || command.type === 1).map(command => `\`/${command.name}\``).join(', ').slice(0, 1_024) || 'None' },
-            { name: 'Context menus', value: data.filter(command => command.type && command.type !== 1).map(command => command.name).join(', ') || 'None' },
-          );
-          embed.setFooter({ text: `Use ${prefix}help <command> for details.` });
-        }
+export const helpData = new SlashCommandBuilder().setName('help').setDescription('List slash commands or show command details.')
+  .addStringOption(option => option.setName('command').setDescription('The command to describe.'))
+  .addStringOption(option => option.setName('category').setDescription('List commands in a category.').addChoices(
+    {name:'Management',value:'management'}, {name:'Utility',value:'utility'}, {name:'Fun',value:'fun'}, {name:'Debug',value:'debug'})).toJSON();
+
+const owners = new Set(['serverlist','reload','deploy','cmdlist']);
+export function commandCategory(name: string): string {
+  if (['clean','perms','remove','menu','list','stats','top'].includes(name)) return 'management';
+  if (['cringe','howgay','iq','pp','stfu','urmum','reverse'].includes(name)) return 'fun';
+  if (['ping','test','error',...owners].includes(name)) return 'debug';
+  return 'utility';
+}
+export function createRegistryHelp(services: RuntimeServices, getData: () => readonly RESTPostAPIApplicationCommandsJSONBody[]): SlashCommand {
+  return {data:helpData, async execute(interaction) {
+    const available = getData().filter(command => {
+      if (owners.has(command.name) && !services.ownerIds.has(interaction.user.id)) return false;
+      if (!interaction.guildId && command.dm_permission === false) return false;
+      const context = interaction.guildId ? InteractionContextType.Guild : InteractionContextType.BotDM;
+      if (command.contexts && !command.contexts.includes(context)) return false;
+      const permissions = command.default_member_permissions;
+      return !permissions || !interaction.guildId || Boolean(interaction.memberPermissions?.has(BigInt(permissions)));
+    });
+    const requested = interaction.options.getString('command')?.toLowerCase().replace(/^\//, '');
+    const category = interaction.options.getString('category');
+    const command = available.find(item => item.name === requested);
+    const embed = new EmbedBuilder().setColor(0xa039a0);
+    if (command) {
+      embed.setTitle(command.type && command.type !== 1 ? command.name : '/' + command.name)
+        .setDescription(('description' in command && command.description) || 'Context menu command.');
+      if ('options' in command && command.options?.length) embed.addFields(command.options.map(option => ({name:option.name,value:option.description})));
+    } else if (requested) embed.setDescription('Command unavailable. Use /help to see your available slash commands.');
+    else {
+      embed.setTitle(category ? category + ' commands' : 'Available slash commands');
+      for (const group of category ? [category] : ['management','utility','fun','debug']) {
+        const names = available.filter(item => (!item.type || item.type === 1) && commandCategory(item.name) === group).map(item => '/' + item.name);
+        embed.addFields({name:group,value:names.join(', ') || 'None'});
       }
-      await message.reply({ embeds: [embed] });
-    },
-  };
+      if (!category) embed.addFields({name:'Context menus',value:available.filter(item => item.type && item.type !== 1).map(item => item.name).join(', ') || 'None'});
+      embed.setFooter({text:'Use /help command:<name> for details. Text prefixes are disabled.'});
+    }
+    await interaction.reply({embeds:[embed],flags:MessageFlags.Ephemeral});
+  }};
 }

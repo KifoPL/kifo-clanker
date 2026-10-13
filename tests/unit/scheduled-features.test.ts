@@ -3,12 +3,21 @@ import test from 'node:test';
 import { canConfirmCountdown } from '../../src/features/scheduled/countdown.js';
 import { chooseWinners, collectParticipants, giveawayReaction, jobRecordId, parseDuration } from '../../src/features/scheduled/shared.js';
 import { scheduledFeature } from '../../src/features/scheduled/index.js';
-test('scheduled feature declares both slash commands and validates duration bounds', () => {
-  assert.deepEqual(scheduledFeature.commandData.map(command => command.name), ['poll', 'countdown']);
+import { giveawayData } from '../../src/features/scheduled/giveaway.js';
+import { ApplicationCommandOptionType, InteractionContextType, PermissionFlagsBits } from 'discord.js';
+test('scheduled feature declares poll, countdown and giveaway with valid duration bounds', () => {
+  assert.deepEqual(scheduledFeature.commandData.map(command => command.name), ['poll', 'countdown', 'giveaway']);
   assert.equal(parseDuration('1m'), 60000);
   assert.equal(parseDuration('1 year', 31557600000), 31557600000);
   for (const invalid of ['', '59s', '-1h', 'not a duration', '1e100y']) assert.equal(parseDuration(invalid), undefined);
   assert.equal(parseDuration('2y', 31557600000), undefined);
+});
+test('giveaway slash options expose typed input and preserve administrator permissions', () => {
+  assert.deepEqual(giveawayData.options?.map(option => [option.name, option.type, option.required ?? false]), [
+    ['winners', ApplicationCommandOptionType.Integer, true], ['duration', ApplicationCommandOptionType.String, true], ['emoji', ApplicationCommandOptionType.String, false],
+  ]);
+  assert.deepEqual(giveawayData.contexts, [InteractionContextType.Guild]);
+  assert.equal(giveawayData.default_member_permissions, String(PermissionFlagsBits.ManageChannels | PermissionFlagsBits.AddReactions));
 });
 test('giveaway drawing selects unique winners and handles too few entrants without dropping a winner', () => {
   assert.deepEqual(chooseWinners(['1', '2', '2', '3'], 2, () => 0), ['1', '2']);

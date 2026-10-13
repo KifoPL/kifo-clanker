@@ -19,7 +19,7 @@ class GatewayFixture extends EventEmitter {
   async destroy(): Promise<void> { this.destroyed = true; }
 }
 
-test('application refuses gateway login before complete schema, then runs cached prefix dispatch and closes resources', { skip: !databaseUrl, timeout: 30_000 }, async () => {
+test('application refuses gateway login before complete schema, then ignores text prefixes, dispatches slash commands and closes resources', { skip: !databaseUrl, timeout: 30_000 }, async () => {
   const admin = createPool(databaseUrl!, 1);
   const schema = `app_test_${randomUUID().replaceAll('-', '')}`;
   const url = new URL(databaseUrl!);
@@ -44,16 +44,62 @@ test('application refuses gateway login before complete schema, then runs cached
     let calls = 0;
     const originalQuery = pool.query.bind(pool);
     pool.query = ((...args: Parameters<typeof pool.query>) => { calls++; return originalQuery(...args); }) as typeof pool.query;
+    const textReplies: unknown[] = [];
+    for (const content of ['!kifo help', '!kifo', '?help', '?remove <@222222222222222222> <@&333333333333333333>', '!kifo deploy', 'ordinary chat']) {
+      connected.emit(Events.MessageCreate, {
+        content, channelId: '111111111111111111', guildId: '123456789012345678', guild: { id: '123456789012345678' },
+        member: { permissionsIn: () => ({ has: () => true }) }, author: { bot: false, id: '222222222222222222' },
+        async reply(body: unknown) { textReplies.push(body); },
+      });
+    }
+    // Drain queued passive handlers before observing a subsequent interaction.
+    await new Promise<void>(resolve => setImmediate(resolve));
     let reply: unknown;
-    const replied = new Promise<void>(resolve => connected.emit(Events.MessageCreate, {
-      content: '?help', channelId: '111111111111111111', guildId: '123456789012345678', guild: { id: '123456789012345678' },
-      member: { permissionsIn: () => ({ has: () => true }) }, author: { bot: false, id: '222222222222222222' },
+    const replied = new Promise<void>(resolve => connected.emit(Events.InteractionCreate, {
+      id: 'interaction', commandName: 'help', guildId: '123456789012345678', user: { id: '222222222222222222' },
+      isChatInputCommand: () => true, isContextMenuCommand: () => false,
+      memberPermissions: { has: () => true }, options: { getString: () => null },
       async reply(body: unknown) { reply = body; resolve(); },
     }));
     await replied;
-    assert.equal(calls, 0, 'ordinary command/help uses hydrated settings without configuration SELECTs');
-    assert.ok(JSON.stringify(reply).includes('?help'));
+    assert.deepEqual(textReplies, [], 'default and stored custom prefixes cannot invoke commands');
+    assert.equal(calls, 0, 'message intake and slash help neither read prefixes nor execute command mutations');
+    assert.ok(JSON.stringify(reply).includes('/help'));
+    assert.ok(JSON.stringify(reply).includes('/clean'));
     assert.ok(JSON.stringify(reply).includes('/countdown'));
+    assert.ok(!JSON.stringify(reply).includes('!kifo'));
+    await new Promise<void>(resolve => setImmediate(resolve));
+    const releases: Array<() => void> = [];
+    let started!: () => void;
+    const allStarted = new Promise<void>(resolve => { started = resolve; });
+    for (let index = 0; index < 16; index++) connected.emit(Events.InteractionCreate, {
+      id: `held-${index}`, commandName: 'help', guildId: '123456789012345678', user: { id: `actor-${index}` },
+      isChatInputCommand: () => true, isContextMenuCommand: () => false,
+      memberPermissions: { has: () => true }, options: { getString: () => null },
+      async reply() {
+        await new Promise<void>(resolve => {
+          releases.push(resolve);
+          if (releases.length === 16) started();
+        });
+      },
+    });
+    await allStarted;
+    try {
+      const busyReplies: unknown[] = [];
+      const component = {
+        id: 'component', customId: 'countdown:fixture:yes', user: { id: 'actor' },
+        isChatInputCommand: () => false, isContextMenuCommand: () => false,
+        isButton: () => true, isRepliable: () => true, deferred: false, replied: false,
+        async reply(body: unknown) { busyReplies.push(body); },
+      };
+      connected.emit(Events.InteractionCreate, component);
+      assert.equal(busyReplies.length, 1, 'runtime components receive immediate busy acknowledgement rather than queuing past expiry');
+      assert.match(JSON.stringify(busyReplies), /busy/);
+      for (const prefix of ['moderation', 'automation', 'deploy']) connected.emit(Events.InteractionCreate, {
+        ...component, id: prefix, customId: `${prefix}:fixture:yes`,
+      });
+      assert.equal(busyReplies.length, 1, 'scoped confirmation collectors own their acknowledgement, even when intake is full');
+    } finally { for (const release of releases) release(); }
     assert.equal(connected.presence, true);
     await close();
     assert.equal(connected.destroyed, true);

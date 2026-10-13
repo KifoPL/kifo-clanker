@@ -1,10 +1,19 @@
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ComponentType } from 'discord.js';
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ComponentType, SlashCommandBuilder } from 'discord.js';
 import { randomUUID } from 'node:crypto';
-import type { PrefixCommand } from '../../contracts/commands.js';
+import type { InvocationCommand } from '../../contracts/commands.js';
 import type { RuntimeServices } from '../../contracts/features.js';
-import { applicationCommandData } from '../../registry.js';
+import { invocationCommand } from '../../discord/invocation.js';
 
-export function createOwnerCommands(services: RuntimeServices): PrefixCommand[] {
+export const ownerCommandData = ['reload','serverlist','cmdlist','deploy'].map(name => {
+  const builder = new SlashCommandBuilder().setName(name).setDescription('Bot owner only: ' + ({reload:'Reload cached settings.',serverlist:'List connected servers.',cmdlist:'List registered commands.',deploy:'Review and confirm command registration/removal.'}[name] ?? name));
+  if (name === 'deploy') builder.setDMPermission(false).addStringOption(option => option.setName('operation').setDescription('Registration or removal scope.').setRequired(true).addChoices(...['guild','global','both','delete-guild','delete-global','delete-both'].map(value => ({name:value,value}))));
+  return builder.toJSON();
+});
+export function createOwnerSlashCommands(services: RuntimeServices) {
+  return createOwnerCommands(services).map(command => invocationCommand(ownerCommandData.find(data => data.name === command.name)!, command, interaction => command.name === 'deploy' ? [interaction.options.getString('operation',true)] : [], services));
+}
+
+export function createOwnerCommands(services: RuntimeServices): InvocationCommand[] {
   return [
     {
       name: 'reload', description: 'Reload cached configuration after operator database changes.', ownerOnly: true, category: 'DEBUG',
@@ -40,18 +49,21 @@ export function createOwnerCommands(services: RuntimeServices): PrefixCommand[] 
     {
       name: 'deploy', description: 'Review and confirm application command registration or removal.', ownerOnly: true, guildOnly: true, category: 'DEBUG',
       usage: ['deploy — choose this server, global registration, or removal, then confirm'],
-      async execute(message) {
+      async execute(message, args) {
         if (!services.ownerIds.has(message.author.id) || !message.guild) throw new Error('Bot owner in a server required');
         const application = services.client.application;
         if (!application) throw new Error('Discord application is not ready');
+        if (!services.applicationCommands?.length) throw new Error('Application command metadata is unavailable');
         const token = randomUUID();
-        const choices = ['guild', 'global', 'both', 'delete-guild', 'delete-global', 'delete-both'] as const;
+        const operations = ['guild', 'global', 'both', 'delete-guild', 'delete-global', 'delete-both'] as const;
+        const choices = operations.filter(choice => choice === args[0]);
+        if (choices.length !== 1) throw new Error('Choose a valid deployment operation');
         const ids = new Map(choices.map(choice => [`deploy:${token}:${choice}`, choice]));
         const buttons = choices.map(choice => new ButtonBuilder().setCustomId(`deploy:${token}:${choice}`)
           .setLabel(choice).setStyle(choice.startsWith('delete') ? ButtonStyle.Danger : ButtonStyle.Primary));
         const prompt = await message.reply({
-          content: `Register ${applicationCommandData.length} commands or remove commands? Global changes affect every server. Only you can confirm within 30 seconds.`,
-          components: [new ActionRowBuilder<ButtonBuilder>().addComponents(buttons.slice(0, 3)), new ActionRowBuilder<ButtonBuilder>().addComponents(buttons.slice(3))],
+          content: `Register ${services.applicationCommands.length} commands or remove commands? Global changes affect every server. Only you can confirm within 30 seconds.`,
+          components: [new ActionRowBuilder<ButtonBuilder>().addComponents(buttons)],
         });
         try {
           const interaction = await prompt.awaitMessageComponent({
@@ -62,12 +74,12 @@ export function createOwnerCommands(services: RuntimeServices): PrefixCommand[] 
           if (!choice || !services.ownerIds.has(interaction.user.id)) throw new Error('Invalid deployment confirmation');
           await interaction.deferUpdate();
           const remove = choice.startsWith('delete');
-          const data = remove ? [] : [...applicationCommandData];
+          const data = remove ? [] : [...services.applicationCommands];
           if (choice.endsWith('guild') || choice.endsWith('both')) await application.commands.set(data, message.guild.id);
           if (choice.endsWith('global') || choice.endsWith('both')) await application.commands.set(data);
-          await prompt.edit({ content: `${remove ? 'Removed' : 'Registered'} commands: ${choice}.`, components: [] });
+          await message.editReply(prompt.id, { content: `${remove ? 'Removed' : 'Registered'} commands: ${choice}.`, components: [] });
         } catch (error) {
-          await prompt.edit({ content: 'Deployment confirmation expired or the operation failed. No further changes will be attempted.', components: [] });
+          await message.editReply(prompt.id, { content: 'Deployment confirmation expired or the operation failed. No further changes will be attempted.', components: [] });
           // A completed first scope cannot be rolled back automatically if the second scope fails.
           services.logger.error('Owner command deployment did not complete', error);
         }

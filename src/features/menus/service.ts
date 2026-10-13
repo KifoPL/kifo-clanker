@@ -1,5 +1,6 @@
+import type { CommandInvocation } from '../../contracts/invocation.js';
 import { randomUUID } from 'node:crypto';
-import { type Guild, type GuildChannel, type GuildMember, type Message, type Role } from 'discord.js';
+import { type Guild, type GuildChannel, type GuildMember, type Role } from 'discord.js';
 import type { PoolClient } from 'pg';
 import type { RuntimeServices } from '../../contracts/features.js';
 import { enqueueJob, query, withTransaction } from '../../db/index.js';
@@ -70,7 +71,7 @@ export class MenuService {
     return next;
   }
 
-  async persist(menu: Menu, command: Message): Promise<void> {
+  async persist(menu: Menu, command: Pick<CommandInvocation, 'id' | 'channelId'>): Promise<void> {
     await withTransaction(this.services.pool, async (client) => {
       await query(client, `INSERT INTO menus
         (message_id,guild_id,channel_id,command_message_id,command_channel_id,created_by,kind,target_id,permission,expires_at)

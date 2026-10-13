@@ -1,7 +1,10 @@
-import { EmbedBuilder } from 'discord.js';
-import type { PrefixCommand } from '../../contracts/commands.js';
+import { EmbedBuilder, InteractionContextType, SlashCommandBuilder } from 'discord.js';
+import type { InvocationCommand } from '../../contracts/commands.js';
 import type { RuntimeServices } from '../../contracts/features.js';
 import { color, fetchVisibleMessage, safeMentions, utilityError } from './shared.js';
+
+export const langData = new SlashCommandBuilder().setName('lang').setDescription('Detect a message’s language.').setContexts(InteractionContextType.Guild)
+  .addStringOption(option => option.setName('message').setDescription('Discord message ID or link.').setRequired(true).setMaxLength(300)).toJSON();
 
 export interface Detection { language: string; confidence: number; isReliable: boolean }
 export function readDetections(body: unknown): Detection[] {
@@ -35,15 +38,15 @@ export async function detectLanguage(text: string, key: string | undefined): Pro
     .setFooter({ text: 'Language names and native names use Unicode CLDR metadata. Detection powered by Detect Language.' });
 }
 
-export function createLang(services: RuntimeServices): PrefixCommand {
+export function createLang(services: RuntimeServices): InvocationCommand {
   return {
-    name: 'lang', category: 'UTILITY', guildOnly: true, usage: ['lang <message ID or Discord link>'], description: 'Detect the language of a message using Detect Language.',
-    async execute(message, args) {
+    name: 'lang', category: 'UTILITY', guildOnly: true, usage: ['/lang message:<message ID or Discord link>'], description: 'Detect the language of a message using Detect Language.',
+    async execute(invocation, args) {
       try {
-        if (args.length !== 1) throw new Error('Usage: lang <message ID or Discord link>');
-        const target = await fetchVisibleMessage(services.client, message.author.id, message.channel, args[0]!);
-        await message.reply({ embeds: [await detectLanguage(target.content, services.env.LANGUAGE_DETECT_KEY)], allowedMentions: safeMentions });
-      } catch (error) { await utilityError(message, error); }
+        if (args.length !== 1) throw new Error('Usage: /lang message:<message ID or Discord link>');
+        const target = await fetchVisibleMessage(services.client, invocation.author.id, invocation.channel, args[0]!);
+        await invocation.reply({ embeds: [await detectLanguage(target.content, services.env.LANGUAGE_DETECT_KEY)], allowedMentions: safeMentions });
+      } catch (error) { await utilityError(invocation, error); }
     },
   };
 }

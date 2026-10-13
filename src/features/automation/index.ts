@@ -1,22 +1,31 @@
 import ms from 'ms';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits, type ThreadAutoArchiveDuration } from 'discord.js';
 import type { FeatureDefinition } from '../../contracts/features.js';
+import { invocationCommand } from '../../discord/invocation.js';
 import { query } from '../../db/query.js';
 import { autothreadingCommand, autothreadingData, threadTitle } from './autothreading.js';
-import { reactCommand } from './react.js';
-import { claimCooldown, superslowCommand } from './superslow.js';
+import { reactCommand, reactData } from './react.js';
+import { claimCooldown, superslowCommand, superslowData } from './superslow.js';
 import { ticketCommand, ticketData } from './ticket.js';
 import { ticketingCommand, ticketingData } from './ticketing.js';
 import { threadsCommand, threadsData } from './threads.js';
 import type { AutoSettings, AutomationState, ReactionSettings, SlowSettings, TicketSettings } from './shared.js';
 
 export const automationFeature: FeatureDefinition = {
-  name:'automation', commandData:[ticketingData,ticketData,autothreadingData,threadsData],
+  name:'automation', commandData:[ticketingData,ticketData,autothreadingData,threadsData,reactData,superslowData],
   create(services) {
     const state: AutomationState = {services,reactions:new Map(),slow:new Map(),tickets:new Map(),auto:new Map()};
     return {
-      prefixCommands:[reactCommand(state),superslowCommand(state)],
-      slashCommands:[ticketingCommand(state),ticketCommand(state),autothreadingCommand(state),threadsCommand()],
+      slashCommands:[ticketingCommand(state),ticketCommand(state),autothreadingCommand(state),threadsCommand(),
+        invocationCommand(reactData,reactCommand(state),interaction => {
+          const action=interaction.options.getSubcommand();
+          return action === 'status' ? [] : action === 'on' ? ['on',...interaction.options.getString('emojis',true).trim().split(/\s+/u)] : [action];
+        },services,true),
+        invocationCommand(superslowData,superslowCommand(state),interaction => {
+          const action=interaction.options.getSubcommand();
+          return action === 'status' ? [] : action === 'off' ? ['0s'] : action === 'set' ? [interaction.options.getString('duration',true)] : [action];
+        },services),
+      ],
       async hydrate() {
         const [reactions,slow,tickets,auto] = await Promise.all([
           query<ReactionSettings>(services.pool,'SELECT channel_id,guild_id,emojis FROM auto_reactions'),
@@ -40,7 +49,6 @@ export const automationFeature: FeatureDefinition = {
         const reactions = state.reactions.get(message.channelId);
         const auto = state.auto.get(message.channelId);
         if (!ticket && !slow && !reactions && !auto) return 'continue';
-        const prefix = services.prefixes.get(message.guild.id) ?? '!kifo ';
         const bot = await message.guild.members.fetchMe();
         const member = message.member ?? await message.guild.members.fetch(message.author.id);
         const managesMessages = member.permissionsIn(message.channelId).has(PermissionFlagsBits.ManageMessages);
@@ -52,16 +60,15 @@ export const automationFeature: FeatureDefinition = {
         if (slow && !message.author.bot && !managesMessages) {
           if (!bot.permissionsIn(message.channelId).has([PermissionFlagsBits.ManageChannels,PermissionFlagsBits.ManageMessages])) { services.logger.error('Superslow cannot enforce cooldown: missing channel permissions'); return 'continue'; }
           const duration = Number(slow.duration_ms);
-          const isCheck = message.content.trim().toLowerCase() === prefix.trim().toLowerCase();
-          if (isCheck || !await claimCooldown(services.pool,message.channelId,message.author.id,message.createdTimestamp,duration)) {
+          if (!await claimCooldown(services.pool,message.channelId,message.author.id,message.createdTimestamp,duration)) {
             const result = await query<{timestamp_ms:string}>(services.pool,'SELECT timestamp_ms FROM superslow_users WHERE channel_id=$1 AND user_id=$2',[message.channelId,message.author.id]);
             const last = result.rows[0];
             const remaining = last ? Math.max(0,Number(last.timestamp_ms)+duration-message.createdTimestamp) : 0;
-            await message.author.send(remaining ? `Please wait ${ms(remaining,{long:true})} before speaking in <#${message.channelId}>. Send \`${prefix.trim()}\` there to check your cooldown without extending it.` : `You can already talk in <#${message.channelId}>.`).catch(() => {});
+            await message.author.send(remaining ? `Please wait ${ms(remaining,{long:true})} before speaking in <#${message.channelId}>.` : `You can already talk in <#${message.channelId}>.`).catch(() => {});
             await message.delete(); return 'deleted';
           }
         }
-        if (reactions && !message.content.toLowerCase().startsWith(prefix.toLowerCase()) && (!message.author.bot || (message.author.id === services.client.user?.id && message.embeds.length > 0)) && bot.permissionsIn(message.channelId).has(PermissionFlagsBits.AddReactions)) {
+        if (reactions && (!message.author.bot || (message.author.id === services.client.user?.id && message.embeds.length > 0)) && bot.permissionsIn(message.channelId).has(PermissionFlagsBits.AddReactions)) {
           for (const emoji of reactions.emojis) { try { await message.react(emoji); } catch(error) { services.logger.error('Automatic reaction failed',error); } }
         }
         if (auto && auto.guild_id === message.guild.id && (!message.author.bot || auto.bot_auto) && !message.components.length && !message.hasThread) {

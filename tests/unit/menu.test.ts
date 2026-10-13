@@ -1,6 +1,7 @@
+import type { CommandInvocation } from '../../src/contracts/invocation.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { Collection, PermissionFlagsBits, PermissionsBitField, type GuildChannel, type GuildMember, type Message, type Role } from 'discord.js';
+import { Collection, PermissionFlagsBits, PermissionsBitField, type GuildChannel, type GuildMember, type Role } from 'discord.js';
 import type { RuntimeServices } from '../../src/contracts/features.js';
 import { menuCommand, menuDuration } from '../../src/features/menus/menu.js';
 import { elevatedMenuPermission, elevatedMenuRole, explicitlyDenied, messageIdFromReference, safeMenuPermission, safeMenuRole } from '../../src/features/menus/safety.js';
@@ -93,20 +94,20 @@ test('privileged menu confirmation cannot be bypassed and cancellation causes no
           if (changeRole) role.permissions = new PermissionsBitField(PermissionFlagsBits.Administrator);
         } };
       } };
-    }, delete: async () => { events.push('delete command'); },
-    channel: { permissionsFor: () => actor.permissions, send: async () => { events.push('send'); return {
-      id: 'menu', react: async () => { events.push('react'); }, delete: async () => {},
+    },
+    channel: { isDMBased: () => false, isSendable: () => true, permissionsFor: () => actor.permissions, send: async () => { events.push('send'); return {
+      id: 'menu', url: 'https://discord.com/channels/guild/channel/menu', react: async () => { events.push('react'); }, delete: async () => {},
     }; } },
-  } as unknown as Message;
-  const services = { prefixes: new Map(), logger: { error() {} } } as unknown as RuntimeServices;
+  } as unknown as CommandInvocation;
+  const services = { logger: { error() {} } } as unknown as RuntimeServices;
   const menus = { persist: async () => { events.push('persist'); }, expire: async () => {} } as unknown as MenuService;
   const command = menuCommand(services, menus);
-  await command.execute(message, ['role', roleId, 'confirm']);
+  await command.execute(message, ['role', roleId]);
   assert.equal(events.length, 0);
   assert.match(replies[0]!, /eligible reactor.*permanently/);
   approved = true;
   await command.execute(message, ['role', roleId]);
-  assert.deepEqual(events, ['send', 'persist', 'react', 'delete command']);
+  assert.deepEqual(events, ['send', 'persist', 'react']);
   events.length = 0;
   revokePermissions = true;
   await command.execute(message, ['role', roleId]);
@@ -291,4 +292,20 @@ test('already-expired imported menus capture reaction provenance before scheduli
   service.menus.set('123', { ...menu, created_by: null, expires_at: new Date(0) });
   await service.ready();
   assert.deepEqual(events, ['capture unknown', 'enqueue expiry']);
+});
+
+test('native menus expose typed role/permission creation and message-based restoration',async()=>{
+  const {ApplicationCommandOptionType}=await import('discord.js');
+  const {menuData}=await import('../../src/features/menus/menu.js');
+  const {menusFeature}=await import('../../src/features/menus/index.js');
+  assert.deepEqual(menuData.options?.map(option=>option.name),['help','list','role','permission','revert']);
+  const role=menuData.options?.find(option=>option.name==='role');
+  assert.ok(role?.type===ApplicationCommandOptionType.Subcommand);
+  assert.equal(role.options?.find(option=>option.name==='role')?.type,ApplicationCommandOptionType.Role);
+  const permission=menuData.options?.find(option=>option.name==='permission');
+  assert.ok(permission?.type===ApplicationCommandOptionType.Subcommand);
+  assert.equal(permission.options?.find(option=>option.name==='channel')?.type,ApplicationCommandOptionType.Channel);
+  const runtime=menusFeature.create(new Proxy({} as RuntimeServices,{get(){throw new Error('Native construction touched services.');}}));
+  assert.deepEqual(runtime.slashCommands?.map(command=>command.data.name),['menu']);
+  assert.equal('prefixCommands' in runtime,false);
 });

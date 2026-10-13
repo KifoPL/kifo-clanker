@@ -24,6 +24,8 @@ test('PostgreSQL migrations, prefix hydration and durable concurrent scheduling'
   const migrationDirectory = await mkdtemp(join(tmpdir(), 'kifo-migrations-'));
   const errors: unknown[] = [];
   const workers: DurableScheduler[] = [];
+  let releaseHandlers!: () => void;
+  const bothHandlersStarted = new Promise<void>((resolve) => { releaseHandlers = resolve; });
   admin.on('error', (error: unknown) => errors.push(error));
   pool.on('error', (error: unknown) => errors.push(error));
   try {
@@ -64,14 +66,16 @@ test('PostgreSQL migrations, prefix hydration and durable concurrent scheduling'
           handled.push(job.id);
           active += 1;
           peakActive = Math.max(peakActive, active);
-          await new Promise((done) => setTimeout(done, 50));
+          // Hold the first lease until another worker enters; elapsed time cannot prove concurrent claims.
+          if (active === 2) releaseHandlers();
+          await bothHandlersStarted;
           active -= 1;
         } },
         logger: { error: (_message, error) => { errors.push(error); } },
         batchSize: 1,
         pollIntervalMs: 10,
-        handlerTimeoutMs: 100,
-        leaseMs: 1_000,
+        handlerTimeoutMs: 5_000,
+        leaseMs: 10_000,
       });
       workers.push(worker);
       worker.start();
@@ -83,6 +87,7 @@ test('PostgreSQL migrations, prefix hydration and durable concurrent scheduling'
       if (completed === 2) break;
       await new Promise((done) => setTimeout(done, 20));
     } while (Date.now() < deadline);
+    releaseHandlers();
     await Promise.all(workers.map((worker) => worker.stop()));
     assert.equal(completed, 2);
     assert.equal(handled.length, 2);
@@ -107,6 +112,7 @@ test('PostgreSQL migrations, prefix hydration and durable concurrent scheduling'
     await query(pool, 'DROP TABLE scheduled_jobs');
     await assert.rejects(assertSchemaReady(pool), /Database schema is not ready/);
   } finally {
+    releaseHandlers();
     await Promise.all(workers.map((worker) => worker.stop()));
     await pool.end();
     try {

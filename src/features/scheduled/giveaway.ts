@@ -1,12 +1,19 @@
 import { randomUUID } from 'node:crypto';
-import { EmbedBuilder, PermissionFlagsBits } from 'discord.js';
-import type { PrefixCommand } from '../../contracts/commands.js';
+import { EmbedBuilder, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
+import type { InvocationCommand, SlashCommand } from '../../contracts/commands.js';
 import type { RuntimeServices } from '../../contracts/features.js';
 import { enqueueJob, query, withTransaction } from '../../db/index.js';
 import { giveawayReaction, parseDuration } from './shared.js';
-export function createGiveaway(services: RuntimeServices): PrefixCommand {
+import { invocationCommand } from '../../discord/invocation.js';
+export const giveawayData = new SlashCommandBuilder().setName('giveaway').setDescription('Choose random winners from users who react before a deadline.')
+  .setContexts(InteractionContextType.Guild)
+  .setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels | PermissionFlagsBits.AddReactions)
+  .addIntegerOption(option => option.setName('winners').setDescription('Number of distinct winners.').setRequired(true).setMinValue(1).setMaxValue(2147483647))
+  .addStringOption(option => option.setName('duration').setDescription('Duration of at least 1 minute, for example 1h.').setRequired(true).setMaxLength(100))
+  .addStringOption(option => option.setName('emoji').setDescription('Entry reaction, such as ✅ or a custom emoji.').setMaxLength(100)).toJSON();
+export function createGiveaway(services: RuntimeServices): InvocationCommand {
   return { name: 'giveaway', description: 'Choose random winners from users who react before a deadline.', category: 'utility', guildOnly: true, permissions: [PermissionFlagsBits.ManageChannels, PermissionFlagsBits.AddReactions], usage: ['giveaway <winners> <duration> [emoji]'], async execute(message, args) {
-    if (!message.inGuild() || !message.member?.permissionsIn(message.channel).has([PermissionFlagsBits.ManageChannels, PermissionFlagsBits.AddReactions]) || !message.guild.members.me?.permissionsIn(message.channel).has([PermissionFlagsBits.ManageChannels, PermissionFlagsBits.AddReactions, PermissionFlagsBits.ReadMessageHistory])) { await message.reply('Use this in a server with Manage Channels and Add Reactions permissions.'); return; }
+    if (!message.inGuild() || !message.guild || !message.member?.permissionsIn(message.channelId).has([PermissionFlagsBits.ManageChannels, PermissionFlagsBits.AddReactions]) || !message.guild.members.me?.permissionsIn(message.channelId).has([PermissionFlagsBits.ManageChannels, PermissionFlagsBits.AddReactions, PermissionFlagsBits.ReadMessageHistory])) { await message.reply('Use this in a server with Manage Channels and Add Reactions permissions.'); return; }
     const count = Number(args[0]);
     const duration = parseDuration(args[1] ?? '');
     const emoji = args[2] ?? '<a:done:828097348545544202>';
@@ -27,4 +34,12 @@ export function createGiveaway(services: RuntimeServices): PrefixCommand {
       throw error;
     }
   } };
+}
+
+export function createGiveawaySlash(services: RuntimeServices): SlashCommand {
+  return invocationCommand(giveawayData, createGiveaway(services), interaction => [
+    String(interaction.options.getInteger('winners', true)),
+    interaction.options.getString('duration', true),
+    interaction.options.getString('emoji') ?? '<a:done:828097348545544202>',
+  ], services, true);
 }

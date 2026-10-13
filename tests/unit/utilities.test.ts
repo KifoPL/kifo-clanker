@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { ChannelType, Collection, PermissionsBitField, PermissionFlagsBits, type Client, type GuildMember, type Message, type TextBasedChannel, type User } from 'discord.js';
+import { ApplicationCommandOptionType, ChannelType, MessageFlags, type ChatInputCommandInteraction, Collection, PermissionsBitField, PermissionFlagsBits, type Client, type GuildMember, type Message, type TextBasedChannel, type User } from 'discord.js';
+import type { CommandInvocation } from '../../src/contracts/invocation.js';
 import type { RuntimeServices } from '../../src/contracts/features.js';
 import { utilitiesFeature } from '../../src/features/utilities/index.js';
 import { detectLanguage, languageName, readDetections } from '../../src/features/utilities/lang.js';
@@ -18,7 +19,7 @@ const read = [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.ReadMessageHi
 
 function readableChannel(userPermissions = read, botPermissions = read): TextBasedChannel {
   return {
-    id: channelId, type: ChannelType.GuildText, isDMBased: () => false, isThread: () => false,
+    id: channelId, type: ChannelType.GuildText, isTextBased: () => true, isDMBased: () => false, isThread: () => false,
     guild: { members: { me: { id: 'bot' }, fetch: async () => ({ id: userId }) } },
     permissionsFor: (member: { id: string }) => new PermissionsBitField(member.id === 'bot' ? botPermissions : userPermissions),
   } as unknown as TextBasedChannel;
@@ -186,8 +187,9 @@ test('utilities metadata imports and feature creation make no database or Discor
   const services = new Proxy({} as RuntimeServices, { get() { throw new Error('Services were accessed during construction.'); } });
   const runtime = utilitiesFeature.create(services);
   assert.equal(Object.isFrozen(utilitiesFeature), true);
-  assert.deepEqual(runtime.prefixCommands?.map(command => command.name), ['list', 'stats', 'top', 'lang', 'prefix', 'todo', 'test']);
-  assert.deepEqual(utilitiesFeature.commandData.map(command => command.name), ['detect language', 'save', 'user stats']);
+  assert.equal('prefixCommands' in runtime, false);
+  assert.deepEqual(runtime.slashCommands?.map(command => command.data.name), ['list', 'stats', 'top', 'lang', 'prefix', 'todo']);
+  assert.deepEqual(utilitiesFeature.commandData.map(command => command.name), ['list', 'stats', 'top', 'lang', 'prefix', 'todo', 'detect language', 'save', 'user stats']);
 });
 
 
@@ -206,13 +208,14 @@ test('top sends private cross-channel contents and image URLs only to requester 
   Object.assign(source, { isTextBased: () => true, messages: { fetch: async () => new Collection([[messageId, secret]]) } });
   const invokingChannelId = '723456789012345678';
   const message = {
-    id: '823456789012345678', channelId: invokingChannelId, deletable: false,
+    id: '823456789012345678', channelId: invokingChannelId,
     author: { id: userId, send: async (payload: unknown) => { directSends.push(payload); } },
     channel: { id: invokingChannelId, isDMBased: () => false, isSendable: () => true, send: async (payload: unknown) => { publicSends.push(payload); } },
     member: { permissionsIn: () => new PermissionsBitField([PermissionFlagsBits.ManageChannels]) },
     guild: { channels: { fetch: async () => source } },
-    reply: async (payload: unknown) => { publicReplies.push(payload); return { edit: async (edit: unknown) => { publicReplies.push(edit); } }; },
-  } as unknown as Message;
+    reply: async (payload: unknown) => { publicReplies.push(payload); return { id: messageId, edit: async (edit: unknown) => { publicReplies.push(edit); } }; },
+    editReply: async (_id: string, payload: unknown) => { publicReplies.push(payload); return { id: messageId }; },
+  } as unknown as CommandInvocation;
   await createTop().command.execute(message, ['1', '1d', channelId, '👍']);
   assert.equal(publicSends.length, 0);
   assert.equal(directSends.length, 2);
@@ -247,7 +250,8 @@ test('top shutdown prevents an in-flight channel lookup from registering a new s
     member: { permissionsIn: () => new PermissionsBitField([PermissionFlagsBits.ManageChannels]) },
     guild: { channels: { fetch: () => { channelFetches++; return new Promise<TextBasedChannel>(resolve => { resolveChannel = resolve; }); } } },
     reply: async (payload: unknown) => { replies.push(payload); return {}; },
-  } as unknown as Message;
+    editReply: async (_id: string, payload: unknown) => { replies.push(payload); return { id: messageId }; },
+  } as unknown as CommandInvocation;
   const command = top.command.execute(message, ['1', '1d', channelId, '👍']);
   assert.ok(resolveChannel);
   await top.close();
@@ -258,4 +262,90 @@ test('top shutdown prevents an in-flight channel lookup from registering a new s
   assert.match(JSON.stringify(replies), /shutting down/);
   await top.command.execute(message, ['1', '1d', channelId, '👍']);
   assert.equal(channelFetches, 1);
+});
+
+
+test('native utilities expose typed targets and bounded ranking options', () => {
+  const runtime = utilitiesFeature.create({} as RuntimeServices);
+  const commands = runtime.slashCommands!;
+  const list = commands.find(command => command.data.name === 'list')!.data;
+  assert.deepEqual(list.options?.map(option => [option.name, option.type]), [['server', ApplicationCommandOptionType.Subcommand], ['user', ApplicationCommandOptionType.Subcommand], ['roles', ApplicationCommandOptionType.Subcommand]]);
+  const roleList = list.options?.find(option => option.name === 'roles');
+  assert.ok(roleList?.type === ApplicationCommandOptionType.Subcommand);
+  assert.equal(roleList.options?.find(option => option.name === 'role')?.type, ApplicationCommandOptionType.Role);
+  assert.equal(roleList.options?.find(option => option.name === 'role')?.required, true);
+  assert.equal(roleList.options?.find(option => option.name === 'channel')?.type, ApplicationCommandOptionType.Channel);
+  const stats = commands.find(command => command.data.name === 'stats')!.data;
+  assert.deepEqual(stats.options?.map(option => [option.name, option.type]), [['member', ApplicationCommandOptionType.User], ['role', ApplicationCommandOptionType.Role]]);
+  const top = commands.find(command => command.data.name === 'top')!.data;
+  const winners = top.options?.find(option => option.name === 'winners');
+  assert.ok(winners?.type === ApplicationCommandOptionType.Integer);
+  assert.equal(winners.min_value, 1);
+  assert.equal(winners.max_value, 10);
+  assert.equal(top.options?.find(option => option.name === 'channel')?.type, ApplicationCommandOptionType.Channel);
+  assert.equal(commands.find(command => command.data.name === 'lang')!.data.options?.[0]?.required, true);
+});
+
+test('native /prefix acknowledges privately and explains slash commands without promising paid prefixes', async () => {
+  const events: string[] = [];
+  const replies: unknown[] = [];
+  const interaction = {
+    id: messageId, channelId, guildId, guild: { members: { fetch: async () => ({ id: userId }) } },
+    channel: readableChannel(), user: { id: userId }, client: {},
+    deferReply: async (options: { flags: number }) => { assert.equal(options.flags, MessageFlags.Ephemeral); events.push('defer'); },
+    editReply: async (payload: unknown) => { events.push('reply'); replies.push(payload); return {}; },
+  } as unknown as ChatInputCommandInteraction;
+  const command = utilitiesFeature.create({} as RuntimeServices).slashCommands!.find(value => value.data.name === 'prefix')!;
+  await command.execute(interaction);
+  assert.deepEqual(events, ['defer', 'reply']);
+  const payload = replies[0] as { embeds: Array<{ toJSON(): { description?: string } }> };
+  assert.match(payload.embeds[0]?.toJSON().description ?? '', /Text prefixes are disabled.*\/help/);
+  assert.doesNotMatch(payload.embeds[0]?.toJSON().description ?? '', /premium|beer|buy|custom prefix/i);
+});
+
+test('native /list user resolves the selected member and returns roles as an interaction attachment', async () => {
+  const roles = new Collection([[guildId, { id: guildId, name: '@everyone', rawPosition: 0, position: 0 }], [roleId, { id: roleId, name: 'Selected role', rawPosition: 2, position: 2 }]]);
+  const target = { id: role2, displayName: 'Selected member', nickname: null, premiumSince: null, joinedAt: null, joinedTimestamp: null, user: { id: role2, bot: false, tag: 'selected', createdAt: new Date(0), createdTimestamp: 0, displayAvatarURL: () => 'https://cdn.discordapp.com/avatar.png' }, roles: { cache: roles, highest: roles.get(roleId) } };
+  const guild = { id: guildId, roles: { cache: roles, highest: roles.get(roleId), fetch: async () => roles }, channels: { cache: new Collection([[channelId, {}]]) }, members: { me: { id: 'bot' }, fetch: async (argument: string | { user: string }) => { if (typeof argument === 'string') { assert.equal(argument, role2); return target; } assert.equal(argument.user, userId); return { id: userId }; } } };
+  Object.assign(target, { guild });
+  const channel = readableChannel(read, [...read, PermissionFlagsBits.AttachFiles]);
+  const replies: unknown[] = [];
+  const interaction = {
+    id: messageId, channelId, guildId, guild, channel, user: { id: userId }, client: {},
+    options: { getSubcommand: () => 'user', getUser: (name: string) => { assert.equal(name, 'member'); return { id: role2 }; } },
+    deferReply: async (options: { flags: number }) => { assert.equal(options.flags, MessageFlags.Ephemeral); },
+    editReply: async (payload: unknown) => { replies.push(payload); return {}; },
+  } as unknown as ChatInputCommandInteraction;
+  const command = utilitiesFeature.create({} as RuntimeServices).slashCommands!.find(value => value.data.name === 'list')!;
+  await command.execute(interaction);
+  const payload = replies[0] as { files: Array<{ attachment: Buffer }>; embeds: Array<{ toJSON(): { title?: string } }> };
+  assert.equal(payload.embeds[0]?.toJSON().title, 'Selected member stats:');
+  assert.match(payload.files[0]?.attachment.toString() ?? '', /Selected role/);
+});
+
+test('native /todo preserves literal URL text and fetches only the explicit link option', async () => {
+  const reference = `https://discord.com/channels/${guildId}/${channelId}/${messageId}`;
+  let linked = false;
+  let sourceReads = 0;
+  const sends: unknown[] = [];
+  const source = readableChannel();
+  Object.assign(source, { guildId, messages: { fetch: async () => { sourceReads++; return { content: 'Referenced message', url: reference }; } } });
+  const services = { client: { channels: { fetch: async () => source } }, logger: { error: () => {} } } as unknown as RuntimeServices;
+  const interaction = {
+    id: messageId, channelId, guildId, guild: { members: { fetch: async () => ({ id: userId }) } },
+    channel: readableChannel(), client: {},
+    user: { id: userId, send: async (payload: unknown) => { sends.push(payload); return { react: async () => {}, pin: async () => {} }; } },
+    options: { getString: (name: string) => name === 'link' ? linked ? reference : null : linked ? 'Additional note' : reference },
+    deferReply: async () => {}, editReply: async () => ({}),
+  } as unknown as ChatInputCommandInteraction;
+  const command = utilitiesFeature.create(services).slashCommands!.find(value => value.data.name === 'todo')!;
+  await command.execute(interaction);
+  const literal = sends[0] as { embeds: Array<{ toJSON(): { description?: string } }> };
+  assert.equal(literal.embeds[0]?.toJSON().description, reference);
+  assert.equal(sourceReads, 0);
+  linked = true;
+  await command.execute(interaction);
+  const copied = sends[1] as { embeds: Array<{ toJSON(): { description?: string } }> };
+  assert.equal(copied.embeds[0]?.toJSON().description, 'Referenced message\n==========\nAdditional note');
+  assert.equal(sourceReads, 1);
 });

@@ -1,28 +1,29 @@
 # TypeScript rewrite
 
-The complete legacy command and automation surface is implemented in the new root package. Production deployment is a separate step: live Discord, provider credentials, and the actual production MySQL schema/snapshot must be validated before cutover.
+The legacy command features and automation surface are implemented in the new root package through 37 native slash commands and three context menus. Text message commands and custom prefixes are disabled. Production deployment is a separate step: live Discord, provider credentials, and the actual production MySQL schema/snapshot must be validated before cutover.
 
 ## Implemented surface
 
 | Surface | Implemented |
 |---|---|
-| 15 prefix commands | clean, list, menu, perms, remove, stats, top, giveaway, lang, prefix, react, superslow, todo, test, help |
-| 19 slash commands | autothreading, bookmark, countdown, cringe, epoch, error, guide, howgay, iq, ping, poll, pp, reverse, stfu, test, threads, ticket, ticketing, urmum |
+| 37 native slash commands | autothreading, bookmark, clean, cmdlist, countdown, cringe, deploy, epoch, error, giveaway, guide, help, howgay, iq, lang, list, menu, perms, ping, poll, pp, prefix, react, reload, remove, reverse, serverlist, stats, stfu, superslow, test, threads, ticket, ticketing, todo, top, urmum |
 | 3 context menus | detect language, save, user stats |
-| Owner commands | serverlist, deploy, cmdlist; additional reload for operator configuration changes |
-| Passive behavior | Auto reactions, superslow, ticket-channel filtering, automatic threads, role/permission reaction menus, note/bookmark DM deletion, deleted/bulk-deleted menu restoration, mention/prefix greeting, guild lifecycle notifications |
+| Owner-only slash commands, included above | /serverlist, /deploy, /cmdlist, /reload for operator configuration changes |
+| Passive behavior | Auto reactions, superslow, ticket-channel filtering, automatic threads, role/permission reaction menus, note/bookmark DM deletion, deleted/bulk-deleted menu restoration, mention greeting, guild lifecycle notifications |
 | Scheduled behavior | Giveaways, temporary role restoration, permission restoration, menu expiry, poll results, countdown alerts, presence refresh |
 | Migration tools | Read-only MySQL export with optional DDL, all 13-table dry-run/import, canonical reconciliation, controlled failed-job retry |
 | Delivery | Multi-stage non-root Docker image, persistent PostgreSQL 18.6, Aspire migration gate, CI, CodeQL, Dependabot |
 | Observability | Structured stdout, optional bounded Discord log relay, liveness/readiness, OpenTelemetry command/query/job spans, latency/outcome/pool/lag/memory/event-loop/drop metrics |
 
-The parity tests read the legacy source without executing it and compare every slash name, option path, type, and required input against the new registry. Help, registration and generated documentation use the same registry. Each command has its own file; shared behavior is implemented in feature services.
+The parity tests read the legacy source without executing it, retain every existing slash name, option path, type, and required input, and check that former text commands are registered as native slash commands. Help, registration and generated documentation use the same registry. Each command has its own file; shared behavior is implemented in feature services.
+
+Use `/help` or Discord's command picker. Former text commands now expose structured options: `/list server`, `/list user`, and `/list roles` cover member exports; `/stats` accepts a member or role; `/top` takes a winner count, duration, channel, and emoji. `/test` keeps its original `input` and `input2` options and adds `arguments` for the former whitespace-separated argument test. `/prefix` is informational only: it explains that text prefixes are retired and makes no custom-prefix or premium-feature offer. Imported prefix values are retained for migration history and do not enable text commands.
 
 ## Architecture and intentional corrections
 
 Node 24 LTS, TypeScript 7.0.2, discord.js 14.27.0, ESM, strict compilation, and Biome linting replace the old runtime. One `pg.Pool` serves the entire process with at most five connections and finite connection/query/lock timeouts. Commands do not import the entry point. Imports and feature construction never connect, log in, or start polling.
 
-Startup verifies all six migration checksums and required tables, hydrates configuration, connects Discord, resolves owner/team membership, reconciles recoverable operations, then accepts events and starts scheduling. Ordinary messages and help use cached settings with zero configuration SELECTs. Configuration commands update cache after successful writes; bot owners can use `reload` after operator database edits. Cache reload failures preserve existing feature state.
+Startup verifies all six migration checksums and required tables, hydrates configuration, connects Discord, resolves owner/team membership, reconciles recoverable operations, then accepts events and starts scheduling. Ordinary messages run passive features only; those features and `/help` use cached settings with zero configuration SELECTs. Configuration commands update cache after successful writes; bot owners can use `/reload` after operator database edits. Cache reload failures preserve existing feature state.
 
 Message processing is ordered by channel, with explicit continue/handled/deleted results. Intake bounds concurrent work to 16 and pending work to 256. Saturated application commands receive an immediate retry response. Dropped menu reaction/deletion events trigger bounded durable reconciliation through the same scheduler loop. On shutdown, intake closes, unstarted work is discarded, scans/jobs cancel and drain, Discord disconnects, the pool closes, and telemetry flushes. The process enforces a 15-second shutdown deadline; unfinished leased jobs recover after restart.
 
@@ -30,6 +31,7 @@ One non-overlapping scheduler claims bounded batches using `FOR UPDATE SKIP LOCK
 
 Intentional changes and fixes:
 
+- Text prefix parsing, dispatch and cache loading are removed. Message events cannot invoke commands; old default/custom prefixes follow ordinary passive-message behavior. Native inputs retain the interaction actor and respond through Discord interactions, with private confirmation edits using the interaction webhook.
 - Permissions are checked in the actual target channel, with fresh authorization after confirmation. Role changes enforce user and bot hierarchy. Temporary-operation intent and restoration jobs commit before Discord effects; permission restoration preserves allow/deny/inherit and detects later changes.
 - Menus preserve preexisting roles and unrelated overwrite bits. Privileged menu creation requires the creator and bot to hold granted permissions, plus an explicit user/message/action-bound 30-second button confirmation.
 - Superslow uses an atomic unique channel/user cooldown transition; concurrent messages admit exactly one transition per window.
@@ -68,7 +70,7 @@ Optional configuration:
 - `OTEL_EXPORTER_OTLP_ENDPOINT`: HTTP/protobuf endpoint; Aspire supplies endpoint and exporter configuration.
 - `SCHEDULER_PAUSED=true`: pauses scheduled execution for migration checks. Commands, passive events and startup reconciliation remain active; this is not a dry-run flag.
 
-Register all 19 slash commands and three context menus in a test guild by setting `DISCORD_APPLICATION_ID` and `DISCORD_TEST_GUILD_ID`, then running `npm run deploy-commands`. This replaces that test guild's application commands. Startup never deploys commands. The owner-only `deploy` command supports reviewed guild/global/both registration and removal through a bound confirmation. `npm run generate-docs` rebuilds [the command reference](commandList.md) without opening a database or gateway connection.
+Register all 37 slash commands and three context menus in a test guild by setting `DISCORD_APPLICATION_ID` and `DISCORD_TEST_GUILD_ID`, then running `npm run deploy-commands`. This replaces that test guild's application commands. Startup never deploys commands. The owner-only `/deploy` command supports reviewed guild/global/both registration and removal through a bound confirmation. `npm run generate-docs` rebuilds [the command reference](commandList.md) without opening a database or gateway connection.
 
 ## Docker and Aspire
 
@@ -112,7 +114,7 @@ The JSON format is `{ "timezone": "+02:00", "tables": { "prefixes": [], ... } }`
 
 | Legacy tables | Target |
 |---|---|
-| prefixes | guild_settings |
+| prefixes | guild_settings, retained as migration history; text prefixes are disabled |
 | react | auto_reactions |
 | superslow, superslowusers | superslow_settings, unique superslow_cooldowns |
 | ticketing, autothreading | ticket_settings, autothreading_settings |
@@ -133,7 +135,7 @@ Failed restoration jobs retain the operation/ownership record. Diagnose the targ
 
 Local verification covers strict compilation/lint, registry parity, authorization, privacy, cancellations, durable intent, lease recovery, retry stability, import rollback/reconciliation, bounded intake and actual HTTP/protobuf telemetry export. PostgreSQL tests use random isolated schemas and do not touch existing rows. Run them with a test database:
 
-Validated on 13 October 2026: 114 unit tests and six PostgreSQL 18.6 integration tests pass; lint, strict typecheck, compilation, clean install, and dependency audit (zero reported vulnerabilities in the new package) pass. The frozen Docker image builds and runs compiled migrations as UID 1000; AppHost builds with zero warnings/errors. The preserved legacy package retains its original dependency graph and is excluded from the runtime image.
+Validated on 13 October 2026: 131 unit tests and six PostgreSQL 18.6 integration tests pass; lint, strict typecheck, compilation, clean install, and dependency audit (zero reported vulnerabilities in the new package) pass. The frozen Docker image builds and runs compiled migrations as UID 1000; AppHost builds with zero warnings/errors. The preserved legacy package retains its original dependency graph and is excluded from the runtime image.
 
 ```sh
 npm run check

@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readConfig } from '../../src/config.js';
-import { parsePrefix } from '../../src/discord/dispatch.js';
 import { startHealthServer } from '../../src/health.js';
 import { MessageFlags, type ChatInputCommandInteraction } from 'discord.js';
 import type { SlashCommand } from '../../src/contracts/commands.js';
@@ -13,14 +12,6 @@ test('configuration rejects missing secrets, wrong database scheme and invalid p
   assert.throws(() => readConfig({ ...env, DISCORD_TOKEN: '' }), /DISCORD_TOKEN/);
   assert.throws(() => readConfig({ ...env, DATABASE_URL: 'https://example.com' }), /PostgreSQL/);
   assert.throws(() => readConfig({ ...env, HEALTH_PORT: '1.5' }), /HEALTH_PORT/);
-});
-
-test('prefix parsing preserves boundaries and maps bare configured prefixes to help', () => {
-  assert.deepEqual(parsePrefix('!KIFO help reverse', '!kifo '), { name: 'help', args: ['reverse'] });
-  assert.deepEqual(parsePrefix('!kifo ', '!kifo '), { name: 'help', args: [] });
-  assert.deepEqual(parsePrefix('!kifo', '!kifo '), { name: 'help', args: [] });
-  assert.equal(parsePrefix('!kifoo help', '!kifo '), undefined);
-  assert.deepEqual(parsePrefix('??help', '??'), { name: 'help', args: [] });
 });
 
 test('readiness reflects database availability while liveness remains available', async () => {

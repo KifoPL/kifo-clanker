@@ -1,10 +1,17 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags, PermissionFlagsBits, parseEmoji, type Interaction, type Message } from 'discord.js';
+import { ActionRowBuilder, ChannelType, InteractionContextType, SlashCommandBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags, PermissionFlagsBits, parseEmoji, type Interaction, type Message } from 'discord.js';
 import ms from 'ms';
-import type { PrefixCommand } from '../../contracts/commands.js';
+import type { CommandInvocation } from '../../contracts/invocation.js';
+import type { InvocationCommand } from '../../contracts/commands.js';
 import { assertCanRead, color, entityId, safeMentions, utilityError } from './shared.js';
 
+export const topData = new SlashCommandBuilder().setName('top').setDescription('Rank unique authors by a reaction in a channel over a time period.').setContexts(InteractionContextType.Guild).setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels)
+  .addIntegerOption(option => option.setName('winners').setDescription('Number of winning posts, including ties at the cutoff.').setRequired(true).setMinValue(1).setMaxValue(10))
+  .addStringOption(option => option.setName('duration').setDescription('Time period between 10s and 14d.').setRequired(true).setMaxLength(100))
+  .addChannelOption(option => option.setName('channel').setDescription('Channel to scan; cross-channel results are sent by DM.').setRequired(true).addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement, ChannelType.PublicThread, ChannelType.PrivateThread, ChannelType.GuildVoice, ChannelType.GuildStageVoice))
+  .addStringOption(option => option.setName('emoji').setDescription('Unicode emoji, custom emoji, or custom emoji ID.').setRequired(true).setMaxLength(100)).toJSON();
+
 export function parseTopArgs(args: readonly string[]): { count: number; duration: number; channelId: string; emojiKey: string } {
-  if (args.length !== 4) throw new Error('Usage: top <1–10 posts> <10s–14d> <channel> <reaction>');
+  if (args.length !== 4) throw new Error('Usage: /top winners:<1–10> duration:<10s–14d> channel:<channel> emoji:<reaction>');
   const count = Number(args[0]);
   const duration = ms(args[1]! as ms.StringValue);
   const channelId = entityId(args[2]!);
@@ -57,30 +64,30 @@ export function selectWinners<T extends { authorId: string; score: number }>(can
   return winners;
 }
 
-export function createTop(): { command: PrefixCommand; onInteraction(interaction: Interaction): Promise<boolean>; close(): Promise<void> } {
+export function createTop(): { command: InvocationCommand; onInteraction(interaction: Interaction): Promise<boolean>; close(): Promise<void> } {
   const scans = new Map<string, { userId: string; controller: AbortController }>();
   let closing = false;
   return {
     command: {
-      name: 'top', category: 'MANAGEMENT', guildOnly: true, permissions: [PermissionFlagsBits.ManageChannels], usage: ['top <1–10 posts> <10s–14d> <channel> <reaction>'], description: 'Rank 1–10 unique authors by a reaction in a channel over 10s–14d; requires Manage Channels.',
-      async execute(message: Message, args) {
+      name: 'top', category: 'MANAGEMENT', guildOnly: true, permissions: [PermissionFlagsBits.ManageChannels], usage: ['/top winners:<1–10> duration:<10s–14d> channel:<channel> emoji:<reaction>'], description: 'Rank 1–10 unique authors by a reaction in a channel over 10s–14d; requires Manage Channels.',
+      async execute(invocation: CommandInvocation, args) {
         let progress: Message | undefined;
         let scanId: string | undefined;
         try {
           if (closing) throw new Error('The bot is shutting down. Please try again after it restarts.');
-          if (!message.guild || !message.member || message.channel.isDMBased()) throw new Error('This command is only available in a server.');
+          if (!invocation.guild || !invocation.member || invocation.channel.isDMBased()) throw new Error('This command is only available in a server.');
           const options = parseTopArgs(args);
-          const channel = await message.guild.channels.fetch(options.channelId);
+          const channel = await invocation.guild.channels.fetch(options.channelId);
           if (!channel?.isTextBased()) throw new Error('Specify a text channel in this server.');
-          if (!message.member.permissionsIn(message.channel).has(PermissionFlagsBits.ManageChannels) || !message.member.permissionsIn(channel).has(PermissionFlagsBits.ManageChannels)) throw new Error('You need Manage Channels in this channel and the selected channel.');
-          await assertCanRead(channel, message.author.id);
+          if (!invocation.member.permissionsIn(invocation.channel).has(PermissionFlagsBits.ManageChannels) || !invocation.member.permissionsIn(channel).has(PermissionFlagsBits.ManageChannels)) throw new Error('You need Manage Channels in this channel and the selected channel.');
+          await assertCanRead(channel, invocation.author.id);
           if (closing) throw new Error('The bot is shutting down. Please try again after it restarts.');
-          const privateResults = channel.id !== message.channelId;
+          const privateResults = channel.id !== invocation.channelId;
           const controller = new AbortController();
-          scanId = message.id;
-          scans.set(scanId, { userId: message.author.id, controller });
+          scanId = invocation.id;
+          scans.set(scanId, { userId: invocation.author.id, controller });
           const control = new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId(`utilities:top:cancel:${scanId}`).setLabel('Cancel scan').setStyle(ButtonStyle.Secondary));
-          progress = await message.reply({ content: privateResults ? 'Scanning the selected channel… Results will be sent to your DMs.' : `Scanning <#${channel.id}> for ${args[3]} reactions…`, components: [control], allowedMentions: safeMentions });
+          progress = await invocation.reply({ content: privateResults ? 'Scanning the selected channel… Results will be sent to your DMs.' : `Scanning <#${channel.id}> for ${args[3]} reactions…`, components: [control], allowedMentions: safeMentions });
           const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(120_000)]);
           const result = await scanPages(async before => [...(await channel.messages.fetch({ limit: 100, ...(before ? { before } : {}) })).values()], Date.now() - options.duration, signal);
           const normalize = (value: string): string => value.replace(/\uFE0F/gu, '');
@@ -93,7 +100,7 @@ export function createTop(): { command: PrefixCommand; onInteraction(interaction
           const winners = allWinners.slice(0, 100);
           const summary = `Scanned ${result.messages.length} messages. ${winners.length ? `${winners.length} winning posts (one per author; equal scores tie).` : 'No matching posts found.'}${result.truncated ? '\nThe 50,000-message scan limit was reached; results cover only scanned messages. Use a shorter time period.' : ''}${allWinners.length > winners.length ? '\nThe first 100 tied posts are shown; use a shorter time period to narrow the result.' : ''}`;
           // Cross-channel readers need not share the requester's access to the source.
-          if (privateResults) await message.author.send({ content: summary, allowedMentions: safeMentions }).catch(() => { throw new Error('Could not deliver results in DM. Enable DMs and run top again.'); });
+          if (privateResults) await invocation.author.send({ content: summary, allowedMentions: safeMentions }).catch(() => { throw new Error('Could not deliver results in DM. Enable DMs and run top again.'); });
           else await progress.edit({ content: summary, components: [], allowedMentions: safeMentions });
           for (let offset = 0; offset < winners.length; offset += 5) {
             const embeds = winners.slice(offset, offset + 5).map(winner => {
@@ -104,15 +111,14 @@ export function createTop(): { command: PrefixCommand; onInteraction(interaction
               if (image) embed.setImage(image.url);
               return embed;
             });
-            if (privateResults) await message.author.send({ embeds, allowedMentions: safeMentions }).catch(() => { throw new Error('Could not deliver results in DM. Enable DMs and run top again.'); });
-            else if (message.channel.isSendable()) await message.channel.send({ embeds, allowedMentions: safeMentions });
+            if (privateResults) await invocation.author.send({ embeds, allowedMentions: safeMentions }).catch(() => { throw new Error('Could not deliver results in DM. Enable DMs and run top again.'); });
+            else if (invocation.channel.isSendable()) await invocation.channel.send({ embeds, allowedMentions: safeMentions });
           }
           if (privateResults) await progress.edit({ content: 'Scan complete. Results were sent to your DMs.', components: [], allowedMentions: safeMentions });
-          if (winners.length && message.deletable) await message.delete().catch(() => {});
         } catch (error) {
           const content = error instanceof Error && (error.name === 'AbortError' || error.name === 'TimeoutError') ? 'Scan cancelled or timed out. Use a shorter period and try again.' : error instanceof Error ? error.message : 'The scan failed. Please try again.';
           if (progress) await progress.edit({ content, components: [], allowedMentions: safeMentions });
-          else await utilityError(message, error);
+          else await utilityError(invocation, error);
         } finally { if (scanId) scans.delete(scanId); }
       },
     },

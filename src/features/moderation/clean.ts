@@ -1,13 +1,17 @@
-import { AttachmentBuilder, ChannelType, PermissionFlagsBits, type GuildChannel, type NonThreadGuildBasedChannel } from 'discord.js';
-import type { PrefixCommand } from '../../contracts/commands.js';
+import { AttachmentBuilder, ChannelType, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder, type GuildChannel, type NonThreadGuildBasedChannel } from 'discord.js';
+import type { InvocationCommand } from '../../contracts/commands.js';
 import { authorizeChannel, authorizeTarget } from './authorization.js';
-import { commandError, confirm, guildContext, snowflake } from './common.js';
-export function createCleanCommand(): PrefixCommand {
-  return {name:'clean',category:'management',guildOnly:true,permissions:[PermissionFlagsBits.ManageChannels,PermissionFlagsBits.ManageRoles],usage:['clean [channel|category|all]'],description:'Delete empty permission overwrites in this channel, a channel/category, or all channels: clean [channel|category|all].',
-    async execute(message,args) {
+import { commandError, confirm, guildContext, overwriteChannelTypes, snowflake } from './common.js';
+export const cleanData = new SlashCommandBuilder().setName('clean').setDescription('Delete empty permission overwrites in channels or categories.').setContexts(InteractionContextType.Guild)
+  .addChannelOption(option => option.setName('channel').addChannelTypes(...overwriteChannelTypes).setDescription('Channel or category to clean; defaults to this channel.'))
+  .addBooleanOption(option => option.setName('all').setDescription('Clean every channel in the server; requires Administrator.')).toJSON();
+
+export function createCleanCommand(): InvocationCommand {
+  return {name:'clean',category:'management',guildOnly:true,permissions:[PermissionFlagsBits.ManageChannels,PermissionFlagsBits.ManageRoles],usage:['/clean [channel] [all]'],description:'Delete empty permission overwrites in this channel, a channel/category, or all server channels.',
+    async execute(invocation,args) {
       try {
-        if (args.length > 1) throw new Error('Usage: clean [channel|category|all]');
-        const {actor,bot,channel} = await guildContext(message);
+        if (args.length > 1) throw new Error('Select either channel or all, then confirm the cleanup.');
+        const {actor,bot,channel} = await guildContext(invocation);
         let channels: GuildChannel[];
         if (args[0]?.toLowerCase() === 'all') {
           if (!actor.permissions.has(PermissionFlagsBits.Administrator)) throw new Error('Cleaning all channels requires Administrator.');
@@ -19,7 +23,7 @@ export function createCleanCommand(): PrefixCommand {
           if (target.type === ChannelType.GuildCategory) channels.push(...[...(await channel.guild.channels.fetch()).values()].filter((value): value is NonThreadGuildBasedChannel => value !== null && 'permissionOverwrites' in value && value.parentId === target.id));
         } else channels = [channel];
         for (const target of channels) authorizeChannel(actor,bot,target);
-        if (!await confirm(message,`clean empty permission overwrites in ${channels.length} channel(s)`)) return;
+        if (!await confirm(invocation,`clean empty permission overwrites in ${channels.length} channel(s)`)) return;
         const results: string[] = ['Channel ID\tName\tStatus\tDeleted\tError'];
         let cleaned = 0;
         let errors = 0;
@@ -45,8 +49,8 @@ export function createCleanCommand(): PrefixCommand {
             results.push(`${target.id}\t${target.name}\tError\t${deleted}\t${error instanceof Error ? error.message : 'Unknown error'}`);
           }
         }
-        await message.reply({content:`Channels found: ${channels.length}; cleaned: ${cleaned}; errors: ${errors}.`,files:[new AttachmentBuilder(Buffer.from(results.join('\n')),{name:`clean-${message.id}.txt`})]});
-      } catch(error) { await commandError(message,error); }
+        await invocation.reply({content:`Channels found: ${channels.length}; cleaned: ${cleaned}; errors: ${errors}.`,files:[new AttachmentBuilder(Buffer.from(results.join('\n')),{name:`clean-${invocation.id}.txt`})]});
+      } catch(error) { await commandError(invocation,error); }
     },
   };
 }

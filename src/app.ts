@@ -1,8 +1,8 @@
 import { once } from 'node:events';
 import { Client, Events, GatewayIntentBits, MessageFlags, Partials, Team, TeamMemberMembershipState } from 'discord.js';
 import type { Config } from './config.js';
-import { assertSchemaReady, createPool, loadPrefixes, query } from './db/index.js';
-import { dispatchContext, dispatchInteraction, dispatchMessage } from './discord/dispatch.js';
+import { assertSchemaReady, createPool, query } from './db/index.js';
+import { dispatchContext, dispatchInteraction } from './discord/dispatch.js';
 import { EventIntake } from './discord/intake.js';
 import { startHealthServer } from './health.js';
 import { configureLogSink, logger } from './logger.js';
@@ -26,21 +26,17 @@ export async function startApp(config: Config, dependencies: { client?: Client; 
   });
   client.on(Events.Error, error => logger.error('Discord client error', error));
   const startedAt = Date.now();
-  const prefixes = new Map<string, string>();
   const ownerIds = new Set<string>();
   for (const id of (process.env.BOT_OWNER_IDS || '').split(',').filter(Boolean)) {
     if (!/^\d{17,20}$/u.test(id)) throw new Error('BOT_OWNER_IDS must contain decimal Discord user IDs');
     ownerIds.add(id);
   }
-  const services: RuntimeServices = { client, pool, prefixes, ownerIds, logger, startedAt, env: process.env };
+  const services: RuntimeServices = { client, pool, ownerIds, logger, startedAt, env: process.env };
   const registry = createRegistry(services);
   let reconcileRequested = 0;
   let reconcileCompleted = 0;
   services.reload = async () => {
-    const nextPrefixes = await loadPrefixes(pool);
     await Promise.all(registry.features.map(feature => feature.hydrate?.()));
-    prefixes.clear();
-    for (const [guildId, prefix] of nextPrefixes) prefixes.set(guildId, prefix);
     reconcileRequested++;
   };
   let lastDropWarning = 0;
@@ -94,7 +90,6 @@ export async function startApp(config: Config, dependencies: { client?: Client; 
   try {
     // Migrations run separately; missing schema prevents gateway login.
     await assertSchemaReady(pool);
-    for (const [guildId, prefix] of await loadPrefixes(pool)) prefixes.set(guildId, prefix);
     await Promise.all(registry.features.map(feature => feature.hydrate?.()));
     health = await startHealthServer(config.healthPort, async () => {
       if (!accepting || !client.isReady()) return false;
@@ -104,6 +99,8 @@ export async function startApp(config: Config, dependencies: { client?: Client; 
     client.on(Events.InteractionCreate, interaction => {
       if (!accepting) return;
       const command = interaction.isChatInputCommand() || interaction.isContextMenuCommand();
+      // These confirmations acknowledge through their command's scoped collector.
+      if (!command && interaction.isButton() && /^(moderation|automation|deploy):/u.test(interaction.customId)) return;
       const admitted = intake.enqueue(command ? `interaction:${interaction.user.id}` : `component:${interaction.id}`, async () => {
         if (interaction.isChatInputCommand()) await dispatchInteraction(interaction, registry.slash);
         else if (interaction.isContextMenuCommand()) await dispatchContext(interaction, registry.context);
@@ -118,7 +115,7 @@ export async function startApp(config: Config, dependencies: { client?: Client; 
             }
           }
         }
-      }, command);
+      }, true);
       if (!admitted && interaction.isRepliable() && !interaction.replied && !interaction.deferred) {
         dropped('interaction');
         void interaction.reply({ content: 'The bot is busy. Please retry shortly.', flags: MessageFlags.Ephemeral }).catch(() => {});
@@ -132,8 +129,6 @@ export async function startApp(config: Config, dependencies: { client?: Client; 
           if (!accepting) return;
           if (result && result !== 'continue') return;
         }
-        const prefix = (message.guildId && prefixes.get(message.guildId)) || '!kifo ';
-        await dispatchMessage(message, prefix, registry.prefix, ownerIds, registry.slash);
       })) dropped('message');
     });
     client.on(Events.MessageReactionAdd, (reaction, user) => {

@@ -1,4 +1,5 @@
-import { ChannelType, EmbedBuilder, PermissionFlagsBits, type Guild, type GuildBasedChannel, type GuildMember, type Message, type Role } from 'discord.js';
+import { ChannelType, EmbedBuilder, PermissionFlagsBits, type Guild, type GuildBasedChannel, type GuildMember, type Role } from 'discord.js';
+import type { CommandInvocation } from '../../contracts/invocation.js';
 import { calculateHowgay, calculateIq, calculatePp } from '../entertainment/calculations.js';
 import { assertCanRead, color, entityId, safeMentions, textFile } from './shared.js';
 
@@ -109,14 +110,14 @@ export function parseListTarget(args: readonly string[], authorId: string, curre
   throw new Error('Unknown target. Use a member mention/ID, role mention/ID, me, or channel + roles.');
 }
 
-export async function runStatistics(message: Message, args: readonly string[], isList: boolean): Promise<void> {
-  const guild = message.guild;
-  if (!guild || !message.member) throw new Error('This command is only available in a server.');
-  if (!isList && args.length > 1) throw new Error('Use list for multiple roles or a channel role filter.');
+export async function runStatistics(invocation: CommandInvocation, args: readonly string[], isList: boolean): Promise<void> {
+  const guild = invocation.guild;
+  if (!guild || !invocation.member) throw new Error('This command is only available in a server.');
+  if (!isList && args.length > 1) throw new Error('Choose either a member or a role for /stats.');
   await guild.roles.fetch();
-  const target = parseListTarget(args, message.author.id, message.channelId, new Set(guild.roles.cache.keys()), new Set(guild.channels.cache.keys()));
+  const target = parseListTarget(args, invocation.author.id, invocation.channelId, new Set(guild.roles.cache.keys()), new Set(guild.channels.cache.keys()));
   if (target.kind === 'unsupported') throw new Error('Channel and message statistics were not implemented in the original bot. Use stats with a member, role, or no target.');
-  if (isList && !message.channel.isDMBased() && !message.channel.permissionsFor(guild.members.me ?? await guild.members.fetchMe())?.has(PermissionFlagsBits.AttachFiles)) throw new Error('The bot needs Attach Files in this channel.');
+  if (isList && !invocation.channel.isDMBased() && !invocation.channel.permissionsFor(guild.members.me ?? await guild.members.fetchMe())?.has(PermissionFlagsBits.AttachFiles)) throw new Error('The bot needs Attach Files in this channel.');
   let embed: EmbedBuilder;
   let content = '';
   if (target.kind === 'user') {
@@ -130,8 +131,8 @@ export async function runStatistics(message: Message, args: readonly string[], i
     let members = [...collection.values()];
     if (target.kind === 'roles') {
       const channel = target.channelId ? guild.channels.cache.get(target.channelId) : undefined;
-      if (target.channelId && (!channel || !channel.permissionsFor(message.member)?.has(PermissionFlagsBits.ViewChannel) || !channel.permissionsFor(guild.members.me ?? await guild.members.fetchMe())?.has(PermissionFlagsBits.ViewChannel))) throw new Error('Both you and the bot must be able to view the selected channel.');
-      if (channel?.isTextBased()) await assertCanRead(channel, message.author.id);
+      if (target.channelId && (!channel || !channel.permissionsFor(invocation.member)?.has(PermissionFlagsBits.ViewChannel) || !channel.permissionsFor(guild.members.me ?? await guild.members.fetchMe())?.has(PermissionFlagsBits.ViewChannel))) throw new Error('Both you and the bot must be able to view the selected channel.');
+      if (channel?.isTextBased()) await assertCanRead(channel, invocation.author.id);
       members = filterMembers(members, target.ids, channel);
       if (target.ids.length === 1 && !channel) embed = await roleStats(guild.roles.cache.get(target.ids[0]!)!, members.length);
       else embed = new EmbedBuilder().setColor(color).setTitle(`Multiple roles${channel ? ` in ${channel.name}` : ''} list:`.slice(0, 256))
@@ -142,8 +143,8 @@ export async function runStatistics(message: Message, args: readonly string[], i
         );
     } else embed = await serverStats(guild, members);
     const largePermission = target.kind === 'roles' && target.ids.length === 1 && !target.channelId ? PermissionFlagsBits.ManageRoles : PermissionFlagsBits.ManageGuild;
-    if (isList && members.length > 1000 && !message.member.permissions.has(largePermission)) throw new Error(`Listing more than 1000 members requires ${largePermission === PermissionFlagsBits.ManageRoles ? 'Manage Roles' : 'Manage Server'}.`);
+    if (isList && members.length > 1000 && !invocation.member.permissions.has(largePermission)) throw new Error(`Listing more than 1000 members requires ${largePermission === PermissionFlagsBits.ManageRoles ? 'Manage Roles' : 'Manage Server'}.`);
     content = memberTsv(members);
   }
-  await message.reply({ embeds: [embed], ...(isList ? { files: [textFile(content)] } : {}), allowedMentions: safeMentions });
+  await invocation.reply({ embeds: [embed], ...(isList ? { files: [textFile(content)] } : {}), allowedMentions: safeMentions });
 }

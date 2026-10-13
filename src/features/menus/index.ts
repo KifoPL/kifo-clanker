@@ -1,6 +1,7 @@
+import { invocationCommand } from '../../discord/invocation.js';
 import type { FeatureDefinition } from '../../contracts/features.js';
 import { PermanentJobError } from '../../scheduler/index.js';
-import { menuCommand } from './menu.js';
+import { menuCommand, menuData } from './menu.js';
 import { isMenuEmoji, MenuService } from './service.js';
 
 function payload(value: unknown): { messageId: string; userId?: string } {
@@ -10,11 +11,19 @@ function payload(value: unknown): { messageId: string; userId?: string } {
 }
 
 export const menusFeature: FeatureDefinition = {
-  name: 'menus', commandData: [],
+  name: 'menus', commandData: [menuData],
   create(services) {
     const menus = new MenuService(services);
     return {
-      prefixCommands: [menuCommand(services, menus)],
+      slashCommands: [invocationCommand(menuData,menuCommand(services, menus),interaction => {
+        const action = interaction.options.getSubcommand();
+        if (action === 'help') return [];
+        if (action === 'list') return ['list'];
+        if (action === 'revert') return ['revert',interaction.options.getString('message',true)];
+        const duration = interaction.options.getString('duration');
+        if (action === 'role') return ['role',interaction.options.getRole('role',true).id,...(duration ? [duration] : [])];
+        return ['perm',interaction.options.getString('permission',true),interaction.options.getChannel('channel',true).id,...(duration ? [duration] : [])];
+      },services)],
       hydrate: () => menus.hydrate(),
       onReady: () => menus.ready(),
       reconcile: () => menus.enqueueReconciliation(),
