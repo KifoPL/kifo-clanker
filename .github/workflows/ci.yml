@@ -1,0 +1,45 @@
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18.6
+        env:
+          POSTGRES_USER: clanker
+          POSTGRES_PASSWORD: integration-only
+          POSTGRES_DB: clanker_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U clanker -d clanker_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://clanker:integration-only@localhost:5432/clanker_test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24.21.0'
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run test:integration
+      - run: npm run build
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - name: Install Aspire CLI
+        run: |
+          dotnet tool install --tool-path "$RUNNER_TEMP/aspire" Aspire.Cli --version 13.6.1
+          echo "$RUNNER_TEMP/aspire" >> "$GITHUB_PATH"
+      - run: dotnet build infra/AppHost/AppHost.csproj --configuration Release
+      - run: docker build --tag kifo-clanker:ci .

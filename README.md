@@ -1,4 +1,6 @@
-![Kifo Clanker™ - When general-purpose bots 
+> **TypeScript migration in progress.** The root package runs the new development runtime with `/ping`, `/reverse`, `/epoch`, and prefix help. The original MySQL bot is preserved under `legacy/`. See [migration status and setup](docs/MIGRATION.md) before running either bot. The new runtime is not ready for production cutover.
+
+![Kifo Clanker™ - When general-purpose bots
 fail, run !kifo](https://i.imgur.com/hWkoxmm.jpg)
 
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/kifopl/kifo-clanker?label=latest)
