@@ -116,10 +116,11 @@ Aspire requires .NET SDK 10.0.401, Aspire CLI 13.6.1 on PATH, and Docker. The fi
 
 ```sh
 dotnet user-secrets set "Parameters:discord-token" "YOUR_TEST_BOT_TOKEN" --id kifo-clanker-apphost
-dotnet user-secrets set "Parameters:postgres-password" "YOUR_LOCAL_DATABASE_PASSWORD" --id kifo-clanker-apphost
 ```
 
-Keep the PostgreSQL password stable across restarts and do not commit secrets. Aspire forwards optional `BOT_OWNER_IDS`, `SCHEDULER_PAUSED`, `DISCORD_TEST_GUILD_ID`, `DISCORD_DEPLOY_CHANNEL_ID`, `DISCORD_LOG_CHANNEL_ID`, `GITHUB_REPOSITORY`, and `JOKE_API_URL` from AppHost configuration. It forwards `LANGUAGE_DETECT_KEY`, `GITHUB_TOKEN`, and legacy `GITHUB_KEY` as secret parameters when configured. Leaving optional settings unset uses the bot's defaults. The AppHost does not read the bot's `.env`; set shell environment variables or values under the same keys in the `kifo-clanker-apphost` user-secrets store.
+The Discord token is read from AppHost user-secrets under `Parameters:discord-token`. Aspire automatically generates a PostgreSQL password and persists it in the same user-secrets store as `Parameters:postgres-password`, so it remains stable across restarts with the existing data volume. An existing configured password is respected; keep it if the volume was initialized with it. Do not commit secrets.
+
+Aspire forwards optional `BOT_OWNER_IDS`, `SCHEDULER_PAUSED`, `DISCORD_TEST_GUILD_ID`, `DISCORD_DEPLOY_CHANNEL_ID`, `DISCORD_LOG_CHANNEL_ID`, `GITHUB_REPOSITORY`, and `JOKE_API_URL` from AppHost configuration. It forwards `LANGUAGE_DETECT_KEY`, `GITHUB_TOKEN`, and legacy `GITHUB_KEY` as secret parameters when configured. Leaving optional settings unset uses the bot's defaults. The AppHost does not read the bot's `.env`; set shell environment variables or values under the same keys in the `kifo-clanker-apphost` user-secrets store.
 
 The file-based .NET/Aspire SDK and package pins require coordinated manual updates in `global.json`, `infra/AppHost/apphost.cs`, and CI. Dependabot continues checking npm, Docker, and GitHub Actions; its NuGet discovery does not support inline `.cs` package directives.
 

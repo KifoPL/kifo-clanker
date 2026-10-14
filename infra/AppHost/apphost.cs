@@ -6,8 +6,7 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
 var discordToken = builder.AddParameter("discord-token", secret: true);
-var postgresPassword = builder.AddParameter("postgres-password", secret: true);
-var postgres = builder.AddPostgres("postgres", password: postgresPassword)
+var postgres = builder.AddPostgres("postgres")
     .WithImageTag("18.6")
     .WithDataVolume("kifo-clanker-postgres-data");
 var database = postgres.AddDatabase("clanker");
