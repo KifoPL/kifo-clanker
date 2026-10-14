@@ -1,4 +1,5 @@
 import type { Client, Guild, Interaction, Message, MessageReaction, PartialMessage, PartialMessageReaction, PartialUser, RESTPostAPIApplicationCommandsJSONBody, User } from 'discord.js';
+import type { RuntimeEnvironment } from '../config.js';
 import type { Pool } from 'pg';
 import type { ContextCommand, SlashCommand } from './commands.js';
 import type { ScheduledHandler } from '../scheduler/index.js';
@@ -11,7 +12,7 @@ export interface RuntimeServices {
   applicationCommands?: readonly RESTPostAPIApplicationCommandsJSONBody[];
   logger: typeof logger;
   startedAt: number;
-  env: Readonly<NodeJS.ProcessEnv>;
+  env: Readonly<Partial<RuntimeEnvironment>>;
   reload?(): Promise<void>;
 }
 

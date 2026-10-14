@@ -5,6 +5,7 @@ import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { monitorEventLoopDelay } from 'node:perf_hooks';
+import type { TelemetryConfig } from './config.js';
 import type { Pool } from 'pg';
 
 const tracer = trace.getTracer('kifo-clanker');
@@ -49,18 +50,20 @@ export async function withSpan<T>(name: string, attributes: Attributes, work: ()
   });
 }
 
-export function startTelemetry(env: NodeJS.ProcessEnv): () => Promise<void> {
-  if (!env.OTEL_EXPORTER_OTLP_ENDPOINT && !env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT) return async () => {};
-  const metricReader = new PeriodicExportingMetricReader({ exporter: new OTLPMetricExporter(), exportIntervalMillis: 10_000 });
+export function startTelemetry(config: TelemetryConfig): () => Promise<void> {
+  if (!config.traces && !config.metrics) return async () => {};
+  const metricReader = config.metrics ? new PeriodicExportingMetricReader({ exporter: new OTLPMetricExporter(config.metrics), exportIntervalMillis: 10_000 }) : undefined;
   const sdk = new NodeSDK({
-    resource: resourceFromAttributes({ 'service.name': env.OTEL_SERVICE_NAME || 'kifo-clanker' }),
-    traceExporter: new OTLPTraceExporter(),
-    metricReader,
+    resource: resourceFromAttributes({ 'service.name': config.serviceName }),
+    autoDetectResources: false,
+    logRecordProcessors: [],
+    ...(config.traces ? { traceExporter: new OTLPTraceExporter(config.traces) } : { spanProcessors: [] }),
+    metricReaders: metricReader ? [metricReader] : [],
   });
   sdk.start();
   // Meters obtained before SDK registration are permanent no-ops; create instruments after startup.
   instruments = undefined;
-  return async () => { try { await metricReader.forceFlush(); } finally { await sdk.shutdown(); } };
+  return async () => { try { await metricReader?.forceFlush(); } finally { await sdk.shutdown(); } };
 }
 
 export function observeRuntime(pool: Pool): () => void {

@@ -1,3 +1,4 @@
+import { BOT_COLOR } from '../../constants.js';
 import { randomUUID } from 'node:crypto';
 import { EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import type { SlashCommand } from '../../contracts/commands.js';
@@ -25,7 +26,7 @@ export function createPoll(services: RuntimeServices): SlashCommand {
       await query(connection, 'INSERT INTO polls(id,guild_id,channel_id,message_id,user_id,question,options,end_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8)', [id, interaction.guildId, interaction.channelId, message.id, interaction.user.id, question, JSON.stringify(options), end]);
       if (end) await enqueueJob(connection, 'poll.complete', { id }, end, `poll:${id}`);
     });
-    const embed = new EmbedBuilder().setColor(0xa039a0).setTitle('React to the option you choose!').setDescription(question)
+    const embed = new EmbedBuilder().setColor(BOT_COLOR).setTitle('React to the option you choose!').setDescription(question)
       .addFields(options.map((option, index) => ({ name: `Option ${pollReactions[index]}:`, value: option })));
     await interaction.editReply({ content: end ? `Poll ends at <t:${Math.floor(end.getTime() / 1000)}> (<t:${Math.floor(end.getTime() / 1000)}:R>).` : '', embeds: [embed] });
     try { for (const reaction of pollReactions.slice(0, options.length)) await message.react(reaction); }

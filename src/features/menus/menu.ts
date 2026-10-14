@@ -1,3 +1,4 @@
+import { BOT_COLOR } from '../../constants.js';
 import { EmbedBuilder, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import ms from 'ms';
 import type { InvocationCommand } from '../../contracts/commands.js';
@@ -46,7 +47,7 @@ export function menuCommand(services: RuntimeServices, menus: MenuService): Invo
       const options = args;
       try {
         if (!args.length) {
-          await invocation.reply({ embeds: [new EmbedBuilder().setColor(0xa039a0)
+          await invocation.reply({ embeds: [new EmbedBuilder().setColor(BOT_COLOR)
             .setTitle('Reaction menus').setDescription(`${usage}\n\nPermission aliases:\n${permissionAliases()}`)] });
           return;
         }
@@ -61,7 +62,7 @@ export function menuCommand(services: RuntimeServices, menus: MenuService): Invo
             wholeGuild ? [guild.id] : [guild.id, invocation.channelId]);
           const lines = result.rows.map(menu => `[${menu.kind === 'role' ? `<@&${menu.target_id}>` : menu.permission} menu](https://discord.com/channels/${menu.guild_id}/${menu.channel_id}/${menu.message_id})`
             + `${menu.expires_at ? ` — reverts <t:${Math.floor(menu.expires_at.getTime() / 1000)}:R>` : ' — permanent'}`);
-          await invocation.reply({ embeds: [new EmbedBuilder().setColor(0xa039a0).setTitle('Active menus (newest 10)')
+          await invocation.reply({ embeds: [new EmbedBuilder().setColor(BOT_COLOR).setTitle('Active menus (newest 10)')
             .setDescription(lines.join('\n') || 'No menus set.')] });
           return;
         }
@@ -144,7 +145,7 @@ export function menuCommand(services: RuntimeServices, menus: MenuService): Invo
         }
         const emoji = menuEmoji(kind);
         if (!invocation.channel.isSendable()) throw new Error('This channel cannot host a reaction menu.');
-        const sent = await invocation.channel.send({ embeds: [new EmbedBuilder().setColor(0xa039a0)
+        const sent = await invocation.channel.send({ embeds: [new EmbedBuilder().setColor(BOT_COLOR)
           .setTitle(kind === 'role' ? 'Role menu' : 'Permission menu')
           .setDescription(`React with ${emoji} to receive ${kind === 'role' ? `<@&${targetId}>` : `\`${permission}\` in <#${targetId}>`}. Remove your reaction to restore your previous state.`
             + (expiresAt ? `\nReverts <t:${Math.floor(expiresAt.getTime() / 1000)}:R>.` : ''))] });

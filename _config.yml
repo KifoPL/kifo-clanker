@@ -1,1 +1,47 @@
+title: Kifo Clanker™
+description: Unorthodox Discord commands. Less busywork, more community.
 theme: jekyll-theme-architect
+url: https://kifopl.github.io
+baseurl: /kifo-clanker
+repository: KifoPL/kifo-clanker
+show_downloads: false
+github:
+  is_project_page: true
+  repository_name: kifo-clanker
+  repository_url: https://github.com/KifoPL/kifo-clanker
+  owner_name: KifoPL
+  owner_url: https://github.com/KifoPL
+plugins:
+  - jekyll-relative-links
+  - jekyll-seo-tag
+relative_links:
+  enabled: true
+markdown: kramdown
+kramdown:
+  input: GFM
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+exclude:
+  - README.md
+  - AGENTS.md
+  - node_modules
+  - src
+  - tests
+  - scripts
+  - migrations
+  - infra
+  - dist
+  - package.json
+  - package-lock.json
+  - tsconfig.json
+  - tsconfig.build.json
+  - biome.json
+  - Dockerfile
+  - compose.yaml
+  - global.json
+  - LICENSE
+  - .env
+  - .env.example

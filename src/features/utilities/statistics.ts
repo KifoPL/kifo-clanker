@@ -1,7 +1,8 @@
+import { BOT_COLOR, BOT_NAME } from '../../constants.js';
 import { ChannelType, EmbedBuilder, PermissionFlagsBits, type Guild, type GuildBasedChannel, type GuildMember, type Role } from 'discord.js';
 import type { CommandInvocation } from '../../contracts/invocation.js';
 import { calculateHowgay, calculateIq, calculatePp } from '../entertainment/calculations.js';
-import { assertCanRead, color, entityId, safeMentions, textFile } from './shared.js';
+import { assertCanRead, entityId, safeMentions, textFile } from './shared.js';
 
 const stamp = (date: Date | null): string => date ? `<t:${Math.floor(date.getTime() / 1000)}:F> (<t:${Math.floor(date.getTime() / 1000)}:R>)` : 'Unknown';
 const cell = (value: string): string => value.replace(/[\t\r\n]/gu, ' ');
@@ -22,7 +23,7 @@ export function userStats(member: GuildMember): EmbedBuilder {
   const pp = calculatePp(user.id, member.guild.id);
   const gay = calculateHowgay(user.id, member.guild.id);
   const joined = member.joinedTimestamp;
-  const embed = new EmbedBuilder().setColor(color).setTitle(`${member.displayName} stats:`.slice(0, 256))
+  const embed = new EmbedBuilder().setColor(BOT_COLOR).setTitle(`${member.displayName} stats:`.slice(0, 256))
     .setDescription(`${user.bot ? '**BOT** ' : ''}<@${user.id}> · ${user.tag}\nNickname: ${member.nickname ?? 'None'}\nID: ${user.id}`)
     .setImage(user.displayAvatarURL({ size: 512 }))
     .addFields(
@@ -45,7 +46,7 @@ async function serverStats(guild: Guild, members: readonly GuildMember[]): Promi
   const online = members.filter(member => !member.user.bot && member.presence && member.presence.status !== 'offline').length;
   const channels = [...guild.channels.cache.values()];
   const count = (type: ChannelType): number => channels.filter(channel => channel.type === type).length;
-  const embed = new EmbedBuilder().setColor(color).setTitle(`${guild.name} stats:`.slice(0, 256))
+  const embed = new EmbedBuilder().setColor(BOT_COLOR).setTitle(`${guild.name} stats:`.slice(0, 256))
     .setDescription(guild.description ?? 'No server description set.')
     .addFields(
       field('Members', `Humans: ${members.length - bots}, bots: ${bots}, fetched: ${members.length}, total: ${guild.memberCount}.\nVisible online humans: ${online} (presence data may be unavailable).`),
@@ -55,7 +56,7 @@ async function serverStats(guild: Guild, members: readonly GuildMember[]): Promi
       field('Owner', `${owner.displayName} (${owner.user.tag}) · ${owner.id}`),
       field('Channels', `${count(ChannelType.GuildVoice)} voice, ${count(ChannelType.GuildStageVoice)} stage, ${count(ChannelType.GuildText)} text, ${count(ChannelType.GuildCategory)} categories, ${count(ChannelType.GuildAnnouncement)} announcement, ${count(ChannelType.GuildForum)} forum; ${channels.length} total.`),
       field('Created', stamp(guild.createdAt)),
-    ).setFooter({ text: `Kifo Clanker · helping ${guild.client.guilds.cache.size} servers. Stats reflect fetched members and channels visible to the bot.` });
+    ).setFooter({ text: `${BOT_NAME} · helping ${guild.client.guilds.cache.size} servers. Stats reflect fetched members and channels visible to the bot.` });
   const icon = guild.iconURL({ size: 128 });
   const banner = guild.bannerURL({ size: 512 });
   if (icon) embed.setThumbnail(icon);
@@ -72,7 +73,7 @@ async function roleStats(role: Role, count: number): Promise<EmbedBuilder> {
       if (response.ok && typeof data === 'object' && data !== null && 'name' in data && typeof data.name === 'object' && data.name !== null && 'value' in data.name && typeof data.name.value === 'string') colorName = ` (${data.name.value})`;
     } catch { /* The optional color name must not block role statistics. */ }
   }
-  return new EmbedBuilder().setColor(color).setTitle(`${role.name} stats:`.slice(0, 256)).setDescription(`<@&${role.id}> · ID ${role.id}`)
+  return new EmbedBuilder().setColor(BOT_COLOR).setTitle(`${role.name} stats:`.slice(0, 256)).setDescription(`<@&${role.id}> · ID ${role.id}`)
     .addFields(
       field('Color', `${role.hexColor}${colorName}`, true),
       field('Position', `${role.guild.roles.highest.position - role.position + 1} of ${role.guild.roles.cache.size}`, true),
@@ -135,7 +136,7 @@ export async function runStatistics(invocation: CommandInvocation, args: readonl
       if (channel?.isTextBased()) await assertCanRead(channel, invocation.author.id);
       members = filterMembers(members, target.ids, channel);
       if (target.ids.length === 1 && !channel) embed = await roleStats(guild.roles.cache.get(target.ids[0]!)!, members.length);
-      else embed = new EmbedBuilder().setColor(color).setTitle(`Multiple roles${channel ? ` in ${channel.name}` : ''} list:`.slice(0, 256))
+      else embed = new EmbedBuilder().setColor(BOT_COLOR).setTitle(`Multiple roles${channel ? ` in ${channel.name}` : ''} list:`.slice(0, 256))
         .setDescription('The attachment lists members with every specified role.').addFields(
           field('Role filter', target.ids.map(id => `<@&${id}>`).join('\n')),
           field('Channel filter', channel ? `<#${channel.id}>` : 'Entire server'),

@@ -1,3 +1,4 @@
+import { readDatabaseConfig } from '../src/config.js';
 import { readFile } from 'node:fs/promises';
 import { createPool, DatabaseError } from '../src/db/index.js';
 import { prepareImport } from '../src/db/import-plan.js';
@@ -17,8 +18,7 @@ async function main(): Promise<void> {
     if (!report.valid) process.exitCode = 1;
     return;
   }
-  const databaseUrl = process.env['DATABASE_URL'];
-  if (!databaseUrl) throw new Error('DATABASE_URL is required for --apply.');
+  const { databaseUrl } = readDatabaseConfig(process.env);
   const pool = createPool(databaseUrl, 1);
   pool.on('error', (error: unknown) => { console.error(new DatabaseError(error).message); process.exitCode = 1; });
   try {

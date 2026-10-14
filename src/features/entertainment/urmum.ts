@@ -1,3 +1,4 @@
+import { BOT_COLOR } from '../../constants.js';
 import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import type { SlashCommand } from '../../contracts/commands.js';
 import type { RuntimeServices } from '../../contracts/features.js';
@@ -16,7 +17,7 @@ export function createUrmum(services: RuntimeServices): SlashCommand {
     await interaction.deferReply();
     try {
       const joke = await fetchJoke(services.env.JOKE_API_URL ?? 'https://www.yomomma.info/');
-      await interaction.editReply({ embeds: [new EmbedBuilder().setColor(0xa039a0).setTitle('Ur mum').setDescription(`${joke}\n\n*Best regards from <@${interaction.user.id}>.*`)] });
+      await interaction.editReply({ embeds: [new EmbedBuilder().setColor(BOT_COLOR).setTitle('Ur mum').setDescription(`${joke}\n\n*Best regards from <@${interaction.user.id}>.*`)] });
     } catch { await interaction.editReply({ content: 'The joke provider is unavailable. Please try again later.' }); }
   } };
 }

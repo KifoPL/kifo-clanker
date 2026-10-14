@@ -1,3 +1,4 @@
+import { BOT_COLOR } from '../../constants.js';
 import { AttachmentBuilder, EmbedBuilder, resolvePartialEmoji, type Message } from 'discord.js';
 import type { Pool, PoolClient } from 'pg';
 import type { RuntimeServices } from '../../contracts/features.js';
@@ -40,7 +41,7 @@ export function createScheduledHandlers(services: RuntimeServices): Record<strin
         if (!Array.isArray(winners) || !winners.every(value => typeof value === 'string' && /^\d+$/u.test(value))) throw new Error('Invalid stored giveaway winners');
         signal.throwIfAborted();
         const text = winners.length ? winners.map(id => `- <@${id}>`).join('\n') : 'No eligible participants entered.';
-        const announcement = await message.reply({ content: `<@${row.user_id}> Giveaway ended.`, embeds: [new EmbedBuilder().setColor(0xa039a0).setTitle('Giveaway results:').setDescription(text.length > 3500 ? 'Winners are listed in the attached file.' : text)], files: text.length > 3500 ? [new AttachmentBuilder(Buffer.from(text), { name: 'giveaway-winners.txt' })] : [], nonce: announcementNonce(id), enforceNonce: true, allowedMentions: { parse: [], users: [row.user_id], repliedUser: false } });
+        const announcement = await message.reply({ content: `<@${row.user_id}> Giveaway ended.`, embeds: [new EmbedBuilder().setColor(BOT_COLOR).setTitle('Giveaway results:').setDescription(text.length > 3500 ? 'Winners are listed in the attached file.' : text)], files: text.length > 3500 ? [new AttachmentBuilder(Buffer.from(text), { name: 'giveaway-winners.txt' })] : [], nonce: announcementNonce(id), enforceNonce: true, allowedMentions: { parse: [], users: [row.user_id], repliedUser: false } });
         await finish(services, 'giveaways', id, announcement.id);
       });
     },
@@ -66,7 +67,7 @@ export function createScheduledHandlers(services: RuntimeServices): Record<strin
         }
         if (!Array.isArray(outcome)) throw new Error('Invalid stored poll outcome');
         signal.throwIfAborted();
-        const announcement = await message.reply({ content: `<@${row.user_id}> Poll ended.`, embeds: [new EmbedBuilder().setColor(0xa039a0).setTitle('Poll results').setDescription((row.question ?? message.embeds[0]?.description ?? 'Poll').slice(0, 1800)).addFields(outcome.map((option, index) => ({ name: `${index + 1}. ${option.label}`.slice(0, 256), value: `${option.votes} votes` })))], nonce: announcementNonce(id), enforceNonce: true, allowedMentions: { parse: [], users: [row.user_id], repliedUser: false } });
+        const announcement = await message.reply({ content: `<@${row.user_id}> Poll ended.`, embeds: [new EmbedBuilder().setColor(BOT_COLOR).setTitle('Poll results').setDescription((row.question ?? message.embeds[0]?.description ?? 'Poll').slice(0, 1800)).addFields(outcome.map((option, index) => ({ name: `${index + 1}. ${option.label}`.slice(0, 256), value: `${option.votes} votes` })))], nonce: announcementNonce(id), enforceNonce: true, allowedMentions: { parse: [], users: [row.user_id], repliedUser: false } });
         await finish(services, 'polls', id, announcement.id);
       });
     },
@@ -78,7 +79,7 @@ export function createScheduledHandlers(services: RuntimeServices): Record<strin
       await guarded(services, 'countdowns', id, async () => {
         const message = await fetchJobMessage(services, row.channel_id, row.message_id);
         signal.throwIfAborted();
-        const announcement = await message.reply({ content: `<@${row.user_id}> Countdown has ended!`, embeds: [new EmbedBuilder().setColor(0xa039a0).setTitle('Countdown has ended!').setDescription(row.message)], nonce: announcementNonce(id), enforceNonce: true, allowedMentions: { parse: [], users: [row.user_id], repliedUser: false } });
+        const announcement = await message.reply({ content: `<@${row.user_id}> Countdown has ended!`, embeds: [new EmbedBuilder().setColor(BOT_COLOR).setTitle('Countdown has ended!').setDescription(row.message)], nonce: announcementNonce(id), enforceNonce: true, allowedMentions: { parse: [], users: [row.user_id], repliedUser: false } });
         await finish(services, 'countdowns', id, announcement.id);
       });
     },

@@ -1,7 +1,8 @@
+import { BOT_COLOR } from '../../constants.js';
 import { EmbedBuilder, InteractionContextType, SlashCommandBuilder } from 'discord.js';
 import type { InvocationCommand } from '../../contracts/commands.js';
 import type { RuntimeServices } from '../../contracts/features.js';
-import { color, fetchVisibleMessage, safeMentions, utilityError } from './shared.js';
+import { fetchVisibleMessage, safeMentions, utilityError } from './shared.js';
 
 export const langData = new SlashCommandBuilder().setName('lang').setDescription('Detect a message’s language.').setContexts(InteractionContextType.Guild)
   .addStringOption(option => option.setName('message').setDescription('Discord message ID or link.').setRequired(true).setMaxLength(300)).toJSON();
@@ -33,7 +34,7 @@ export async function detectLanguage(text: string, key: string | undefined): Pro
   if (!response.ok) throw new Error(`Language detection failed (${response.status}). Please try again later.`);
   const detections = readDetections(await response.json());
   if (!detections.length) throw new Error('Could not detect a language.');
-  return new EmbedBuilder().setColor(color).setTitle('Detected language:')
+  return new EmbedBuilder().setColor(BOT_COLOR).setTitle('Detected language:')
     .addFields(detections.slice(0, 25).map(row => ({ name: languageName(row.language).slice(0, 256), value: `Confidence: ${row.confidence}\n${row.isReliable ? '✅ Pretty sure!' : '❌ Not so certain.'}` })))
     .setFooter({ text: 'Language names and native names use Unicode CLDR metadata. Detection powered by Detect Language.' });
 }

@@ -1,4 +1,4 @@
-CREATE TABLE menus (
+CREATE TABLE IF NOT EXISTS menus (
   message_id text PRIMARY KEY,
   guild_id text NOT NULL,
   channel_id text NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE menus (
   CHECK ((kind = 'role' AND permission IS NULL) OR (kind = 'permission' AND permission IS NOT NULL))
 );
 
-CREATE TABLE menu_participants (
+CREATE TABLE IF NOT EXISTS menu_participants (
   menu_id text NOT NULL REFERENCES menus(message_id) ON DELETE CASCADE,
   user_id text NOT NULL,
   target_key text NOT NULL UNIQUE,
@@ -23,4 +23,4 @@ CREATE TABLE menu_participants (
   status text NOT NULL DEFAULT 'capturing' CHECK (status IN ('capturing', 'granting', 'active', 'restoring')),
   PRIMARY KEY (menu_id, user_id)
 );
-CREATE INDEX menus_guild_idx ON menus(guild_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS menus_guild_idx ON menus(guild_id, created_at DESC);

@@ -1,3 +1,4 @@
+import { BOT_URLS } from '../../constants.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import type { SlashCommand } from '../../contracts/commands.js';
 export const guideChoices = [
@@ -10,7 +11,7 @@ export const guide: SlashCommand = {
     .addStringOption(option => option.setName('choice').setDescription('Select a topic to learn about.').addChoices(...guideChoices)).toJSON(),
   async execute(interaction) {
     const choice = guideChoices.find(choice => choice.value === interaction.options.getString('choice'));
-    const url = choice ? `https://kifopl.github.io/kifo-clanker/docs/guides/${choice.value}` : 'https://kifopl.github.io/kifo-clanker/docs/guideList';
+    const url = choice ? BOT_URLS.guide(choice.value) : BOT_URLS.guideList;
     await interaction.reply({ content: choice ? `Learn about ${choice.name}:` : 'Read the guide list:', components: [new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setLabel(choice?.name ?? 'Guide List').setStyle(ButtonStyle.Link).setURL(url))], flags: MessageFlags.Ephemeral });
   },
 };

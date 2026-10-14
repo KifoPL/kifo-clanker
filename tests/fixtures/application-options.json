@@ -1,0 +1,638 @@
+[
+  {
+    "name": "autothreading",
+    "options": [
+      {
+        "name": "on",
+        "type": "SUB_COMMAND",
+        "description": "Turn on auto-threading system.",
+        "options": [
+          {
+            "name": "title",
+            "description": "Choose the title for every thread (use /autothreading help for more info)",
+            "type": "STRING",
+            "required": true
+          },
+          {
+            "name": "archiving",
+            "description": "After what time of inactivity should threads be archived?",
+            "type": "STRING",
+            "required": true,
+            "choices": [
+              {
+                "name": "1 hour",
+                "value": "1h"
+              },
+              {
+                "name": "1 day",
+                "value": "1h"
+              },
+              {
+                "name": "3 days",
+                "value": "3d"
+              },
+              {
+                "name": "1 week",
+                "value": "1w"
+              }
+            ]
+          },
+          {
+            "name": "bots",
+            "description": "True if you want threads to be created on bot messages as well, false otherwise.",
+            "type": "BOOLEAN",
+            "required": true
+          },
+          {
+            "name": "slowmode",
+            "description": "What should be the default slow-mode for threads?",
+            "type": "STRING",
+            "required": false,
+            "choices": [
+              {
+                "name": "5s",
+                "value": "5s"
+              },
+              {
+                "name": "10s",
+                "value": "10s"
+              },
+              {
+                "name": "15s",
+                "value": "15s"
+              },
+              {
+                "name": "30s",
+                "value": "30s"
+              },
+              {
+                "name": "1m",
+                "value": "1m"
+              },
+              {
+                "name": "2m",
+                "value": "2m"
+              },
+              {
+                "name": "5m",
+                "value": "5m"
+              },
+              {
+                "name": "10m",
+                "value": "10m"
+              },
+              {
+                "name": "15m",
+                "value": "15m"
+              },
+              {
+                "name": "30m",
+                "value": "30m"
+              },
+              {
+                "name": "1h",
+                "value": "1h"
+              },
+              {
+                "name": "2h",
+                "value": "2h"
+              },
+              {
+                "name": "6h",
+                "value": "6h"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "off",
+        "description": "Turn off auto-threading system.",
+        "type": "SUB_COMMAND"
+      },
+      {
+        "name": "list",
+        "description": "List all channels with auto-threading system enabled.",
+        "type": "SUB_COMMAND"
+      },
+      {
+        "name": "help",
+        "description": "Send a link with very detailed information regarding auto-threading system.",
+        "type": "SUB_COMMAND"
+      }
+    ]
+  },
+  {
+    "name": "bookmark",
+    "options": [
+      {
+        "name": "message",
+        "type": "STRING",
+        "description": "ID or URL of the message.",
+        "required": true
+      },
+      {
+        "name": "pin",
+        "type": "BOOLEAN",
+        "description": "Whether the message should be pinned. False by default."
+      }
+    ]
+  },
+  {
+    "name": "countdown",
+    "options": [
+      {
+        "name": "epoch",
+        "type": "INTEGER",
+        "description": "The amount of seconds since 1970-01-01T00:00:00Z (use /epoch date_to_epoch to get the number)",
+        "required": true
+      },
+      {
+        "name": "message",
+        "type": "STRING",
+        "description": "The message to send when the countdown ends.",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "cringe",
+    "options": [
+      {
+        "name": "user",
+        "type": "USER",
+        "description": "direct your feelings towards the user."
+      }
+    ]
+  },
+  {
+    "name": "epoch",
+    "options": [
+      {
+        "name": "date_to_epoch",
+        "type": "SUB_COMMAND",
+        "description": "Convert from date to epoch number (in seconds).",
+        "options": [
+          {
+            "name": "input",
+            "type": "STRING",
+            "description": "Type either date like \"1970-01-01T00:00:00Z\", or time period \"1h\"",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "epoch_to_date",
+        "type": "SUB_COMMAND",
+        "description": "Convert from epoch number (in seconds) to date.",
+        "options": [
+          {
+            "name": "epoch",
+            "type": "INTEGER",
+            "required": true,
+            "description": "The number of seconds since 1970-01-01T00:00:00"
+          }
+        ]
+      },
+      {
+        "name": "help",
+        "type": "SUB_COMMAND",
+        "description": "Receive link to guide that helps you use this command."
+      }
+    ]
+  },
+  {
+    "name": "error",
+    "options": [
+      {
+        "name": "description",
+        "type": "STRING",
+        "description": "Provide a brief description of how and when this error occurred.",
+        "required": true
+      }
+    ]
+  },
+  {
+    "name": "guide",
+    "options": [
+      {
+        "name": "choice",
+        "type": "STRING",
+        "description": "Select a topic, which you want to learn about.",
+        "choices": [
+          {
+            "name": "Slash commands",
+            "value": "slash"
+          },
+          {
+            "name": "Context menus",
+            "value": "contextmenus"
+          },
+          {
+            "name": "Epoch converter",
+            "value": "epoch"
+          },
+          {
+            "name": "Using /ticket",
+            "value": "ticket"
+          },
+          {
+            "name": "Ticketing system",
+            "value": "ticketing"
+          },
+          {
+            "name": "Auto-threading system",
+            "value": "autothreading"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "howgay",
+    "options": [
+      {
+        "name": "user",
+        "type": "USER",
+        "description": "A subject of measurement."
+      }
+    ]
+  },
+  {
+    "name": "iq",
+    "options": [
+      {
+        "name": "user",
+        "type": "USER",
+        "description": "A subject of measurement."
+      }
+    ]
+  },
+  {
+    "name": "ping",
+    "options": [
+      {
+        "name": "reply",
+        "type": "STRING",
+        "description": "What do you want me to reply with?"
+      }
+    ]
+  },
+  {
+    "name": "poll",
+    "options": [
+      {
+        "name": "question",
+        "type": "STRING",
+        "description": "Ask the question or an opinion",
+        "required": true
+      },
+      {
+        "name": "timeout",
+        "type": "STRING",
+        "description": "When do you want to calculate results? \"0\", if never.",
+        "required": true
+      },
+      {
+        "name": "one",
+        "type": "STRING",
+        "description": "Option 1",
+        "required": true
+      },
+      {
+        "name": "two",
+        "type": "STRING",
+        "description": "Option 2",
+        "required": true
+      },
+      {
+        "name": "three",
+        "type": "STRING",
+        "description": "Option 3"
+      },
+      {
+        "name": "four",
+        "type": "STRING",
+        "description": "Option 4"
+      },
+      {
+        "name": "five",
+        "type": "STRING",
+        "description": "Option 5"
+      },
+      {
+        "name": "six",
+        "type": "STRING",
+        "description": "Option 6"
+      },
+      {
+        "name": "seven",
+        "type": "STRING",
+        "description": "Option 7"
+      },
+      {
+        "name": "eight",
+        "type": "STRING",
+        "description": "Option 8"
+      },
+      {
+        "name": "nine",
+        "type": "STRING",
+        "description": "Option 9"
+      },
+      {
+        "name": "ten",
+        "type": "STRING",
+        "description": "Option 10"
+      }
+    ]
+  },
+  {
+    "name": "pp",
+    "options": [
+      {
+        "name": "user",
+        "type": "USER",
+        "description": "A subject of measurement."
+      }
+    ]
+  },
+  {
+    "name": "reverse",
+    "options": [
+      {
+        "name": "text",
+        "type": "STRING",
+        "description": "The text to reverse",
+        "required": true
+      },
+      {
+        "name": "silent",
+        "type": "BOOLEAN",
+        "description": "Whether to show the result to only you, or everyone. False by default."
+      }
+    ]
+  },
+  {
+    "name": "stfu",
+    "options": [
+      {
+        "name": "user",
+        "description": "Ask someone to lower their voice to the sub-audible level in an elegant manner.",
+        "type": "USER"
+      }
+    ]
+  },
+  {
+    "name": "threads",
+    "options": [
+      {
+        "name": "archive",
+        "description": "Bulk archive oldest threads in this channel.",
+        "type": "SUB_COMMAND",
+        "options": [
+          {
+            "name": "count",
+            "type": "STRING",
+            "description": "How many oldest threads would you like to archive?",
+            "choices": [
+              {
+                "name": "All",
+                "value": "all"
+              },
+              {
+                "name": "3",
+                "value": "3"
+              },
+              {
+                "name": "5",
+                "value": "5"
+              },
+              {
+                "name": "10",
+                "value": "10"
+              },
+              {
+                "name": "25",
+                "value": "25"
+              }
+            ],
+            "required": true
+          },
+          {
+            "name": "silent",
+            "type": "BOOLEAN",
+            "description": "Do you want the output to be visible only by you? Defaults to false."
+          }
+        ]
+      },
+      {
+        "name": "delete",
+        "type": "SUB_COMMAND",
+        "description": "Bulk delete specified threads in this channel.",
+        "options": [
+          {
+            "name": "count",
+            "type": "STRING",
+            "description": "How many oldest threads would you like to archive?",
+            "choices": [
+              {
+                "name": "All",
+                "value": "all"
+              },
+              {
+                "name": "3",
+                "value": "3"
+              },
+              {
+                "name": "5",
+                "value": "5"
+              },
+              {
+                "name": "10",
+                "value": "10"
+              },
+              {
+                "name": "25",
+                "value": "25"
+              }
+            ],
+            "required": true
+          },
+          {
+            "name": "which",
+            "type": "STRING",
+            "description": "Should I delete archived, or active threads?",
+            "choices": [
+              {
+                "name": "Archived",
+                "value": "archived"
+              },
+              {
+                "name": "Active",
+                "value": "active"
+              },
+              {
+                "name": "Both",
+                "value": "both"
+              }
+            ],
+            "required": true
+          },
+          {
+            "name": "silent",
+            "type": "BOOLEAN",
+            "description": "Do you want the output to be visible only by you? Defaults to false."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "ticket",
+    "options": [
+      {
+        "name": "title",
+        "type": "STRING",
+        "description": "The problem, or question you have.",
+        "required": true
+      },
+      {
+        "name": "description",
+        "type": "STRING",
+        "description": "Provide any additional information about your question/problem"
+      }
+    ]
+  },
+  {
+    "name": "ticketing",
+    "options": [
+      {
+        "name": "on",
+        "type": "SUB_COMMAND",
+        "description": "Turn on ticketing system.",
+        "options": [
+          {
+            "name": "visibility",
+            "description": "Should tickets be public, allowing everyone to answer questions, or private?",
+            "type": "STRING",
+            "required": true,
+            "choices": [
+              {
+                "name": "Public",
+                "value": "public"
+              },
+              {
+                "name": "Private",
+                "value": "private"
+              }
+            ]
+          },
+          {
+            "name": "archiving",
+            "description": "After what time of inactivity should threads be archived?",
+            "type": "STRING",
+            "required": true,
+            "choices": [
+              {
+                "name": "1 hour",
+                "value": "1h"
+              },
+              {
+                "name": "1 day",
+                "value": "1h"
+              },
+              {
+                "name": "3 days",
+                "value": "3d"
+              },
+              {
+                "name": "1 week",
+                "value": "1w"
+              }
+            ]
+          },
+          {
+            "name": "slowmode",
+            "description": "What should be the default slow-mode for tickets?",
+            "type": "STRING",
+            "required": false,
+            "choices": [
+              {
+                "name": "5s",
+                "value": "5s"
+              },
+              {
+                "name": "10s",
+                "value": "10s"
+              },
+              {
+                "name": "15s",
+                "value": "15s"
+              },
+              {
+                "name": "30s",
+                "value": "30s"
+              },
+              {
+                "name": "1m",
+                "value": "1m"
+              },
+              {
+                "name": "2m",
+                "value": "2m"
+              },
+              {
+                "name": "5m",
+                "value": "5m"
+              },
+              {
+                "name": "10m",
+                "value": "10m"
+              },
+              {
+                "name": "15m",
+                "value": "15m"
+              },
+              {
+                "name": "30m",
+                "value": "30m"
+              },
+              {
+                "name": "1h",
+                "value": "1h"
+              },
+              {
+                "name": "2h",
+                "value": "2h"
+              },
+              {
+                "name": "6h",
+                "value": "6h"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "off",
+        "description": "Turn off ticketing system.",
+        "type": "SUB_COMMAND"
+      },
+      {
+        "name": "list",
+        "description": "List all channels with ticketing system enabled.",
+        "type": "SUB_COMMAND"
+      },
+      {
+        "name": "help",
+        "description": "Send a link with very detailed information regarding ticketing system.",
+        "type": "SUB_COMMAND"
+      }
+    ]
+  },
+  {
+    "name": "urmum",
+    "options": []
+  }
+]

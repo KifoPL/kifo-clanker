@@ -26,12 +26,8 @@ export async function startApp(config: Config, dependencies: { client?: Client; 
   });
   client.on(Events.Error, error => logger.error('Discord client error', error));
   const startedAt = Date.now();
-  const ownerIds = new Set<string>();
-  for (const id of (process.env.BOT_OWNER_IDS || '').split(',').filter(Boolean)) {
-    if (!/^\d{17,20}$/u.test(id)) throw new Error('BOT_OWNER_IDS must contain decimal Discord user IDs');
-    ownerIds.add(id);
-  }
-  const services: RuntimeServices = { client, pool, ownerIds, logger, startedAt, env: process.env };
+  const ownerIds = new Set(config.ownerIds);
+  const services: RuntimeServices = { client, pool, ownerIds, logger, startedAt, env: config.env };
   const registry = createRegistry(services);
   let reconcileRequested = 0;
   let reconcileCompleted = 0;
@@ -174,9 +170,9 @@ export async function startApp(config: Config, dependencies: { client?: Client; 
     }
     else if (owner?.id) ownerIds.add(owner.id);
     for (const feature of registry.features) await feature.onReady?.();
-    if (process.env.DISCORD_LOG_CHANNEL_ID) {
+    if (config.env.DISCORD_LOG_CHANNEL_ID) {
       try {
-        const channel = await client.channels.fetch(process.env.DISCORD_LOG_CHANNEL_ID);
+        const channel = await client.channels.fetch(config.env.DISCORD_LOG_CHANNEL_ID);
         if (channel?.isSendable()) configureLogSink(record => {
           logs.enqueue('log', async () => {
             await channel.send({ content: `[${record.level}] ${record.message}${record.error ? ` (${record.error})` : ''}`.slice(0, 1_900), allowedMentions: { parse: [] } });

@@ -1,9 +1,9 @@
-CREATE TABLE guild_settings (
+CREATE TABLE IF NOT EXISTS guild_settings (
   guild_id text PRIMARY KEY,
   prefix text NOT NULL CHECK (length(prefix) BETWEEN 1 AND 100)
 );
 
-CREATE TABLE scheduled_jobs (
+CREATE TABLE IF NOT EXISTS scheduled_jobs (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   type text NOT NULL,
   payload jsonb NOT NULL,
@@ -18,5 +18,5 @@ CREATE TABLE scheduled_jobs (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX scheduled_jobs_due_idx ON scheduled_jobs (run_at, id) WHERE status = 'pending';
-CREATE INDEX scheduled_jobs_lease_idx ON scheduled_jobs (lease_until, id) WHERE status = 'running';
+CREATE INDEX IF NOT EXISTS scheduled_jobs_due_idx ON scheduled_jobs (run_at, id) WHERE status = 'pending';
+CREATE INDEX IF NOT EXISTS scheduled_jobs_lease_idx ON scheduled_jobs (lease_until, id) WHERE status = 'running';

@@ -1,3 +1,4 @@
+import { BOT_COLOR } from '../../constants.js';
 import { ChannelType, EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder, type ThreadChannel, type ThreadAutoArchiveDuration } from 'discord.js';
 import type { SlashCommand } from '../../contracts/commands.js';
 import { requireChannel, threadBot, type AutomationState } from './shared.js';
@@ -15,7 +16,7 @@ export function ticketCommand(state: AutomationState): SlashCommand {
     if (!title) { await interaction.reply({content:'Provide a nonempty title.',flags:MessageFlags.Ephemeral}); return; }
     await interaction.deferReply({flags:MessageFlags.Ephemeral});
     const member = await interaction.guild!.members.fetch(interaction.user.id);
-    const embed = new EmbedBuilder().setColor(0xa039a0).setTitle(title).setDescription(interaction.options.getString('description') || 'No additional details.')
+    const embed = new EmbedBuilder().setColor(BOT_COLOR).setTitle(title).setDescription(interaction.options.getString('description') || 'No additional details.')
       .setAuthor({name:`${member.displayName}, ${interaction.user.tag}`.slice(0,256),iconURL:interaction.user.displayAvatarURL()}).setFooter({text:`Asked by ${interaction.user.tag}`}).setTimestamp();
     let thread: ThreadChannel;
     if (setting.are_public) {

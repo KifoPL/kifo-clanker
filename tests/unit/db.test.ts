@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { Pool } from 'pg';
-import { createPool, DatabaseError, loadPrefixes, query } from '../../src/db/index.js';
+import { createPool, DatabaseError, query } from '../../src/db/index.js';
 
 test('database connection validation does not expose credentials', () => {
   assert.throws(() => createPool('https://secret:password@example.com/db'), /valid PostgreSQL URL/);
@@ -21,15 +21,4 @@ test('query errors retain SQLSTATE without query text, values or server detail',
     return true;
   });
   assert.equal(new DatabaseError({ code: 'secret value' }).message, 'Database operation failed.');
-});
-
-test('prefix hydration loads all guild settings with one query', async () => {
-  let calls = 0;
-  const pool = { query: async (sql: string) => {
-    calls += 1;
-    assert.equal(sql, 'SELECT guild_id, prefix FROM guild_settings');
-    return { rows: [{ guild_id: '123', prefix: '!kifo ' }, { guild_id: '456', prefix: '??' }] };
-  } } as unknown as Pool;
-  assert.deepEqual(await loadPrefixes(pool), new Map([['123', '!kifo '], ['456', '??']]));
-  assert.equal(calls, 1);
 });

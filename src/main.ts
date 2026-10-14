@@ -26,7 +26,7 @@ startup = (async () => {
   let stopTelemetry: (() => Promise<void>) | undefined;
   try {
     const config = readConfig(process.env);
-    stopTelemetry = startTelemetry(process.env);
+    stopTelemetry = startTelemetry(config.telemetry);
     const stopApp = await startApp(config);
     close = async () => { try { await stopApp(); } finally { await stopTelemetry?.(); } };
   } catch (error) {

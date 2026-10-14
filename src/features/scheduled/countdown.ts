@@ -1,3 +1,4 @@
+import { BOT_COLOR } from '../../constants.js';
 import { randomUUID } from 'node:crypto';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder, type Interaction } from 'discord.js';
 import type { SlashCommand } from '../../contracts/commands.js';
@@ -26,7 +27,7 @@ export function createCountdown(services: RuntimeServices): SlashCommand {
       await query(connection, `INSERT INTO countdowns(id,guild_id,channel_id,message_id,user_id,message,end_at,status,confirmation_expires_at) VALUES($1,$2,$3,$4,$5,$6,$7,'pending_confirmation',$8)`, [id, interaction.guildId, interaction.channelId, reply.id, interaction.user.id, message, end, expires]);
       await enqueueJob(connection, 'countdown.expire', { id }, expires, `countdown-confirmation:${id}`);
     });
-    await interaction.editReply({ embeds: [new EmbedBuilder().setColor(0xa039a0).setTitle('Please review the countdown:').setDescription(`Ends at <t:${epoch}> (<t:${epoch}:R>).\n\n${message}\n\nAccept within 30 seconds, or cancel.`)], components: [new ActionRowBuilder<ButtonBuilder>().addComponents(
+    await interaction.editReply({ embeds: [new EmbedBuilder().setColor(BOT_COLOR).setTitle('Please review the countdown:').setDescription(`Ends at <t:${epoch}> (<t:${epoch}:R>).\n\n${message}\n\nAccept within 30 seconds, or cancel.`)], components: [new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder().setCustomId(`countdown:${id}:yes`).setLabel('Accept').setStyle(ButtonStyle.Primary),
       new ButtonBuilder().setCustomId(`countdown:${id}:no`).setLabel('Cancel').setStyle(ButtonStyle.Secondary),
     )] });

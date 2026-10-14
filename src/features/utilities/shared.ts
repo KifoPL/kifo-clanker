@@ -1,8 +1,8 @@
+import { BOT_COLOR } from '../../constants.js';
 import { AttachmentBuilder, ChannelType, EmbedBuilder, PermissionFlagsBits, type Client, type Message, type TextBasedChannel, type User } from 'discord.js';
 
 import type { CommandInvocation } from '../../contracts/invocation.js';
 
-export const color = 0xa039a0;
 export const safeMentions = { parse: [] as const };
 const snowflake = /^\d{16,22}$/u;
 
@@ -74,7 +74,7 @@ export async function saveBookmark(user: User, message: Message, pin = false): P
   await assertCanRead(message.channel, user.id);
   const files = await attachmentBuffers(message);
   const content = message.content.replace(/<@&(\d{16,22})>/gu, (match, id: string) => message.guild?.roles.cache.get(id)?.name ? `@${message.guild.roles.cache.get(id)!.name}` : match);
-  const embed = new EmbedBuilder().setColor(color).setTitle(`BOOKMARK - ${'name' in message.channel ? message.channel.name : 'DM'}, ${message.guild?.name ?? 'Direct message'}`.slice(0, 256))
+  const embed = new EmbedBuilder().setColor(BOT_COLOR).setTitle(`BOOKMARK - ${'name' in message.channel ? message.channel.name : 'DM'}, ${message.guild?.name ?? 'Direct message'}`.slice(0, 256))
     .setAuthor({ name: `${message.author.tag}, ID: ${message.author.id}`, iconURL: message.author.displayAvatarURL() })
     .setURL(message.url).setDescription(content.slice(0, 4096) || '*No content.*')
     .addFields({ name: "Don't need this anymore?", value: 'React with ❌ to delete this bookmark.' });

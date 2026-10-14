@@ -1,50 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { readFile, readdir } from 'node:fs/promises';
-import { parse, type Node } from 'acorn';
+import { readFile } from 'node:fs/promises';
 import { Client, GatewayIntentBits } from 'discord.js';
 import { createPool } from '../../src/db/pool.js';
 import { applicationCommandData, createRegistry } from '../../src/registry.js';
 import { logger } from '../../src/logger.js';
-
-interface SyntaxNode extends Node {
-  value?: unknown;
-  name?: string;
-  elements?: SyntaxNode[];
-  properties?: Array<{ key: SyntaxNode; value: SyntaxNode }>;
-  left?: SyntaxNode;
-  right?: SyntaxNode;
-  object?: SyntaxNode;
-  property?: SyntaxNode;
-}
-function literal(node: SyntaxNode): unknown {
-  if (node.type === 'Literal') return node.value;
-  if (node.type === 'ArrayExpression') return node.elements?.map(literal);
-  if (node.type === 'ObjectExpression') return Object.fromEntries((node.properties ?? []).map(property => [
-    property.key.name ?? String(property.key.value), literal(property.value),
-  ]));
-  return undefined;
-}
-
-async function legacyOptions(name: string): Promise<unknown> {
-  const text = await readFile(`legacy/slash_commands/${name}.js`, 'utf8');
-  const source = parse(text, { ecmaVersion: 'latest' });
-  let options: unknown;
-  function visit(node: SyntaxNode): void {
-    if (node.type === 'AssignmentExpression' && node.left?.object?.name === 'module' && node.left.property?.name === 'exports' && node.right?.type === 'ObjectExpression') {
-      const metadata = literal(node.right) as Record<string, unknown>;
-      options = metadata.options ?? [];
-    }
-    for (const value of Object.values(node)) {
-      if (Array.isArray(value)) {
-        for (const child of value) if (child && typeof child === 'object' && 'type' in child) visit(child as SyntaxNode);
-      } else if (value && typeof value === 'object' && 'type' in value) visit(value as unknown as SyntaxNode);
-    }
-  }
-  visit(source);
-  assert.ok(Array.isArray(options), `Cannot read legacy options for ${name}`);
-  return options;
-}
 
 const types: Record<string, number> = { SUB_COMMAND: 1, SUB_COMMAND_GROUP: 2, STRING: 3, INTEGER: 4, BOOLEAN: 5, USER: 6, CHANNEL: 7, ROLE: 8, MENTIONABLE: 9, NUMBER: 10, ATTACHMENT: 11 };
 function optionPaths(options: unknown, parent = ''): Map<string, { type: number; required: boolean }> {
@@ -63,28 +23,27 @@ function optionPaths(options: unknown, parent = ''): Map<string, { type: number;
   return paths;
 }
 
-test('all legacy slash command names, option paths, types and required inputs remain registered', async () => {
-  const files = (await readdir('legacy/slash_commands')).filter(name => name.endsWith('.js'));
-  assert.equal(files.length, 19);
+test('supported slash names, option paths, types and required inputs preserve their public contract', async () => {
+  const expected = JSON.parse(await readFile('tests/fixtures/application-options.json', 'utf8')) as Array<{ name: string; options: unknown }>;
+  assert.equal(expected.length, 18);
   const registered = applicationCommandData.filter(command => !command.type || command.type === 1);
-  assert.equal(registered.length, 37);
-  for (const file of files) {
-    const name = file.slice(0, -3);
-    const command = registered.find(item => item.name === name);
-    assert.ok(command, `Missing /${name}`);
-    const oldPaths = optionPaths(await legacyOptions(name));
+  assert.equal(registered.length, 35);
+  for (const contract of expected) {
+    const command = registered.find(item => item.name === contract.name);
+    assert.ok(command, `Missing /${contract.name}`);
     const newPaths = optionPaths('options' in command ? command.options ?? [] : []);
-    for (const [path, option] of oldPaths) assert.deepEqual(newPaths.get(path), option, `/${name}${path} changed`);
+    for (const [path, option] of optionPaths(contract.options)) assert.deepEqual(newPaths.get(path), option, `/${contract.name}${path} changed`);
   }
+  assert.ok(!applicationCommandData.some(command => ['prefix', 'test'].includes(command.name)));
 });
 
-test('registry exposes every former text command as slash commands, three context menus and durable handlers without connections', async () => {
+test('registry exposes native slash commands, three context menus and durable handlers without connections', async () => {
   const client = new Client({ intents: [GatewayIntentBits.Guilds] });
   const pool = createPool('postgresql://localhost/parity_no_connection');
   try {
     const registry = createRegistry({ client, pool, ownerIds: new Set(), logger, startedAt: Date.now(), env: {} });
     const names = new Set(registry.slash.map(command => command.data.name));
-    for (const name of ['clean','list','menu','perms','remove','stats','top','giveaway','lang','prefix','react','superslow','todo','test','help','serverlist','deploy','cmdlist']) assert.ok(names.has(name), `Missing slash /${name}`);
+    for (const name of ['clean','list','menu','perms','remove','stats','top','giveaway','lang','react','superslow','todo','help','serverlist','deploy','cmdlist']) assert.ok(names.has(name), `Missing slash /${name}`);
     assert.equal('prefix' in registry, false);
     assert.deepEqual(registry.context.map(command => command.data.name).sort(), ['detect language', 'save', 'user stats']);
     assert.deepEqual(registry.slash.map(command => command.data.name).sort(), applicationCommandData.filter(command => !command.type || command.type === 1).map(command => command.name).sort());

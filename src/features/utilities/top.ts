@@ -1,8 +1,9 @@
+import { BOT_COLOR } from '../../constants.js';
 import { ActionRowBuilder, ChannelType, InteractionContextType, SlashCommandBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags, PermissionFlagsBits, parseEmoji, type Interaction, type Message } from 'discord.js';
 import ms from 'ms';
 import type { CommandInvocation } from '../../contracts/invocation.js';
 import type { InvocationCommand } from '../../contracts/commands.js';
-import { assertCanRead, color, entityId, safeMentions, utilityError } from './shared.js';
+import { assertCanRead, entityId, safeMentions, utilityError } from './shared.js';
 
 export const topData = new SlashCommandBuilder().setName('top').setDescription('Rank unique authors by a reaction in a channel over a time period.').setContexts(InteractionContextType.Guild).setDefaultMemberPermissions(PermissionFlagsBits.ManageChannels)
   .addIntegerOption(option => option.setName('winners').setDescription('Number of winning posts, including ties at the cutoff.').setRequired(true).setMinValue(1).setMaxValue(10))
@@ -105,7 +106,7 @@ export function createTop(): { command: InvocationCommand; onInteraction(interac
           for (let offset = 0; offset < winners.length; offset += 5) {
             const embeds = winners.slice(offset, offset + 5).map(winner => {
               const item = winner.message;
-              const embed = new EmbedBuilder().setColor(color).setTitle(`${winner.rank} place by ${item.author.username} with ${winner.score} ${args[3]}`.slice(0, 256))
+              const embed = new EmbedBuilder().setColor(BOT_COLOR).setTitle(`${winner.rank} place by ${item.author.username} with ${winner.score} ${args[3]}`.slice(0, 256))
                 .setURL(item.url).setDescription(item.content.slice(0, 420) || '*No text content.*').setThumbnail(item.author.displayAvatarURL());
               const image = item.attachments.find(attachment => attachment.contentType?.startsWith('image/'));
               if (image) embed.setImage(image.url);

@@ -1,3 +1,4 @@
+import { BOT_COLOR, BOT_URLS } from '../constants.js';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import type { InteractionReplyOptions } from 'discord.js';
 import ms from 'ms';
@@ -43,7 +44,7 @@ export function epochDateReply(input: string, now = Date.now()): InteractionRepl
   const detected = parsed.kind === 'date' ? '__date__' : `__time period__: \`${ms(parsed.duration, { long: true })}\``;
   return {
     content: String(parsed.epoch),
-    embeds: [new EmbedBuilder().setColor(0xa039a0).setDescription(
+    embeds: [new EmbedBuilder().setColor(BOT_COLOR).setDescription(
       `\`${input}\` detected as ${detected}: <t:${parsed.epoch}>, <t:${parsed.epoch}:R>.\n\n**The epoch (in seconds) is:** \`${parsed.epoch}\`.\nFor easier copying, the epoch is also in the message content.\n\nWrong output? Use ISO 8601 format, or read the guide at \`/epoch help\`.`,
     )],
   };
@@ -54,7 +55,7 @@ export function epochIsoReply(epoch: number): InteractionReplyOptions {
   if (iso === undefined) return invalidInputReply();
   return {
     content: iso,
-    embeds: [new EmbedBuilder().setColor(0xa039a0).setDescription(
+    embeds: [new EmbedBuilder().setColor(BOT_COLOR).setDescription(
       `Detected date: <t:${epoch}>, <t:${epoch}:R>.\n\n**The date (ISO 8601 format) is:** \`${iso}\`.\nFor easier copying, the date is also in the message content.\n\nWrong output? Use epoch in *seconds*, or read the guide at \`/epoch help\`.`,
     )],
   };
@@ -89,7 +90,7 @@ export const epoch: SlashCommand = {
           content: 'Click the button to learn more about the epoch converter.',
           components: [new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder()
             .setLabel('Epoch Converter Guide').setStyle(ButtonStyle.Link)
-            .setURL('https://kifopl.github.io/kifo-clanker/docs/guides/epoch'))],
+            .setURL(BOT_URLS.guide('epoch')))],
           flags: MessageFlags.Ephemeral,
         });
         break;

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { test } from 'node:test';
+import { readTelemetryConfig } from '../../src/config.js';
 import { startTelemetry, withSpan } from '../../src/observability.js';
 
 test('OpenTelemetry exports custom command/query spans without exception text or user identifiers', async () => {
@@ -15,7 +16,7 @@ test('OpenTelemetry exports custom command/query spans without exception text or
   assert.ok(address && typeof address !== 'string');
   const oldEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
   process.env.OTEL_EXPORTER_OTLP_ENDPOINT = `http://127.0.0.1:${address.port}`;
-  const stop = startTelemetry(process.env);
+  const stop = startTelemetry(readTelemetryConfig(process.env));
   try {
     await withSpan('discord.command', { command: 'ping', kind: 'slash' }, async () => {
       await withSpan('db.query', { operation: 'SELECT' }, async () => {});

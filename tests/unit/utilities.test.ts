@@ -188,8 +188,8 @@ test('utilities metadata imports and feature creation make no database or Discor
   const runtime = utilitiesFeature.create(services);
   assert.equal(Object.isFrozen(utilitiesFeature), true);
   assert.equal('prefixCommands' in runtime, false);
-  assert.deepEqual(runtime.slashCommands?.map(command => command.data.name), ['list', 'stats', 'top', 'lang', 'prefix', 'todo']);
-  assert.deepEqual(utilitiesFeature.commandData.map(command => command.name), ['list', 'stats', 'top', 'lang', 'prefix', 'todo', 'detect language', 'save', 'user stats']);
+  assert.deepEqual(runtime.slashCommands?.map(command => command.data.name), ['list', 'stats', 'top', 'lang', 'todo']);
+  assert.deepEqual(utilitiesFeature.commandData.map(command => command.name), ['list', 'stats', 'top', 'lang', 'todo', 'detect language', 'save', 'user stats']);
 });
 
 
@@ -284,23 +284,6 @@ test('native utilities expose typed targets and bounded ranking options', () => 
   assert.equal(winners.max_value, 10);
   assert.equal(top.options?.find(option => option.name === 'channel')?.type, ApplicationCommandOptionType.Channel);
   assert.equal(commands.find(command => command.data.name === 'lang')!.data.options?.[0]?.required, true);
-});
-
-test('native /prefix acknowledges privately and explains slash commands without promising paid prefixes', async () => {
-  const events: string[] = [];
-  const replies: unknown[] = [];
-  const interaction = {
-    id: messageId, channelId, guildId, guild: { members: { fetch: async () => ({ id: userId }) } },
-    channel: readableChannel(), user: { id: userId }, client: {},
-    deferReply: async (options: { flags: number }) => { assert.equal(options.flags, MessageFlags.Ephemeral); events.push('defer'); },
-    editReply: async (payload: unknown) => { events.push('reply'); replies.push(payload); return {}; },
-  } as unknown as ChatInputCommandInteraction;
-  const command = utilitiesFeature.create({} as RuntimeServices).slashCommands!.find(value => value.data.name === 'prefix')!;
-  await command.execute(interaction);
-  assert.deepEqual(events, ['defer', 'reply']);
-  const payload = replies[0] as { embeds: Array<{ toJSON(): { description?: string } }> };
-  assert.match(payload.embeds[0]?.toJSON().description ?? '', /Text prefixes are disabled.*\/help/);
-  assert.doesNotMatch(payload.embeds[0]?.toJSON().description ?? '', /premium|beer|buy|custom prefix/i);
 });
 
 test('native /list user resolves the selected member and returns roles as an interaction attachment', async () => {

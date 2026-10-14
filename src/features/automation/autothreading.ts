@@ -1,3 +1,4 @@
+import { BOT_URLS } from '../../constants.js';
 import ms from 'ms';
 import { MessageFlags, PermissionFlagsBits, SlashCommandBuilder, type Message } from 'discord.js';
 import type { SlashCommand } from '../../contracts/commands.js';
@@ -23,7 +24,7 @@ export function autothreadingCommand(state: AutomationState): SlashCommand {
     const action = interaction.options.getSubcommand();
     const channel = await requireChannel(interaction, action === 'help' || action === 'list' ? [] : manage,action === 'help' || action === 'list' ? [] : [...threadBot,PermissionFlagsBits.ManageChannels]);
     if (!channel) return;
-    if (action === 'help') { await interaction.reply({content:'Title placeholders: `[member]`, `[channel]`, `[server]`, `[embed_t]`, `[embed_d]`. All occurrences are replaced; Discord thread names are limited to 100 characters. https://kifopl.github.io/kifo-clanker/docs/guides/autothreading',flags:MessageFlags.Ephemeral}); return; }
+    if (action === 'help') { await interaction.reply({content:`Title placeholders: \`[member]\`, \`[channel]\`, \`[server]\`, \`[embed_t]\`, \`[embed_d]\`. All occurrences are replaced; Discord thread names are limited to 100 characters. ${BOT_URLS.guide('autothreading')}`,flags:MessageFlags.Ephemeral}); return; }
     if (action === 'list') { await interaction.reply({content:[...state.auto.values()].filter(row => row.guild_id === interaction.guildId).map(row => `<#${row.channel_id}>: ${row.title}, archive ${row.archive_minutes}m, slowmode ${row.slowmode_seconds}s, bots ${row.bot_auto}`).join('\n').slice(0,1900) || 'No automatic threads configured.',flags:MessageFlags.Ephemeral}); return; }
     if (action === 'off') {
       if (!state.auto.has(channel.id)) { await interaction.reply({content:'Automatic threads are already off.',flags:MessageFlags.Ephemeral}); return; }

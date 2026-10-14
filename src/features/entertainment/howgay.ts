@@ -1,3 +1,4 @@
+import { BOT_COLOR } from '../../constants.js';
 import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import type { SlashCommand } from '../../contracts/commands.js';
 import { calculateHowgay } from './calculations.js';
@@ -9,7 +10,7 @@ export const howgay: SlashCommand = {
     if (!interaction.guildId) { await interaction.reply({ content: 'Use this command in a server.', flags: MessageFlags.Ephemeral }); return; }
     const user = interaction.options.getUser('user') ?? interaction.user;
     const displayName = interaction.guild?.members.cache.get(user.id)?.displayName ?? user.username;
-    const embed = new EmbedBuilder().setColor(0xa039a0).setTitle(`${displayName}'s gay level is:`).addFields(calculateHowgay(user.id, interaction.guildId));
+    const embed = new EmbedBuilder().setColor(BOT_COLOR).setTitle(`${displayName}'s gay level is:`).addFields(calculateHowgay(user.id, interaction.guildId));
     await interaction.reply({ embeds: [embed] });
   },
 };

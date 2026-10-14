@@ -1,3 +1,4 @@
+import { BOT_URLS } from '../../constants.js';
 import ms from 'ms';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits, type ThreadAutoArchiveDuration } from 'discord.js';
 import type { FeatureDefinition } from '../../contracts/features.js';
@@ -54,7 +55,7 @@ export const automationFeature: FeatureDefinition = {
         const managesMessages = member.permissionsIn(message.channelId).has(PermissionFlagsBits.ManageMessages);
         if (ticket && ticket.guild_id === message.guild.id && message.author.id !== services.client.user?.id && !managesMessages && !message.interactionMetadata) {
           if (!bot.permissionsIn(message.channelId).has(PermissionFlagsBits.ManageMessages)) { services.logger.error('Ticket filter cannot delete messages: missing ManageMessages'); return 'continue'; }
-          await message.author.send({content:'This channel uses tickets. Use `/ticket` to create a question or report a problem.',components:[new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Ticket guide').setURL('https://kifopl.github.io/kifo-clanker/docs/guides/ticket'))]}).catch(() => {});
+          await message.author.send({content:'This channel uses tickets. Use `/ticket` to create a question or report a problem.',components:[new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel('Ticket guide').setURL(BOT_URLS.guide('ticket')))]}).catch(() => {});
           await message.delete(); return 'deleted';
         }
         if (slow && !message.author.bot && !managesMessages) {

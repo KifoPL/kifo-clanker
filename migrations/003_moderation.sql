@@ -1,4 +1,4 @@
-CREATE TABLE moderation_operations (
+CREATE TABLE IF NOT EXISTS moderation_operations (
   id UUID PRIMARY KEY,
   kind TEXT NOT NULL CHECK (kind IN ('permission', 'role')),
   guild_id TEXT NOT NULL,
@@ -15,6 +15,6 @@ CREATE TABLE moderation_operations (
   created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
   CHECK ((kind = 'permission' AND permission IS NOT NULL AND role_id IS NULL) OR (kind = 'role' AND role_id IS NOT NULL AND permission IS NULL))
 );
-CREATE UNIQUE INDEX moderation_pending_target ON moderation_operations
+CREATE UNIQUE INDEX IF NOT EXISTS moderation_pending_target ON moderation_operations
   (guild_id, (CASE WHEN kind = 'role' THEN '' ELSE channel_id END), target_id, kind, COALESCE(permission, role_id))
   WHERE status IN ('intent','applied') AND restore_at IS NOT NULL;

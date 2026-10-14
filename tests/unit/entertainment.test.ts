@@ -4,26 +4,8 @@ import { calculateHowgay, calculateIq, calculatePp, idRemainder } from '../../sr
 import { entertainmentFeature } from '../../src/features/entertainment/index.js';
 import { createIssue } from '../../src/features/entertainment/error.js';
 import { fetchJoke } from '../../src/features/entertainment/urmum.js';
-import { testCommand, testDescription, testReply } from '../../src/features/entertainment/test.js';
-import { ApplicationCommandOptionType, AttachmentBuilder, EmbedBuilder } from 'discord.js';
-test('entertainment registry preserves ten distinct slash command names', () => {
-  assert.deepEqual(entertainmentFeature.commandData.map(command => command.name).sort(), ['bookmark', 'cringe', 'error', 'guide', 'howgay', 'iq', 'pp', 'stfu', 'test', 'urmum']);
-});
-test('slash test merges argument parsing while retaining original input options and defaults', () => {
-  assert.deepEqual(testCommand.data.options?.map(option => [option.name, option.type, option.required ?? false]), [
-    ['input', ApplicationCommandOptionType.String, false], ['input2', ApplicationCommandOptionType.String, false], ['arguments', ApplicationCommandOptionType.String, false],
-  ]);
-  assert.equal(testDescription(null, null, null), '- input: `not passed`\n- input2: `not passed`');
-  assert.equal(testDescription('hello', 'world', null), '- input: `hello`\n- input2: `world`');
-  assert.equal(testDescription('unused', 'unused', ' one\t two\nthree '), '1. "one"\n2. "two"\n3. "three"');
-  assert.equal(testDescription(null, null, '  '), 'No arguments.');
-  const large = testReply(null, null, 'a '.repeat(900));
-  const embed = large.embeds?.[0];
-  assert.ok(embed instanceof EmbedBuilder);
-  assert.ok((embed.toJSON().description?.length ?? 0) <= 4096);
-  const file = large.files?.[0];
-  assert.ok(file instanceof AttachmentBuilder);
-  assert.equal(file.attachment.toString(), testDescription(null, null, 'a '.repeat(900)));
+test('entertainment registry preserves nine distinct slash command names', () => {
+  assert.deepEqual(entertainmentFeature.commandData.map(command => command.name).sort(), ['bookmark', 'cringe', 'error', 'guide', 'howgay', 'iq', 'pp', 'stfu', 'urmum']);
 });
 test('snowflake calculations retain decimal precision and intended concatenation', () => {
   assert.equal(idRemainder('123456789012345678', '987654321098765432', 101), 21);

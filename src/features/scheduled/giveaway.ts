@@ -1,3 +1,4 @@
+import { BOT_COLOR } from '../../constants.js';
 import { randomUUID } from 'node:crypto';
 import { EmbedBuilder, InteractionContextType, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import type { InvocationCommand, SlashCommand } from '../../contracts/commands.js';
@@ -26,7 +27,7 @@ export function createGiveaway(services: RuntimeServices): InvocationCommand {
       await query(connection, 'INSERT INTO giveaways(id,guild_id,channel_id,message_id,user_id,winner_count,reaction,end_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8)', [id, message.guildId, message.channelId, placeholder.id, message.author.id, count, reaction, end]);
       await enqueueJob(connection, 'giveaway.complete', { id }, end, `giveaway:${id}`);
     });
-    await placeholder.edit({ content: `Ends at <t:${Math.floor(end.getTime() / 1000)}> (<t:${Math.floor(end.getTime() / 1000)}:R>).`, embeds: [new EmbedBuilder().setColor(0xa039a0).setTitle('GIVEAWAY!').setDescription(`React with ${emoji} to enter! ${count} winner${count === 1 ? '' : 's'} will be chosen.`)] });
+    await placeholder.edit({ content: `Ends at <t:${Math.floor(end.getTime() / 1000)}> (<t:${Math.floor(end.getTime() / 1000)}:R>).`, embeds: [new EmbedBuilder().setColor(BOT_COLOR).setTitle('GIVEAWAY!').setDescription(`React with ${emoji} to enter! ${count} winner${count === 1 ? '' : 's'} will be chosen.`)] });
     try { await placeholder.react(emoji); }
     catch (error) {
       await query(services.pool, "UPDATE giveaways SET completed_at=clock_timestamp(),terminal_reason='Reaction setup failed' WHERE id=$1", [id]);

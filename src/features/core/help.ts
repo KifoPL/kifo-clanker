@@ -1,3 +1,4 @@
+import { BOT_COLOR } from '../../constants.js';
 import { EmbedBuilder, InteractionContextType, MessageFlags, SlashCommandBuilder, type RESTPostAPIApplicationCommandsJSONBody } from 'discord.js';
 import type { SlashCommand } from '../../contracts/commands.js';
 import type { RuntimeServices } from '../../contracts/features.js';
@@ -11,7 +12,7 @@ const owners = new Set(['serverlist','reload','deploy','cmdlist']);
 export function commandCategory(name: string): string {
   if (['clean','perms','remove','menu','list','stats','top'].includes(name)) return 'management';
   if (['cringe','howgay','iq','pp','stfu','urmum','reverse'].includes(name)) return 'fun';
-  if (['ping','test','error',...owners].includes(name)) return 'debug';
+  if (['ping','error',...owners].includes(name)) return 'debug';
   return 'utility';
 }
 export function createRegistryHelp(services: RuntimeServices, getData: () => readonly RESTPostAPIApplicationCommandsJSONBody[]): SlashCommand {
@@ -27,7 +28,7 @@ export function createRegistryHelp(services: RuntimeServices, getData: () => rea
     const requested = interaction.options.getString('command')?.toLowerCase().replace(/^\//, '');
     const category = interaction.options.getString('category');
     const command = available.find(item => item.name === requested);
-    const embed = new EmbedBuilder().setColor(0xa039a0);
+    const embed = new EmbedBuilder().setColor(BOT_COLOR);
     if (command) {
       embed.setTitle(command.type && command.type !== 1 ? command.name : '/' + command.name)
         .setDescription(('description' in command && command.description) || 'Context menu command.');
@@ -40,7 +41,7 @@ export function createRegistryHelp(services: RuntimeServices, getData: () => rea
         embed.addFields({name:group,value:names.join(', ') || 'None'});
       }
       if (!category) embed.addFields({name:'Context menus',value:available.filter(item => item.type && item.type !== 1).map(item => item.name).join(', ') || 'None'});
-      embed.setFooter({text:'Use /help command:<name> for details. Text prefixes are disabled.'});
+      embed.setFooter({text:'Use /help command:<name> for details.'});
     }
     await interaction.reply({embeds:[embed],flags:MessageFlags.Ephemeral});
   }};

@@ -1,10 +1,11 @@
+import { BOT_COLOR } from '../constants.js';
 import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import type { InteractionReplyOptions } from 'discord.js';
 import type { SlashCommand } from '../contracts/commands.js';
 
 export function pingReply(reply: string | null): InteractionReplyOptions {
   return {
-    embeds: [new EmbedBuilder().setColor(0xa039a0).setDescription(reply === null ? 'Pong!' : `Pong!\n${reply}`)],
+    embeds: [new EmbedBuilder().setColor(BOT_COLOR).setDescription(reply === null ? 'Pong!' : `Pong!\n${reply}`)],
     flags: MessageFlags.Ephemeral,
   };
 }

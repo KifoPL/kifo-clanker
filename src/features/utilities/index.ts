@@ -3,7 +3,6 @@ import { invocationCommand } from '../../discord/invocation.js';
 import { createDetectLanguage, detectLanguageData } from './detect-language.js';
 import { createLang, langData } from './lang.js';
 import { list, listData } from './list.js';
-import { prefix, prefixData } from './prefix.js';
 import { save, saveData } from './save.js';
 import { canDeleteUtilityDm } from './shared.js';
 import { stats, statsData } from './stats.js';
@@ -13,7 +12,7 @@ import { userStatsCommand, userStatsData } from './user-stats.js';
 
 export const utilitiesFeature: FeatureDefinition = Object.freeze<FeatureDefinition>({
   name: 'utilities',
-  commandData: Object.freeze([listData, statsData, topData, langData, prefixData, todoData, detectLanguageData, saveData, userStatsData]),
+  commandData: Object.freeze([listData, statsData, topData, langData, todoData, detectLanguageData, saveData, userStatsData]),
   create(services) {
     const top = createTop();
     return {
@@ -33,7 +32,6 @@ export const utilitiesFeature: FeatureDefinition = Object.freeze<FeatureDefiniti
         }, services),
         invocationCommand(topData, top.command, interaction => [String(interaction.options.getInteger('winners', true)), interaction.options.getString('duration', true), interaction.options.getChannel('channel', true).id, interaction.options.getString('emoji', true)], services, true),
         invocationCommand(langData, createLang(services), interaction => [interaction.options.getString('message', true)], services),
-        invocationCommand(prefixData, prefix, () => [], services),
         invocationCommand(todoData, createTodo(services), interaction => {
           const text = interaction.options.getString('text');
           const link = interaction.options.getString('link');

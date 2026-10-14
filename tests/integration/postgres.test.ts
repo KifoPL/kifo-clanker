@@ -4,7 +4,7 @@ import { cp, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { test } from 'node:test';
-import { assertSchemaReady, createPool, enqueueJob, loadPrefixes, query, retryJob, runMigrations, withTransaction } from '../../src/db/index.js';
+import { assertSchemaReady, createPool, enqueueJob, query, retryJob, runMigrations, withTransaction } from '../../src/db/index.js';
 import { importSnapshot, verifyImport } from '../../src/db/import-snapshot.js';
 import { prepareImport } from '../../src/db/import-plan.js';
 import { DurableScheduler } from '../../src/scheduler/index.js';
@@ -38,7 +38,7 @@ test('PostgreSQL migrations, prefix hydration and durable concurrent scheduling'
     await query(pool, "UPDATE schema_migrations SET filename = '001_baseline.sql' WHERE version = '001'");
     assert.equal((await query(pool, 'SELECT * FROM schema_migrations')).rowCount, migrationCount);
     await query(pool, 'INSERT INTO guild_settings (guild_id, prefix) VALUES ($1, $2)', ['123', '!custom ']);
-    assert.deepEqual(await loadPrefixes(pool), new Map([['123', '!custom ']]));
+    assert.deepEqual((await query(pool, 'SELECT guild_id, prefix FROM guild_settings')).rows, [{ guild_id: '123', prefix: '!custom ' }]);
 
     await cp(resolve('migrations'), migrationDirectory, { recursive: true });
     await writeFile(join(migrationDirectory, '999_broken.sql'), 'CREATE TABLE rollback_probe (id integer); SELECT no_such_column;');

@@ -1,3 +1,4 @@
+import { BOT_REPOSITORY, BOT_URLS } from '../../constants.js';
 import { MessageFlags, SlashCommandBuilder } from 'discord.js';
 import type { SlashCommand } from '../../contracts/commands.js';
 import type { RuntimeServices } from '../../contracts/features.js';
@@ -18,16 +19,16 @@ export async function createIssue(token: string, repository: string, description
 }
 export function createError(services: RuntimeServices): SlashCommand {
   return { data: errorData, async execute(interaction) {
-    const token = services.env.GITHUB_TOKEN ?? services.env.GITHUB_KEY;
-    if (!token) { await interaction.reply({ content: 'GitHub reporting is disabled. Report issues at https://github.com/KifoPL/kifo-clanker/issues.', flags: MessageFlags.Ephemeral }); return; }
+    const token = services.env.GITHUB_TOKEN;
+    if (!token) { await interaction.reply({ content: `GitHub reporting is disabled. Report issues at ${BOT_URLS.issues}.`, flags: MessageFlags.Ephemeral }); return; }
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const admitted = await query(services.pool, `INSERT INTO error_report_limits(user_id, reported_at) VALUES ($1, clock_timestamp()) ON CONFLICT(user_id) DO UPDATE SET reported_at = EXCLUDED.reported_at WHERE error_report_limits.reported_at <= clock_timestamp() - interval '10 minutes' RETURNING user_id`, [interaction.user.id]);
     if (!admitted.rowCount) { await interaction.editReply({ content: 'Please wait 10 minutes between problem reports.' }); return; }
     try {
       const reply = await interaction.fetchReply();
-      const url = await createIssue(token, services.env.GITHUB_REPOSITORY ?? 'KifoPL/kifo-clanker', interaction.options.getString('description', true), `Reported by ${interaction.user.tag} (${interaction.user.id}) in ${interaction.guildId ?? 'DM'}/${interaction.channelId}. Discord: ${reply.url}`);
+      const url = await createIssue(token, services.env.GITHUB_REPOSITORY ?? BOT_REPOSITORY, interaction.options.getString('description', true), `Reported by ${interaction.user.tag} (${interaction.user.id}) in ${interaction.guildId ?? 'DM'}/${interaction.channelId}. Discord: ${reply.url}`);
       await interaction.editReply({ content: `Created a GitHub issue: ${url}` });
       await Promise.allSettled([...services.ownerIds].map(async id => { const user = await services.client.users.fetch(id); await user.send({ content: `Bot problem reported by ${interaction.user.tag}: ${url}`, allowedMentions: { parse: [] } }); }));
-    } catch { await interaction.editReply({ content: 'GitHub reporting failed. Please report the problem at https://github.com/KifoPL/kifo-clanker/issues.' }); }
+    } catch { await interaction.editReply({ content: `GitHub reporting failed. Please report the problem at ${BOT_URLS.issues}.` }); }
   } };
 }

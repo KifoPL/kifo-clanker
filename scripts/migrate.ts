@@ -1,8 +1,8 @@
+import { readDatabaseConfig } from '../src/config.js';
 import { createPool, DatabaseError, runMigrations } from '../src/db/index.js';
 
 async function main(): Promise<void> {
-  const databaseUrl = process.env['DATABASE_URL'];
-  if (!databaseUrl) throw new Error('DATABASE_URL is required to run migrations.');
+  const { databaseUrl } = readDatabaseConfig(process.env);
   const pool = createPool(databaseUrl, 1);
   pool.on('error', (error: unknown) => {
     console.error(new DatabaseError(error).message);

@@ -7,21 +7,7 @@ export interface MysqlSnapshotConnection {
 
 class SnapshotError extends Error {}
 
-export function readMysqlExportConfig(env: NodeJS.ProcessEnv): { sourceUrl: string; timezone: string } {
-  const sourceUrl = env['MYSQL_SOURCE_URL'];
-  if (!sourceUrl) throw new Error('MYSQL_SOURCE_URL is required.');
-  let url: URL;
-  try { url = new URL(sourceUrl); }
-  catch { throw new Error('MYSQL_SOURCE_URL must be a valid MySQL URL with a database name.'); }
-  if (url.protocol !== 'mysql:' || !url.hostname || !url.username || !/^\/[^/]+$/.test(url.pathname)
-    || (url.port && (!Number.isInteger(Number(url.port)) || Number(url.port) < 1 || Number(url.port) > 65_535))) {
-    throw new Error('MYSQL_SOURCE_URL must be a valid MySQL URL with a database name.');
-  }
-  if ([...url.searchParams.keys()].some((name) => !['ssl', 'charset'].includes(name))) {
-    throw new Error('MYSQL_SOURCE_URL only supports ssl and charset query options; export safety options are fixed.');
-  }
-  return { sourceUrl, timezone: timezoneOffset(env['MYSQL_SOURCE_TIMEZONE']) };
-}
+export { readMysqlExportConfig } from '../config.js';
 
 export function mysqlExportError(error: unknown): Error {
   const code = error && typeof error === 'object' && 'code' in error

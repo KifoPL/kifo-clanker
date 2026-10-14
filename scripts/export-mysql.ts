@@ -1,6 +1,7 @@
+import { readMysqlExportConfig } from '../src/config.js';
 import { writeFile } from 'node:fs/promises';
 import mysql from 'mysql2/promise';
-import { exportMysqlSnapshot, mysqlExportError, readMysqlExportConfig } from '../src/db/export-mysql.js';
+import { exportMysqlSnapshot, mysqlExportError } from '../src/db/export-mysql.js';
 
 async function main(): Promise<void> {
   const [path, option, ddlPath, extra] = process.argv.slice(2);

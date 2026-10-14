@@ -1,3 +1,4 @@
+import { BOT_COLOR, BOT_URLS } from '../../constants.js';
 import { ActivityType, EmbedBuilder } from 'discord.js';
 import type { FeatureDefinition } from '../../contracts/features.js';
 import { createOwnerSlashCommands, ownerCommandData } from './owner.js';
@@ -13,11 +14,11 @@ export const coreFeature: FeatureDefinition = {
         if (message.author.bot) return 'continue';
         const mentioned = services.client.user && new RegExp(`^<@!?${services.client.user.id}>$`).test(message.content.trim());
         if (!mentioned) return 'continue';
-        const embed = new EmbedBuilder().setColor(0xa039a0).setTitle('Hello there!')
+        const embed = new EmbedBuilder().setColor(BOT_COLOR).setTitle('Hello there!')
           .setDescription(`Use \`/help\` to see available commands.\nOnline for ${Math.floor((Date.now() - services.startedAt) / 60_000)} minutes.`)
           .addFields(
-            { name: 'Development and support', value: '[GitHub](https://github.com/KifoPL/kifo-clanker) · [Discord](https://discord.gg/HxUFQCxPFp)' },
-            { name: 'Invite and vote', value: `[Invite](https://discord.com/oauth2/authorize?client_id=${services.client.user?.id}&scope=bot%20applications.commands) · [top.gg](https://top.gg/bot/${services.client.user?.id})` },
+            { name: 'Development and support', value: `[GitHub](${BOT_URLS.repository}) · [Discord](${BOT_URLS.support})` },
+            { name: 'Invite and vote', value: `[Invite](${BOT_URLS.invite(services.client.user?.id)}) · [top.gg](${BOT_URLS.vote(services.client.user?.id)})` },
           );
         await message.reply({ embeds: [embed] });
         return 'handled';

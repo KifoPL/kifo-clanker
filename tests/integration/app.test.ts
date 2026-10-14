@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 import { test } from 'node:test';
 import { type Client, Events } from 'discord.js';
+import { readConfig } from '../../src/config.js';
 import { startApp } from '../../src/app.js';
 import { createPool, query, runMigrations } from '../../src/db/index.js';
 
@@ -28,7 +29,7 @@ test('application refuses gateway login before complete schema, then ignores tex
   try {
     await query(admin, `CREATE SCHEMA ${schema}`);
     const firstPool = createPool(url.toString());
-    await assert.rejects(startApp({ discordToken: 'fixture', databaseUrl: url.toString(), healthPort: 0, schedulerPaused: true }, {
+    await assert.rejects(startApp({ ...readConfig({ DISCORD_TOKEN: 'fixture', DATABASE_URL: url.toString(), SCHEDULER_PAUSED: 'true' }), healthPort: 0 }, {
       client: fixture as unknown as Client, pool: firstPool,
     }), /schema is not ready/);
     assert.equal(fixture.loggedIn, false);
@@ -38,7 +39,7 @@ test('application refuses gateway login before complete schema, then ignores tex
     await runMigrations(pool);
     await query(pool, 'INSERT INTO guild_settings(guild_id,prefix) VALUES($1,$2)', ['123456789012345678', '?']);
     const connected = new GatewayFixture();
-    const close = await startApp({ discordToken: 'fixture', databaseUrl: url.toString(), healthPort: 0, schedulerPaused: true }, {
+    const close = await startApp({ ...readConfig({ DISCORD_TOKEN: 'fixture', DATABASE_URL: url.toString(), SCHEDULER_PAUSED: 'true' }), healthPort: 0 }, {
       client: connected as unknown as Client, pool,
     });
     let calls = 0;

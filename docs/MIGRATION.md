@@ -1,12 +1,18 @@
-# TypeScript rewrite
+---
+title: Deployment and data migration
+permalink: /docs/MIGRATION/
+---
+{% include docs-nav.html %}
 
-The legacy command features and automation surface are implemented in the new root package through 37 native slash commands and three context menus. Text message commands and custom prefixes are disabled. Production deployment is a separate step: live Discord, provider credentials, and the actual production MySQL schema/snapshot must be validated before cutover.
+# Deployment and data migration
+
+Kifo Clanker provides 35 native slash commands, three context menus, passive channel features, and durable scheduled workflows. Production deployment is a separate step: live Discord, provider credentials, and the actual production MySQL schema/snapshot must be validated before cutover.
 
 ## Implemented surface
 
 | Surface | Implemented |
 |---|---|
-| 37 native slash commands | autothreading, bookmark, clean, cmdlist, countdown, cringe, deploy, epoch, error, giveaway, guide, help, howgay, iq, lang, list, menu, perms, ping, poll, pp, prefix, react, reload, remove, reverse, serverlist, stats, stfu, superslow, test, threads, ticket, ticketing, todo, top, urmum |
+| 35 native slash commands | autothreading, bookmark, clean, cmdlist, countdown, cringe, deploy, epoch, error, giveaway, guide, help, howgay, iq, lang, list, menu, perms, ping, poll, pp, react, reload, remove, reverse, serverlist, stats, stfu, superslow, threads, ticket, ticketing, todo, top, urmum |
 | 3 context menus | detect language, save, user stats |
 | Owner-only slash commands, included above | /serverlist, /deploy, /cmdlist, /reload for operator configuration changes |
 | Passive behavior | Auto reactions, superslow, ticket-channel filtering, automatic threads, role/permission reaction menus, note/bookmark DM deletion, deleted/bulk-deleted menu restoration, mention greeting, guild lifecycle notifications |
@@ -15,9 +21,13 @@ The legacy command features and automation surface are implemented in the new ro
 | Delivery | Multi-stage non-root Docker image, persistent PostgreSQL 18.6, Aspire migration gate, CI, CodeQL, Dependabot |
 | Observability | Structured stdout, optional bounded Discord log relay, liveness/readiness, OpenTelemetry command/query/job spans, latency/outcome/pool/lag/memory/event-loop/drop metrics |
 
-The parity tests read the legacy source without executing it, retain every existing slash name, option path, type, and required input, and check that former text commands are registered as native slash commands. Help, registration and generated documentation use the same registry. Each command has its own file; shared behavior is implemented in feature services.
+Registry validation and direct handler tests check the registered command surface and structured inputs. Help, registration and generated documentation use the same registry. Each command has its own file; shared behavior is implemented in feature services.
 
-Use `/help` or Discord's command picker. Former text commands now expose structured options: `/list server`, `/list user`, and `/list roles` cover member exports; `/stats` accepts a member or role; `/top` takes a winner count, duration, channel, and emoji. `/test` keeps its original `input` and `input2` options and adds `arguments` for the former whitespace-separated argument test. `/prefix` is informational only: it explains that text prefixes are retired and makes no custom-prefix or premium-feature offer. Imported prefix values are retained for migration history and do not enable text commands.
+Use `/help` or Discord's command picker. `/list server`, `/list user`, and `/list roles` cover member exports; `/stats` accepts a member or role; `/top` takes a winner count, duration, channel, and emoji. The [guides](guideList.md) explain common workflows.
+
+Migrations use PostgreSQL’s `CREATE ... IF NOT EXISTS` and verify existing objects against the expected catalog structure. Compatible existing tables and indexes are adopted without rewriting rows or identity counters. Incompatible columns, defaults, constraints, indexes, triggers, or row-level security cause the transaction to roll back; the migrator does not guess how to repair them. Applied migration checksums remain strict.
+
+The migration role needs `CREATE` permission on the database to create and drop a private reference schema inside its transaction. The runtime role does not need that permission. The current six migrations contain schema changes only; future data migrations need a separate validation path before using the reference-schema replay.
 
 ## Architecture and intentional corrections
 
@@ -31,13 +41,13 @@ One non-overlapping scheduler claims bounded batches using `FOR UPDATE SKIP LOCK
 
 Intentional changes and fixes:
 
-- Text prefix parsing, dispatch and cache loading are removed. Message events cannot invoke commands; old default/custom prefixes follow ordinary passive-message behavior. Native inputs retain the interaction actor and respond through Discord interactions, with private confirmation edits using the interaction webhook.
+- Native inputs retain the interaction actor and respond through Discord interactions, with private confirmation edits using the interaction webhook.
 - Permissions are checked in the actual target channel, with fresh authorization after confirmation. Role changes enforce user and bot hierarchy. Temporary-operation intent and restoration jobs commit before Discord effects; permission restoration preserves allow/deny/inherit and detects later changes.
 - Menus preserve preexisting roles and unrelated overwrite bits. Privileged menu creation requires the creator and bot to hold granted permissions, plus an explicit user/message/action-bound 30-second button confirmation.
 - Superslow uses an atomic unique channel/user cooldown transition; concurrent messages admit exactly one transition per window.
-- Top scans have cancellation, finite pagination and time limits. Cross-channel rankings and source content go only to the requester in DMs. Same-channel output remains public. Disabled legacy channel/message statistics remain explicitly unsupported rather than claiming invented parity.
+- Top scans have cancellation, finite pagination and time limits. Cross-channel rankings and source content go only to the requester in DMs. Same-channel output remains public. Statistics support servers, members/bots, and roles; channel/message statistics are unsupported.
 - Unicode reversal preserves grapheme clusters. Epoch parsing rejects impossible/out-of-range dates; ISO datetimes without offsets use UTC. Discord IDs stay decimal strings, with BigInt for deterministic calculators.
-- “1 day” archive options mean 1440 minutes. Private tickets create private threads. Old boost-level restrictions superseded by current Discord capabilities are removed.
+- “1 day” archive options mean 1440 minutes. Private tickets create private threads. Archive and thread visibility settings follow current Discord capabilities.
 - Giveaways paginate entrants, exclude bots and persist winners before announcement. Poll/countdown/giveaway results produce new replies with stable enforced nonces and persisted result IDs. Crash recovery does not reroll winners.
 - Missing integrations fail clearly. GitHub issue creation has a durable per-user throttle. User-controlled mentions are disabled by default. Attachments use bounded in-memory buffers instead of writes into the application directory.
 
@@ -54,7 +64,9 @@ npm run check
 npm run dev
 ```
 
-`npm run build` emits compiled code; `npm start` runs it. Development, start, migration, registration, and import/export scripts read `.env` when present. Production and Aspire inject environment variables. New configuration uses `DISCORD_TOKEN`; legacy `LOGIN_TOKEN` stays confined to the preserved old bot.
+PostgreSQL has no `CREATE OR ALTER TABLE`. The migrator uses `CREATE TABLE IF NOT EXISTS` and catalog checks to adopt existing tables only when their structure is compatible. Incompatible types, defaults, checks, indexes, extra uniqueness, row-level security, or triggers cause a rollback without modifying those tables. Applied migration checksum drift is still rejected. The migration account needs **CREATE on the target database** to build a temporary reference schema; this is not the role’s `CREATEDB` attribute, and the runtime account needs no additional schema-creation privileges. Current migrations are schema-only; future data migrations need a separate compatibility plan.
+
+`npm run build` emits compiled code; `npm start` runs it. Development, start, migration, registration, and import/export scripts read `.env` when present. Production and Aspire inject environment variables. Configure `DISCORD_TOKEN` for the gateway and `DATABASE_URL` for PostgreSQL. Environment values are validated before entry points open connections; validation errors identify fields without printing secrets.
 
 Enable Discord's Message Content, Server Members, and Presence privileged intents for the test bot. Give it the permissions and role hierarchy required by the specific features being tested.
 
@@ -70,7 +82,7 @@ Optional configuration:
 - `OTEL_EXPORTER_OTLP_ENDPOINT`: HTTP/protobuf endpoint; Aspire supplies endpoint and exporter configuration.
 - `SCHEDULER_PAUSED=true`: pauses scheduled execution for migration checks. Commands, passive events and startup reconciliation remain active; this is not a dry-run flag.
 
-Register all 37 slash commands and three context menus in a test guild by setting `DISCORD_APPLICATION_ID` and `DISCORD_TEST_GUILD_ID`, then running `npm run deploy-commands`. This replaces that test guild's application commands. Startup never deploys commands. The owner-only `/deploy` command supports reviewed guild/global/both registration and removal through a bound confirmation. `npm run generate-docs` rebuilds [the command reference](commandList.md) without opening a database or gateway connection.
+Register all 35 slash commands and three context menus in a test guild by setting `DISCORD_APPLICATION_ID` and `DISCORD_TEST_GUILD_ID`, then running `npm run deploy-commands`. This replaces that test guild's application commands. Startup never deploys commands. The owner-only `/deploy` command supports reviewed guild/global/both registration and removal through a bound confirmation. `npm run generate-docs` rebuilds [the command reference](commandList.md) without opening a database or gateway connection.
 
 ## Docker and Aspire
 
@@ -80,7 +92,7 @@ docker run --rm --env DATABASE_URL kifo-clanker:dev dist/scripts/migrate.js
 docker run --rm --env DATABASE_URL --env DISCORD_TOKEN -p 8080:8080 kifo-clanker:dev
 ```
 
-Migrations must complete before running the bot directly. Runtime images include compiled application code and migrations, run as UID 1000, and exclude legacy code, MySQL drivers, `.env`, dumps, `.git`, and host dependencies. The MySQL exporter is development tooling, run with `npm ci` locally; it is not a runtime-container command.
+Migrations must complete before running the bot directly. Runtime images include compiled application code and migrations, run as UID 1000, and exclude MySQL drivers, `.env`, dumps, `.git`, and host dependencies. The MySQL exporter is development tooling, run with `npm ci` locally; it is not a runtime-container command.
 
 For a managed cloud build, supply the session CA using `--secret id=proxy_ca,src="$CODEX_PROXY_CERT"` when required. The CA exists only in dependency-install build mounts, not image layers. Keep TLS verification enabled.
 
@@ -114,7 +126,7 @@ The JSON format is `{ "timezone": "+02:00", "tables": { "prefixes": [], ... } }`
 
 | Legacy tables | Target |
 |---|---|
-| prefixes | guild_settings, retained as migration history; text prefixes are disabled |
+| prefixes | guild_settings, retained source settings |
 | react | auto_reactions |
 | superslow, superslowusers | superslow_settings, unique superslow_cooldowns |
 | ticketing, autothreading | ticket_settings, autothreading_settings |
@@ -133,9 +145,9 @@ Failed restoration jobs retain the operation/ownership record. Diagnose the targ
 
 ## Release gates and rollback
 
-Local verification covers strict compilation/lint, registry parity, authorization, privacy, cancellations, durable intent, lease recovery, retry stability, import rollback/reconciliation, bounded intake and actual HTTP/protobuf telemetry export. PostgreSQL tests use random isolated schemas and do not touch existing rows. Run them with a test database:
+Local verification covers strict compilation/lint, registry validation, authorization, privacy, cancellations, durable intent, lease recovery, retry stability, import rollback/reconciliation, bounded intake and actual HTTP/protobuf telemetry export. PostgreSQL tests use random isolated schemas and do not touch existing rows. Run them with a test database:
 
-Validated on 13 October 2026: 131 unit tests and six PostgreSQL 18.6 integration tests pass; lint, strict typecheck, compilation, clean install, and dependency audit (zero reported vulnerabilities in the new package) pass. The frozen Docker image builds and runs compiled migrations as UID 1000; AppHost builds with zero warnings/errors. The preserved legacy package retains its original dependency graph and is excluded from the runtime image.
+Release checks include unit tests, PostgreSQL 18.6 integration tests, lint, strict typecheck, compilation, a clean install, and dependency audit. Validate the Docker image and compiled migrations as UID 1000, and build the AppHost before cutover. The documentation workflow checks that the generated command reference matches the registry, builds Jekyll, and verifies local page links and anchors.
 
 ```sh
 npm run check
@@ -150,4 +162,4 @@ Announcements remain at-least-once: a crash after Discord accepts a reply but be
 
 Before new writes or Discord effects, rollback can restore the previous deployment. Afterwards, rollback requires reconciling new PostgreSQL state and Discord actions; simply restarting the old MySQL bot can lose changes or replay jobs.
 
-The old bot and original package/lockfile remain under `legacy/` for reference and migration review; `legacy/docs` links to existing docs. Run it only from its own directory with its own dependencies and original environment. Never run both bots with the same production token. Root `package.json` formerly claimed ISC while `LICENSE` contains AGPLv3; this rewrite does not silently relicense the project.
+Keep a separately recoverable copy of the previous deployment and its data before cutover. Never run two bot deployments with the same production token. The repository license is AGPLv3; see [LICENSE](https://github.com/KifoPL/kifo-clanker/blob/rewrite/LICENSE).

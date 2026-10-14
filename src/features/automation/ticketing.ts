@@ -1,3 +1,4 @@
+import { BOT_URLS } from '../../constants.js';
 import ms from 'ms';
 import { ChannelType, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import type { SlashCommand } from '../../contracts/commands.js';
@@ -18,7 +19,7 @@ export function ticketingCommand(state: AutomationState): SlashCommand {
     const channel = await requireChannel(interaction, action === 'help' || action === 'list' ? [] : manage,
       action === 'help' || action === 'list' ? [] : [...threadBot,PermissionFlagsBits.ManageChannels,PermissionFlagsBits.ManageMessages]);
     if (!channel) return;
-    if (action === 'help') { await interaction.reply({ content:'https://kifopl.github.io/kifo-clanker/docs/guides/ticketing',flags:MessageFlags.Ephemeral }); return; }
+    if (action === 'help') { await interaction.reply({ content:BOT_URLS.guide('ticketing'),flags:MessageFlags.Ephemeral }); return; }
     if (action === 'list') { await interaction.reply({ content:[...state.tickets.values()].filter(row => row.guild_id === interaction.guildId).map(row => `<#${row.channel_id}>: ${row.are_public ? 'public':'private'}, archive ${row.archive_minutes} minutes, slowmode ${row.slowmode_seconds}s`).join('\n').slice(0,1900) || 'No ticketing channels enabled.',flags:MessageFlags.Ephemeral }); return; }
     if (action === 'off') {
       if (!state.tickets.has(channel.id)) { await interaction.reply({content:'Ticketing is already off.',flags:MessageFlags.Ephemeral}); return; }
@@ -37,7 +38,7 @@ export function ticketingCommand(state: AutomationState): SlashCommand {
     if (!await recheckPermissions(interaction,channel,manage,[...threadBot,PermissionFlagsBits.ManageChannels,PermissionFlagsBits.ManageMessages,...(arePublic ? [] : [PermissionFlagsBits.CreatePrivateThreads])])) return;
     await query(state.services.pool,'INSERT INTO ticket_settings(channel_id,guild_id,are_public,slowmode_seconds,archive_minutes) VALUES($1,$2,$3,$4,$5)',[channel.id,interaction.guildId,arePublic,seconds,minutes]);
     state.tickets.set(channel.id,{channel_id:channel.id,guild_id:interaction.guildId!,are_public:arePublic,slowmode_seconds:seconds,archive_minutes:minutes});
-    if (await confirm(interaction,'Ticketing enabled. Post a guide in this channel?','ticketing-guide')) await channel.send({content:'**Tickets are enabled here.** Use `/ticket` with a brief title and optional description to ask a question or report a problem. Please search existing answers first and thank anyone who helps. Guide: https://kifopl.github.io/kifo-clanker/docs/guides/ticket',allowedMentions:{parse:[]}});
+    if (await confirm(interaction,'Ticketing enabled. Post a guide in this channel?','ticketing-guide')) await channel.send({content:`**Tickets are enabled here.** Use \`/ticket\` with a brief title and optional description to ask a question or report a problem. Please search existing answers first and thank anyone who helps. Guide: ${BOT_URLS.guide('ticket')}`,allowedMentions:{parse:[]}});
     await interaction.editReply({content:'Ticketing enabled. Grant members View Channel, Use Application Commands and Send Messages in Threads. Grant moderators and the bot Send Messages, Manage Messages and Manage Threads.',components:[]});
   } };
 }

@@ -1,3 +1,4 @@
+import { BOT_COLOR, BOT_NAME, BOT_URLS } from '../constants.js';
 import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import type { InteractionReplyOptions } from 'discord.js';
 import type { SlashCommand } from '../contracts/commands.js';
@@ -11,8 +12,8 @@ export function reverseText(text: string): string {
 export function reverseReply(text: string, silent: boolean, userTag: string): InteractionReplyOptions {
   return {
     embeds: [new EmbedBuilder()
-      .setColor(0xa039a0)
-      .setAuthor({ name: 'Powered by Kifo Clanker™', url: 'https://discord.gg/HxUFQCxPFp' })
+      .setColor(BOT_COLOR)
+      .setAuthor({ name: `Powered by ${BOT_NAME}™`, url: BOT_URLS.support })
       .setTitle(`Command "REVERSE" issued by ${userTag}`)
       .setDescription(reverseText(text))],
     ...(silent ? { flags: MessageFlags.Ephemeral } : {}),

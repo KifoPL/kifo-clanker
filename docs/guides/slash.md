@@ -1,50 +1,37 @@
-# How to use `/` commands?
+---
+title: Using slash commands
+permalink: /docs/guides/slash/
+---
+{% include docs-nav.html %}
 
-## Table of Contents:
+# Using slash commands
 
-- [How to use `/` commands?](#how-to-use--commands)
-	- [Table of Contents:](#table-of-contents)
-	- [What are `/` commands?](#what-are--commands)
-	- [List of `/` commands](#list-of--commands)
-	- [Using `/` commands on `PC`](#using--commands-on-pc)
-	- [Using `/` commands on `Mobile`](#using--commands-on-mobile)
-	- [Command arguments](#command-arguments)
+Type `/` in a Discord channel and choose **Kifo Clanker** in the command picker. Select a command, fill its required inputs, and send it. Discord describes each input and offers choices for members, roles, channels, and other values.
 
-## What are `/` commands?
+On desktop, use **Tab** to move between inputs. On mobile, tap an input to choose or enter its value. When several bots have the same command name, check the bot’s icon before sending.
 
-Slash Commands are the new, exciting way to interact with bots on Discord. With Slash Commands, all you have to do is type `/` and you're ready to use your favorite bot.<br/>
-You can learn everything the bot does and easily find new features as they're added. Validation, error states and helpful UI walks you through the commands, meaning you can get it right the first time, especially on mobile. You now have one more ally in the fight against your phone's autocorrect (`kifo help`, `! kif hello`, `!kifo hell`, `@KifoPL#3358 HELP BOT BROKE`).
+## Find a command
 
-Thanks to the features above, **there is no need for the `/help` command** - simply type `/` and click the `Kifo Clanker` icon to see all available commands! Each command and command argument has a description below its name.
-> Since some commands have an advanced/confusing usage, I created the `/guide` command, which links you to different guides for very detailed help.
+Use `/help` for the overview or `/help command:top` for a particular command. `/guide` opens the guide list; its `choice` option links directly to a topic.
 
-## List of `/` commands
+[Browse all commands and options](../commandList.md).
 
-The complete and auto-updated list of commands can be found [here](../commandList.md#list-of-slash-commands-used-with-).
+## Choose the right input
 
-## Using `/` commands on `PC`
+| Input | Example |
+|---|---|
+| Member, role, or channel | Select `@member`, `@Announcements`, or `#events` from Discord’s picker. |
+| Integer | `winners:3` for `/top`. |
+| True / false | `bots:false` for `/autothreading on`. |
+| Duration text | `10m`, `1h`, or `7d`, within the command’s stated limits. |
+| Message reference | Copy a message’s link from its context menu, or use a message ID when supported. |
 
-After typing `/`, you will see a menu with an available command list, as well as a list of bots on the left (represented by their icons). Some bots may have the same command name, so pay attention to the icons.<br/>
-After clicking the chosen command (or pressing `Tab`), if required, type or choose the argument **(you can't skip required arguments)**. To proceed to the next argument, press `Tab`. Optional arguments are listed after the `Optional` text.<br/>
-When you finish typing in all arguments, press `Enter` and observe magic!
+A phrase with spaces belongs in a single text input: `/todo text:Prepare the next community event` creates one note.
 
-## Using `/` commands on `Mobile`
+Some commands show buttons to review a change before it happens. Check the target and duration, then confirm or cancel. Confirmation buttons belong to the person who started the command and expire if left unanswered.
 
-There are but a few minor differences compared to `PC`. After typing `/`, the list of bots is at the bottom of the command list.<br/>
-To choose a specific command, tap on it. To type or choose an argument, simply tap on it **(you can't skip required arguments)**.<br/>
-When all of the required arguments are chosen, send the command like any other message. Simple enough, isn't it?
+## Who can see the result?
 
-## Command arguments
+Many utility responses are visible only to you. Community features such as a giveaway, ticket, or reaction menu post the shared message in the channel. Cross-channel `/top` results go to your DMs so channel access stays private.
 
-There are a few types of arguments a command may require. The most basic is:
-- `INTEGER`: Some integer numbers (`0`, `25`, `69`, `12345`).
-- `STRING`: Some text (Discord markdown supported (with emotes!), like `**Hello there**, this is *ya boi Kifo*. :LMAOROFLFUCC:`).
-> Some commands that require a specific text have a list of choices (either a string or an integer).
-- `BOOLEAN`: `True` or `False`.
-- `USER`: Discord user (when using this argument Discord displays a list of users who can see the channel you're in, kinda like when trying to mention them in the message).
-- `ROLE`: Same as the user, but for roles.
-- `CHANNEL`: Any channel (category, voice, stage, etc), also with an interactive list.
-- `MENTIONABLE`: User or role.
-<hr/>
-
-~by [KifoPL](https://bio.link/KifoPL)
+If a command reports missing permissions, check both your role and the bot’s permissions in the channel it is acting on. A server administrator can also control which slash commands members can use under Discord’s integration settings.
