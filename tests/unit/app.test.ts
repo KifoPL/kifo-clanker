@@ -12,8 +12,24 @@ class GatewayDouble extends EventEmitter {
   destroyed = false;
   presence: unknown;
   user = { id: '795638549730295820', setPresence: (presence: unknown) => { this.presence = presence; } };
-  application = { fetch: async () => ({ owner: { id: '289119054130839552' } }) };
-  async login(): Promise<string> { this.loggedIn = true; this.emit(Events.ClientReady); return 'unit'; }
+  registrations: Array<{ data: unknown[]; guild: string | undefined }> = [];
+  onRegister: ((data: unknown[], guild?: string) => Promise<void>) | undefined;
+  onLogin: (() => Promise<void>) | undefined;
+  reportChannels: string[] = [];
+  reports: unknown[] = [];
+  onReport: (() => Promise<void>) | undefined;
+  channels = { fetch: async (id: string) => {
+    this.reportChannels.push(id);
+    return { isSendable: () => true, send: async (body: unknown) => { await this.onReport?.(); this.reports.push(body); } };
+  } };
+  application = {
+    fetch: async () => ({ owner: { id: '289119054130839552' } }),
+    commands: { set: async (data: unknown[], guild?: string) => {
+      this.registrations.push({ data, guild });
+      await this.onRegister?.(data, guild);
+    } },
+  };
+  async login(): Promise<string> { await this.onLogin?.(); this.loggedIn = true; this.emit(Events.ClientReady); return 'unit'; }
   isReady(): boolean { return this.loggedIn && !this.destroyed; }
   async destroy(): Promise<void> { this.destroyed = true; }
 }
@@ -41,6 +57,10 @@ test('runtime starts and shuts down through gateway and database doubles, with m
   const close = await startApp(f.config, { client: f.client as unknown as Client, pool: f.pool });
   try {
     assert.equal(f.client.loggedIn, true);
+    assert.equal(f.client.registrations.length, 1);
+    assert.equal(f.client.registrations[0]?.guild, undefined);
+    assert.equal(f.client.registrations[0]?.data.length, 38);
+    assert.deepEqual(f.client.reportChannels, ['828100819730956348']);
     assert.match(JSON.stringify(f.client.presence), /\/help/);
     f.queries.length = 0;
     const replies: unknown[] = [];
@@ -111,4 +131,84 @@ test('runtime routes gateway events to feature hooks and dispatches both applica
   f.client.emit(Events.MessageCreate, { id: 'after-close', channelId: 'channel' });
   await new Promise<void>(resolve => setImmediate(resolve));
   assert.equal(calls.filter(call => call.kind === 'message').length, 1, 'shutdown stops event intake');
+});
+
+test('authenticated test bot automatically registers complete metadata only after schema and gateway readiness', async () => {
+  const f = await fixture(); f.client.user.id = '796447999747948584';
+  f.client.onLogin = async () => {
+    assert.ok(f.queries.some(sql => sql.startsWith('SELECT version, filename, checksum')));
+    assert.deepEqual(f.client.registrations, []);
+  };
+  f.client.onRegister = async () => { assert.equal(f.client.isReady(), true); };
+  const close = await startApp(f.config, { client: f.client as unknown as Client, pool: f.pool });
+  try {
+    assert.equal(f.client.registrations.length, 1);
+    assert.equal(f.client.registrations[0]?.guild, '822800862581751848');
+    assert.equal(f.client.registrations[0]?.data.length, 38);
+    assert.equal(f.client.isReady(), true);
+  } finally { await close(); }
+});
+
+test('registration is never attempted when migration validation or gateway login fails', async () => {
+  for (const schemaReady of [false, true]) {
+    const f = await fixture(schemaReady); f.client.user.id = '796447999747948584';
+    if (schemaReady) f.client.onLogin = async () => { throw new Error('Gateway unavailable'); };
+    await assert.rejects(startApp(f.config, { client: f.client as unknown as Client, pool: f.pool }), schemaReady ? /Gateway unavailable/ : /schema is not ready/);
+    assert.deepEqual(f.client.registrations, []); assert.equal(f.client.destroyed, true); assert.equal(f.ended(), true);
+  }
+});
+
+test('test-bot startup awaits registration before returning readiness', async () => {
+  const f = await fixture(); f.client.user.id = '796447999747948584';
+  let release!: () => void; const gate = new Promise<void>(resolve => { release = resolve; });
+  let started!: () => void; const registrationStarted = new Promise<void>(resolve => { started = resolve; });
+  f.client.onRegister = async () => { started(); await gate; };
+  let ready = false;
+  const starting = startApp(f.config, { client: f.client as unknown as Client, pool: f.pool }).then(close => { ready = true; return close; });
+  await registrationStarted; assert.equal(ready, false);
+  release(); const close = await starting;
+  try { assert.equal(ready, true); } finally { await close(); }
+});
+
+test('test-bot registration failure closes Discord/database resources and does not expose a ready runtime', async () => {
+  const f = await fixture(); f.client.user.id = '796447999747948584';
+  f.client.onRegister = async () => { throw new Error('Discord registration failed'); };
+  await assert.rejects(startApp(f.config, { client: f.client as unknown as Client, pool: f.pool }), /Discord registration failed/);
+  assert.equal(f.client.registrations.length, 1); assert.equal(f.client.destroyed, true); assert.equal(f.ended(), true);
+  assert.equal(f.client.isReady(), false);
+});
+
+test('startup selects authenticated test identity after login and honors configured guild override', async () => {
+  const f = await fixture(); const override = '123456789012345678';
+  f.config = { ...readConfig({ DISCORD_TOKEN: 'unit-token', DATABASE_URL: 'postgres://localhost/unit', DISCORD_TEST_GUILD_ID: override }), healthPort: 0, schedulerPaused: true };
+  f.client.onLogin = async () => { f.client.user.id = '796447999747948584'; };
+  const close = await startApp(f.config, { client: f.client as unknown as Client, pool: f.pool });
+  try { assert.equal(f.client.registrations.length, 1); assert.equal(f.client.registrations[0]?.guild, override); assert.equal(f.client.registrations[0]?.data.length, 38); }
+  finally { await close(); }
+});
+
+
+test('production registration failure closes startup resources before reporting success', async () => {
+  const f = await fixture();
+  f.client.onRegister = async () => { throw new Error('Global registration denied'); };
+  await assert.rejects(startApp(f.config, { client: f.client as unknown as Client, pool: f.pool }), /Global registration denied/);
+  assert.equal(f.client.registrations[0]?.guild, undefined);
+  assert.equal(f.client.destroyed, true); assert.equal(f.ended(), true);
+  assert.deepEqual(f.client.reportChannels, []);
+});
+
+test('production registration report failure leaves the app ready and keeps global registration', async () => {
+  const f = await fixture();
+  f.client.onReport = async () => { throw new Error('Report channel unavailable'); };
+  const close = await startApp(f.config, { client: f.client as unknown as Client, pool: f.pool });
+  try { assert.equal(f.client.isReady(), true); assert.equal(f.client.registrations.length, 1); assert.equal(f.client.registrations[0]?.guild, undefined); }
+  finally { await close(); }
+});
+
+test('validated production reporting override reaches actual startup notification without changing global scope', async () => {
+  const f = await fixture(); const override = '123456789012345678';
+  f.config = { ...readConfig({ DISCORD_TOKEN: 'unit-token', DATABASE_URL: 'postgres://localhost/unit', DISCORD_DEPLOY_CHANNEL_ID: override }), healthPort: 0, schedulerPaused: true };
+  const close = await startApp(f.config, { client: f.client as unknown as Client, pool: f.pool });
+  try { assert.equal(f.client.registrations[0]?.guild, undefined); assert.deepEqual(f.client.reportChannels, [override]); assert.equal(f.client.reports.length, 1); }
+  finally { await close(); }
 });

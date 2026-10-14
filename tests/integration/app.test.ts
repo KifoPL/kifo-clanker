@@ -13,7 +13,7 @@ class GatewayFixture extends EventEmitter {
   loggedIn = false;
   destroyed = false;
   presence = false;
-  user = { id: '795638549730295820', setPresence: () => { this.presence = true; } };
+  user = { id: '123456789012345678', setPresence: () => { this.presence = true; } };
   application = { fetch: async () => ({ owner: { id: '289119054130839552' } }) };
   async login(): Promise<string> { this.loggedIn = true; this.emit(Events.ClientReady); return 'fixture'; }
   isReady(): boolean { return this.loggedIn && !this.destroyed; }

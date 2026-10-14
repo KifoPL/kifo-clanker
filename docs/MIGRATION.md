@@ -79,10 +79,14 @@ Optional configuration:
 - `GITHUB_TOKEN` (or legacy `GITHUB_KEY`), `GITHUB_REPOSITORY`: issue integration, default repository `KifoPL/kifo-clanker`.
 - `JOKE_API_URL`: HTTPS humor endpoint, default `https://www.yomomma.info/`.
 - `DISCORD_LOG_CHANNEL_ID`: optional command/error/lifecycle relay. Logging continues through stdout if Discord is unavailable.
+- `DISCORD_TEST_GUILD_ID`: test registration guild override, default `822800862581751848`.
+- `DISCORD_DEPLOY_CHANNEL_ID`: startup registration status channel override; defaults to `822800863050858539` for Test Clanker and `828100819730956348` for production Kifo Clanker.
 - `OTEL_EXPORTER_OTLP_ENDPOINT`: HTTP/protobuf endpoint; Aspire supplies endpoint and exporter configuration.
 - `SCHEDULER_PAUSED=true`: pauses scheduled execution for migration checks. Commands, passive events and startup reconciliation remain active; this is not a dry-run flag.
 
-Register all 35 slash commands and three context menus in a test guild by setting `DISCORD_APPLICATION_ID` and `DISCORD_TEST_GUILD_ID`, then running `npm run deploy-commands`. This replaces that test guild's application commands. Startup never deploys commands. The owner-only `/deploy` command supports reviewed guild/global/both registration and removal through a bound confirmation. `npm run generate-docs` rebuilds [the command reference](commandList.md) without opening a database or gateway connection.
+Startup automatically registers all 35 slash commands and three context menus after Discord login, before readiness. Authenticated Test Clanker (`796447999747948584`) replaces commands in the configured test guild; production Kifo Clanker (`795638549730295820`) replaces global commands immediately. Other bot identities do not deploy automatically. Registration failures stop startup; a failed status notification is logged without stopping a successfully registered bot. The status channels above receive the result; a channel ID is never used as the registration guild ID. Automatic registration does not require `DISCORD_APPLICATION_ID`.
+
+For manual test-guild registration, set `DISCORD_APPLICATION_ID` and `DISCORD_TEST_GUILD_ID`, then run `npm run deploy-commands`. The owner-only `/deploy` command supports guild/global/both registration and removal through a bound confirmation. `npm run generate-docs` rebuilds [the command reference](commandList.md) without opening a database or gateway connection.
 
 ## Docker and Aspire
 
@@ -103,7 +107,7 @@ dotnet user-secrets set "Parameters:discord-token" "YOUR_TEST_BOT_TOKEN" --id ki
 dotnet user-secrets set "Parameters:postgres-password" "YOUR_LOCAL_DATABASE_PASSWORD" --id kifo-clanker-apphost
 ```
 
-Keep the PostgreSQL password stable across restarts and do not commit secrets.
+Keep the PostgreSQL password stable across restarts and do not commit secrets. Aspire forwards optional `DISCORD_TEST_GUILD_ID` and `DISCORD_DEPLOY_CHANNEL_ID` environment overrides to the bot; leaving them unset uses the identity-specific defaults above.
 
 ```sh
 dotnet build infra/AppHost/apphost.cs

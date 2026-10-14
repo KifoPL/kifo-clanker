@@ -4,11 +4,13 @@ import type { FeatureDefinition } from '../../contracts/features.js';
 import { createOwnerSlashCommands, ownerCommandData } from './owner.js';
 
 import { createRegistryHelp, helpData } from './help.js';
+import { registerStartupCommands } from './registration.js';
 
 export const coreFeature: FeatureDefinition = {
   name: 'core', commandData: [...ownerCommandData, helpData],
   create(services) {
     return {
+      onReady: async () => { await registerStartupCommands(services); },
       slashCommands: [...createOwnerSlashCommands(services), createRegistryHelp(services, () => services.applicationCommands ?? [])],
       async onMessage(message) {
         if (message.author.bot) return 'continue';

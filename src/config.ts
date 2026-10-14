@@ -48,6 +48,7 @@ export const environmentSchema = z.object({
   DISCORD_TEST_GUILD_ID: optional(snowflake),
   BOT_OWNER_IDS: optional(z.string().transform(value => value.split(',').map(id => id.trim())).pipe(z.array(snowflake)).transform(value => [...new Set(value)])).default([]),
   DISCORD_LOG_CHANNEL_ID: optional(snowflake),
+  DISCORD_DEPLOY_CHANNEL_ID: optional(snowflake),
   LANGUAGE_DETECT_KEY: optional(secret),
   GITHUB_TOKEN: optional(secret),
   GITHUB_KEY: optional(secret),
@@ -78,7 +79,7 @@ const telemetryFields = {
 } as const;
 const telemetrySchema = environmentSchema.pick(telemetryFields);
 const runtimeSchema = environmentSchema.pick({ DISCORD_TOKEN: true, DATABASE_URL: true, HEALTH_PORT: true, SCHEDULER_PAUSED: true,
-  BOT_OWNER_IDS: true, DISCORD_LOG_CHANNEL_ID: true, LANGUAGE_DETECT_KEY: true, GITHUB_TOKEN: true, GITHUB_KEY: true,
+  BOT_OWNER_IDS: true, DISCORD_LOG_CHANNEL_ID: true, DISCORD_DEPLOY_CHANNEL_ID: true, DISCORD_TEST_GUILD_ID: true, LANGUAGE_DETECT_KEY: true, GITHUB_TOKEN: true, GITHUB_KEY: true,
   GITHUB_REPOSITORY: true, JOKE_API_URL: true, ...telemetryFields }).extend({ DISCORD_TOKEN: secret, DATABASE_URL: postgresUrl });
 export type RuntimeEnvironment = z.infer<typeof runtimeSchema>;
 export interface TelemetryConfig {
