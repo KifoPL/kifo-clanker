@@ -1,4 +1,4 @@
-import { BOT_IDS, COMMAND_REGISTRATION_CHANNEL_IDS, TEST_GUILD_ID } from '../../constants.js';
+import { BOT_IDS, COMMAND_REGISTRATION_CHANNEL_ID, TEST_GUILD_ID } from '../../constants.js';
 import type { RuntimeServices } from '../../contracts/features.js';
 
 export async function registerStartupCommands(services: RuntimeServices): Promise<boolean> {
@@ -17,7 +17,7 @@ export async function registerStartupCommands(services: RuntimeServices): Promis
   }
   const status = `Registered ${services.applicationCommands.length} application commands ${guildId ? `in test server ${guildId}` : 'globally'}.`;
   services.logger.info(status);
-  const channelId = services.env.DISCORD_DEPLOY_CHANNEL_ID ?? COMMAND_REGISTRATION_CHANNEL_IDS[isTest ? 'test' : 'production'];
+  const channelId = services.env.DISCORD_DEPLOY_CHANNEL_ID ?? COMMAND_REGISTRATION_CHANNEL_ID;
   try {
     const channel = await services.client.channels.fetch(channelId);
     if (!channel?.isSendable()) throw new Error(`Command registration channel ${channelId} is unavailable or cannot receive messages.`);

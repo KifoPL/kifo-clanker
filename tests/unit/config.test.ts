@@ -77,7 +77,7 @@ test('OTLP headers reject controls and characters unsupported by Node HTTP witho
 });
 
 test('startup registration guild/channel overrides are optional validated runtime snowflakes', () => {
-  const guild = '822800862581751848'; const channel = '828100819730956348';
+  const guild = '822800862581751848'; const channel = '822800863050858541';
   const configured = readConfig({ ...botEnv, DISCORD_TEST_GUILD_ID: guild, DISCORD_DEPLOY_CHANNEL_ID: channel });
   assert.equal(configured.env.DISCORD_TEST_GUILD_ID, guild);
   assert.equal(configured.env.DISCORD_DEPLOY_CHANNEL_ID, channel);

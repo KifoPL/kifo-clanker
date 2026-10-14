@@ -70,14 +70,14 @@ test('authenticated production bot registers38commands globally and reports in p
   assert.equal(await registerStartupCommands(f.services), true);
   assert.deepEqual(f.changes, [{ data: [...applicationCommandData], guild: undefined }]);
   assert.equal(f.changes[0]?.data.length, 38); assert.deepEqual(f.argumentCounts, [1]);
-  assert.deepEqual(f.destinations, ['828100819730956348']);
+  assert.deepEqual(f.destinations, ['822800863050858541']);
   assert.equal(f.channelSends.length, 1); assert.match(JSON.stringify(f.channelSends), /38/);
 });
 
 test('test registration reports only in default test reporting channel with safe mentions', async () => {
   const f = registrationFixture();
   assert.equal(await registerStartupCommands(f.services), true);
-  assert.deepEqual(f.destinations, ['822800863050858539']);
+  assert.deepEqual(f.destinations, ['822800863050858541']);
   assert.equal(f.channelSends.length, 1);
   assert.match(JSON.stringify(f.channelSends), /"parse":\[\]/);
 });

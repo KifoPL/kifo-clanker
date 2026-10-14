@@ -80,7 +80,7 @@ Optional configuration:
 - `JOKE_API_URL`: HTTPS humor endpoint, default `https://www.yomomma.info/`.
 - `DISCORD_LOG_CHANNEL_ID`: optional command/error/lifecycle relay. Logging continues through stdout if Discord is unavailable.
 - `DISCORD_TEST_GUILD_ID`: test registration guild override, default `822800862581751848`.
-- `DISCORD_DEPLOY_CHANNEL_ID`: startup registration status channel override; defaults to `822800863050858539` for Test Clanker and `828100819730956348` for production Kifo Clanker.
+- `DISCORD_DEPLOY_CHANNEL_ID`: startup registration status channel override; both bots default to `822800863050858541`.
 - `OTEL_EXPORTER_OTLP_ENDPOINT`: HTTP/protobuf endpoint; Aspire supplies endpoint and exporter configuration.
 - `SCHEDULER_PAUSED=true`: pauses scheduled execution for migration checks. Commands, passive events and startup reconciliation remain active; this is not a dry-run flag.
 
@@ -107,7 +107,7 @@ dotnet user-secrets set "Parameters:discord-token" "YOUR_TEST_BOT_TOKEN" --id ki
 dotnet user-secrets set "Parameters:postgres-password" "YOUR_LOCAL_DATABASE_PASSWORD" --id kifo-clanker-apphost
 ```
 
-Keep the PostgreSQL password stable across restarts and do not commit secrets. Aspire forwards optional `DISCORD_TEST_GUILD_ID` and `DISCORD_DEPLOY_CHANNEL_ID` environment overrides to the bot; leaving them unset uses the identity-specific defaults above.
+Keep the PostgreSQL password stable across restarts and do not commit secrets. Aspire forwards optional `DISCORD_TEST_GUILD_ID` and `DISCORD_DEPLOY_CHANNEL_ID` environment overrides to the bot; leaving them unset uses the defaults above.
 
 ```sh
 dotnet build infra/AppHost/apphost.cs

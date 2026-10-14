@@ -60,7 +60,7 @@ test('runtime starts and shuts down through gateway and database doubles, with m
     assert.equal(f.client.registrations.length, 1);
     assert.equal(f.client.registrations[0]?.guild, undefined);
     assert.equal(f.client.registrations[0]?.data.length, 38);
-    assert.deepEqual(f.client.reportChannels, ['828100819730956348']);
+    assert.deepEqual(f.client.reportChannels, ['822800863050858541']);
     assert.match(JSON.stringify(f.client.presence), /\/help/);
     f.queries.length = 0;
     const replies: unknown[] = [];
