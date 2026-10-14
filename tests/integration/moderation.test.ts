@@ -23,11 +23,12 @@ test('PostgreSQL moderation serializes intent, recovers ambiguous effects, and p
     const overwrites=new Collection<string,{allow:PermissionsBitField;deny:PermissionsBitField}>();
     const updateSnapshot=()=>overwrites.set('member',{allow:new PermissionsBitField(state==='allow'?[PermissionFlagsBits.ViewChannel]:[]),deny:new PermissionsBitField(state==='deny'?[PermissionFlagsBits.ViewChannel]:[])});
     updateSnapshot();
-    const member={id:'member',roles:{highest:{position:1}}} as unknown as GuildMember;
+    const member={id:'member',user:{id:'member'},roles:{highest:{position:1}}} as unknown as GuildMember;
+    const actor={id:'actor',user:{id:'actor'},roles:{highest:{position:10,comparePositionTo:(target:{position:number})=>10-target.position}},permissions:new PermissionsBitField(PermissionFlagsBits.Administrator)} as unknown as GuildMember;
     const bot={id:'bot',roles:{highest:{comparePositionTo:()=>20}},permissions:new PermissionsBitField([PermissionFlagsBits.ManageChannels,PermissionFlagsBits.ManageRoles])} as unknown as GuildMember;
     const target={
       id:'channel',
-      permissionsFor:()=>new PermissionsBitField([PermissionFlagsBits.ManageChannels,PermissionFlagsBits.ManageRoles]),
+      permissionsFor:()=>new PermissionsBitField(PermissionFlagsBits.Administrator),
       permissionOverwrites:{cache:overwrites,edit:async(_id:string,permissions:{ViewChannel:boolean|null})=>{
         // Durable intent must be visible from another connection before the Discord request.
         const intent=await query(pool,`SELECT id FROM moderation_operations WHERE status IN ('intent','applied')`);
@@ -40,9 +41,11 @@ test('PostgreSQL moderation serializes intent, recovers ambiguous effects, and p
       fetch:async()=>target,
       isTextBased:()=>false,
     } as unknown as GuildChannel;
-    const guild={id:'guild',ownerId:'owner',channels:{fetch:async()=>target},roles:{fetch:async()=>null},members:{fetch:async()=>member,fetchMe:async()=>bot}} as unknown as Guild;
+    const role={id:'role',position:1,managed:false};
+    const guild={id:'guild',ownerId:'owner',channels:{fetch:async()=>target},roles:{fetch:async(id:string)=>id==='role'?role:null},members:{fetch:async(value:{user:string})=>value.user==='actor'?actor:member,fetchMe:async()=>bot}} as unknown as Guild;
+    for (const value of [member,actor,bot,role]) Object.assign(value,{guild});
     Object.assign(target,{guild});
-    const services={pool,client:{guilds:{fetch:async()=>guild}}} as unknown as RuntimeServices;
+    const services={pool,client:{guilds:{fetch:async()=>guild},users:{fetch:async()=>({send:async()=>{}})}},logger:{error:()=>{}}} as unknown as RuntimeServices;
     const mutation={guild,channel:target,targetId:'member',permission:'ViewChannel' as const,state:'allow' as const,actorId:'actor',messageId:'message',restoreAt:new Date(Date.now()+60_000)};
     const concurrent=await Promise.allSettled([setTemporaryPermission(services,mutation),setTemporaryPermission(services,mutation)]);
     assert.equal(concurrent.filter(value=>value.status==='fulfilled').length,1);
@@ -71,6 +74,19 @@ test('PostgreSQL moderation serializes intent, recovers ambiguous effects, and p
     assert.equal(state,'inherit');
     assert.equal(actions,previousActions);
     assert.equal((await query<{status:string}>(pool,'SELECT status FROM moderation_operations WHERE id=$1',[active.id])).rows[0]?.status,'conflict');
+    // Reproduce delayed admission using PostgreSQL: a permanent operation finishes
+    // after the queued command's initial read, before its ownership transaction starts.
+    let release!:()=>void;let entered!:()=>void;
+    const waiting=new Promise<void>(resolve=>{entered=resolve;});const gate=new Promise<void>(resolve=>{release=resolve;});
+    const queuedPool={query:pool.query.bind(pool),connect:async()=>{entered();await gate;return pool.connect();}} as unknown as import('pg').Pool;
+    const temporary=setTemporaryPermission({...services,pool:queuedPool},{...mutation,state:'allow',messageId:'queued'});
+    await waiting;
+    await setTemporaryPermission(services,{guild,channel:target,targetId:'member',permission:'ViewChannel',state:'deny',actorId:'actor',messageId:'permanent'});
+    release();await temporary;
+    const queued=(await query<{id:string;previous_state:string}>(pool,"SELECT id,previous_state FROM moderation_operations WHERE message_id='queued'")).rows[0]!;
+    assert.equal(queued.previous_state,'deny');
+    await createRestoreHandler(services,'permission')({id:'queuedJob',type:'permission_restore',payload:{operationId:queued.id},attempts:1},new AbortController().signal);
+    assert.equal(state,'deny');
     const roles=new Collection([['role',{id:'role'}]]);
     let roleActions=0;
     Object.assign(member.roles,{cache:roles,remove:async()=>{roleActions++;roles.delete('role');}});

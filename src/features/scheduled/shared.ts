@@ -45,13 +45,15 @@ export function chooseWinners(ids: readonly string[], count: number, draw: (maxi
   }
   return winners;
 }
-export async function fetchJobMessage(services: RuntimeServices, channelId: string, messageId: string): Promise<Message> {
+export async function fetchJobMessage(services: RuntimeServices, channelId: string, messageId: string, signal?: AbortSignal): Promise<Message> {
+  signal?.throwIfAborted();
   const channel = await services.client.channels.fetch(channelId);
   if (!channel?.isTextBased() || !('messages' in channel)) throw new PermanentJobError('Scheduled channel was deleted or cannot contain messages');
-  return channel.messages.fetch(messageId);
+  signal?.throwIfAborted();
+  return channel.messages.fetch({ message: messageId, force: true });
 }
 export function terminalDiscordError(error: unknown): boolean {
-  return error instanceof DiscordAPIError && [10003, 10004, 10008, 50001, 50013].includes(Number(error.code));
+  return error instanceof DiscordAPIError && [10003, 10008].includes(Number(error.code));
 }
 export function jobRecordId(payload: unknown): string {
   if (typeof payload !== 'object' || payload === null || !('id' in payload) || typeof payload.id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu.test(payload.id)) throw new PermanentJobError('Invalid scheduled record identifier');

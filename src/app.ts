@@ -12,8 +12,10 @@ import { observeRuntime, recordDroppedEvent, withSpan } from './observability.js
 import { refreshPresence } from './features/core/index.js';
 import type { Pool } from 'pg';
 import type { RuntimeServices } from './contracts/features.js';
+import { BOT_IDS, TESTER_ROLE_ID } from './constants.js';
 
-export async function startApp(config: Config, dependencies: { client?: Client; pool?: Pool } = {}): Promise<() => Promise<void>> {
+export async function startApp(config: Config, dependencies: { client?: Client; pool?: Pool; signal?: AbortSignal } = {}): Promise<() => Promise<void>> {
+  dependencies.signal?.throwIfAborted();
   const pool = dependencies.pool ?? createPool(config.databaseUrl);
   pool.on('error', (error: unknown) => logger.error('Idle database connection failed', error));
   const client = dependencies.client ?? new Client({
@@ -67,6 +69,7 @@ export async function startApp(config: Config, dependencies: { client?: Client; 
   let accepting = false;
   let health: Awaited<ReturnType<typeof startHealthServer>> | undefined;
   const intake = new EventIntake(error => logger.error('Event handler failed', error));
+  const controls = new EventIntake(error => logger.error('Scan cancellation failed', error), 4, 32);
   const logs = new EventIntake(() => { console.error('Optional Discord log delivery failed'); }, 1, 32);
   async function close(): Promise<void> {
     accepting = false;
@@ -76,6 +79,7 @@ export async function startApp(config: Config, dependencies: { client?: Client; 
       scheduler.stop(),
       ...registry.features.map(feature => feature.close?.()),
       intake.stop(),
+      controls.stop(),
       logs.stop(),
     ]);
     unobserve();
@@ -86,18 +90,35 @@ export async function startApp(config: Config, dependencies: { client?: Client; 
   try {
     // Migrations run separately; missing schema prevents gateway login.
     await assertSchemaReady(pool);
+    dependencies.signal?.throwIfAborted();
     await Promise.all(registry.features.map(feature => feature.hydrate?.()));
+    dependencies.signal?.throwIfAborted();
     health = await startHealthServer(config.healthPort, async () => {
       if (!accepting || !client.isReady()) return false;
       await query(pool, 'SELECT 1');
       return true;
     });
     client.on(Events.InteractionCreate, interaction => {
-      if (!accepting) return;
+      if (!accepting) {
+        if (interaction.isRepliable() && !interaction.replied && !interaction.deferred) {
+          void interaction.reply({ content: 'The bot is starting up or shutting down. Please retry shortly.', flags: MessageFlags.Ephemeral }).catch(() => {});
+        }
+        return;
+      }
       const command = interaction.isChatInputCommand() || interaction.isContextMenuCommand();
+      if (command && client.user?.id === BOT_IDS.test && !ownerIds.has(interaction.user.id)) {
+        const tester = interaction.inCachedGuild() ? interaction.member.roles.cache.has(TESTER_ROLE_ID)
+          : Array.isArray(interaction.member?.roles) && interaction.member.roles.includes(TESTER_ROLE_ID);
+        if (!tester) {
+          void interaction.reply({ content: 'Only testers and bot owners can use Test Clanker.', flags: MessageFlags.Ephemeral }).catch(() => {});
+          return;
+        }
+      }
       // These confirmations acknowledge through their command's scoped collector.
       if (!command && interaction.isButton() && /^(moderation|automation|deploy):/u.test(interaction.customId)) return;
-      const admitted = intake.enqueue(command ? `interaction:${interaction.user.id}` : `component:${interaction.id}`, async () => {
+      // A full command lane must not prevent its scans from being cancelled.
+      const lane = !command && interaction.isButton() && interaction.customId.startsWith('utilities:top:cancel:') ? controls : intake;
+      const admitted = lane.enqueue(command ? `interaction:${interaction.user.id}` : `component:${interaction.id}`, async () => {
         if (interaction.isChatInputCommand()) await dispatchInteraction(interaction, registry.slash);
         else if (interaction.isContextMenuCommand()) await dispatchContext(interaction, registry.context);
         else {
@@ -153,23 +174,31 @@ export async function startApp(config: Config, dependencies: { client?: Client; 
       });
     }
     const abortReady = new AbortController();
+    const readySignal = dependencies.signal ? AbortSignal.any([abortReady.signal, dependencies.signal]) : abortReady.signal;
     const readyTimeout = setTimeout(() => abortReady.abort(), 60_000);
     try {
+      dependencies.signal?.throwIfAborted();
       await Promise.all([
-        once(client, Events.ClientReady, { signal: abortReady.signal }),
+        once(client, Events.ClientReady, { signal: readySignal }),
         client.login(config.discordToken),
       ]);
     } finally {
       clearTimeout(readyTimeout);
       abortReady.abort();
     }
+    dependencies.signal?.throwIfAborted();
     const application = await client.application?.fetch();
+    dependencies.signal?.throwIfAborted();
     const owner = application?.owner;
     if (owner instanceof Team) for (const member of owner.members.values()) {
       if (member.membershipState === TeamMemberMembershipState.Accepted) ownerIds.add(member.id);
     }
     else if (owner?.id) ownerIds.add(owner.id);
-    for (const feature of registry.features) await feature.onReady?.();
+    for (const feature of registry.features) {
+      dependencies.signal?.throwIfAborted();
+      await feature.onReady?.();
+    }
+    dependencies.signal?.throwIfAborted();
     if (config.env.DISCORD_LOG_CHANNEL_ID) {
       try {
         const channel = await client.channels.fetch(config.env.DISCORD_LOG_CHANNEL_ID);
@@ -180,6 +209,7 @@ export async function startApp(config: Config, dependencies: { client?: Client; 
         });
       } catch (error) { logger.error('Optional Discord log channel unavailable', error); }
     }
+    dependencies.signal?.throwIfAborted();
     refreshPresence(client, startedAt);
     presenceUpdatedAt = Date.now();
     accepting = true;

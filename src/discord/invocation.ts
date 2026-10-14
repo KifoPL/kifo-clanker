@@ -18,7 +18,11 @@ export async function createInvocation(interaction: ChatInputCommandInteraction,
     },
     async reply(options) {
       const body = typeof options === 'string' ? { content: options } : options;
-      if (!replied) { replied = true; return interaction.editReply(body); }
+      if (!replied) {
+        const message = await interaction.editReply(body);
+        replied = true;
+        return message;
+      }
       return interaction.followUp({ ...body, ...(publicReply ? {} : { flags: MessageFlags.Ephemeral }) });
     },
   };
@@ -41,8 +45,16 @@ export function invocationCommand(
         await interaction.reply({ content: 'This command requires a server.', flags: MessageFlags.Ephemeral }); return;
       }
       const invocation = await createInvocation(interaction, publicReply);
-      if (command.permissions && !invocation.member?.permissionsIn(invocation.channelId).has(new PermissionsBitField([...command.permissions]))) {
-        await invocation.reply('You do not have the required permissions in this channel.'); return;
+      if (command.permissions?.length) {
+        if (!invocation.guild || !invocation.member) {
+          await invocation.reply('You do not have the required permissions in this channel.'); return;
+        }
+        await invocation.guild.roles.fetch();
+        const channel = await invocation.guild.channels.fetch(invocation.channelId, { force: true });
+        if (!channel?.isTextBased() || !invocation.member.permissionsIn(channel).has(new PermissionsBitField([...command.permissions]))) {
+          await invocation.reply('You do not have the required permissions in this channel.'); return;
+        }
+        invocation.channel = channel;
       }
       await command.execute(invocation, args(interaction));
     },

@@ -11,7 +11,7 @@ export const iq: SlashCommand = {
     const user = interaction.options.getUser('user') ?? interaction.user;
     const displayName = interaction.guild?.members.cache.get(user.id)?.displayName ?? user.username;
     const embed = new EmbedBuilder().setColor(BOT_COLOR).setTitle(`${displayName}'s IQ level is:`).addFields(calculateIq(user.id, interaction.guildId));
-    if (protectedIds.has(user.id)) embed.setImage('https://media1.tenor.com/images/8ac74d59bf920c9588c8f7f00229cb78/tenor.gif');
+    if (protectedIds.has(user.id)) embed.setImage('https://media.tenor.com/N_bXE4MWdEMAAAAM/big-brain-markiplier.gif');
     await interaction.reply({ embeds: [embed] });
   },
 };

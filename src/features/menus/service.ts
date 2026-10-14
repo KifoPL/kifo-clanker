@@ -28,8 +28,11 @@ interface Participant {
   status: 'capturing' | 'granting' | 'active' | 'restoring';
 }
 
+// Unknown Guild can mean the bot was removed; keep snapshots until access returns.
 const missing = (error: unknown): boolean => !!error && typeof error === 'object' && 'code' in error
-  && [10003, 10004, 10007, 10008, 10011, 10013].includes(Number(error.code));
+  && [10003, 10007, 10008, 10011, 10013].includes(Number(error.code));
+
+const closing = (menu: Menu): boolean => menu.closing || !!(menu.expires_at && menu.expires_at.getTime() <= Date.now());
 
 export const menuEmoji = (kind: Menu['kind']): string => kind === 'role' ? '🎭' : '✅';
 export const isMenuEmoji = (kind: Menu['kind'], emoji: string | null): boolean => emoji === menuEmoji(kind)
@@ -71,6 +74,12 @@ export class MenuService {
     return next;
   }
 
+  private async notify(member: GuildMember, content: string): Promise<void> {
+    if (member.user.bot) return;
+    try { await member.send({ content, allowedMentions: { parse: [] } }); }
+    catch (error) { this.services.logger.error('Menu notification failed', error); }
+  }
+
   async persist(menu: Menu, command: Pick<CommandInvocation, 'id' | 'channelId'>): Promise<void> {
     await withTransaction(this.services.pool, async (client) => {
       await query(client, `INSERT INTO menus
@@ -87,6 +96,7 @@ export class MenuService {
   } | undefined> {
     try {
       const guild = await this.services.client.guilds.fetch(menu.guild_id);
+      await guild.roles.fetch();
       const [member, bot] = await Promise.all([guild.members.fetch({ user: userId, force: true }), guild.members.fetchMe({ force: true })]);
       if (menu.kind === 'role') {
         const role = await guild.roles.fetch(menu.target_id, { force: true });
@@ -94,7 +104,12 @@ export class MenuService {
       }
       const channel = await guild.channels.fetch(menu.target_id, { force: true });
       return channel && !channel.isThread() ? { guild, member, bot, channel } : undefined;
-    } catch (error) { if (missing(error)) return undefined; throw error; }
+    } catch (error) {
+      // Member overwrites survive departures; retain their snapshots for safe restoration after rejoining.
+      if (menu.kind === 'permission' && error && typeof error === 'object' && 'code' in error && Number(error.code) === 10007) throw error;
+      if (missing(error)) return undefined;
+      throw error;
+    }
   }
 
   private async reconcileParticipant(menu: Menu, userId: string, signal?: AbortSignal): Promise<void> {
@@ -102,10 +117,6 @@ export class MenuService {
       'SELECT * FROM menu_participants WHERE menu_id=$1 AND user_id=$2', [menu.message_id, userId]);
     const participant = result.rows[0];
     if (!participant) return;
-    if (!participant.want_active && participant.status === 'capturing') {
-      await query(this.services.pool, 'DELETE FROM menu_participants WHERE menu_id=$1 AND user_id=$2', [menu.message_id, userId]);
-      return;
-    }
     signal?.throwIfAborted();
     const target = await this.targets(menu, userId);
     if (!target) {
@@ -114,7 +125,12 @@ export class MenuService {
     }
     const { member, bot, role, channel } = target;
     signal?.throwIfAborted();
-    if (participant.want_active && !menu.closing) {
+    if (participant.status === 'capturing' && (!participant.want_active || closing(menu))) {
+      await query(this.services.pool, `DELETE FROM menu_participants
+        WHERE menu_id=$1 AND user_id=$2 AND status='capturing' AND want_active=$3`, [menu.message_id, userId, participant.want_active]);
+      return;
+    }
+    if (participant.want_active && !closing(menu)) {
       if (participant.status === 'active') return;
       const actor = menu.created_by ? await target.guild.members.fetch({ user: menu.created_by, force: true }) : bot;
       authorizeTarget(actor, bot, member);
@@ -123,9 +139,15 @@ export class MenuService {
         const permission = resolvePermission(menu.permission ?? '');
         participant.previous_state = role ? (member.roles.cache.has(role.id) ? 'present' : 'absent')
           : channel && permission ? permissionState(channel, userId, permission) : 'unknown';
-        await query(this.services.pool, "UPDATE menu_participants SET previous_state=$3,status='granting' WHERE menu_id=$1 AND user_id=$2 AND status='capturing'",
+        const captured = await query(this.services.pool, `UPDATE menu_participants SET previous_state=$3,status='granting'
+          WHERE menu_id=$1 AND user_id=$2 AND status='capturing' AND want_active
+            AND EXISTS (SELECT 1 FROM menus WHERE message_id=$1 AND NOT closing
+              AND (expires_at IS NULL OR expires_at>clock_timestamp())) RETURNING user_id`,
           [menu.message_id, userId, participant.previous_state]);
+        if (!captured.rowCount) return;
       }
+      signal?.throwIfAborted();
+      if (closing(menu)) return;
       if (role) {
         safeMenuRole(actor, bot, role);
         await member.roles.add(role, 'Reaction menu');
@@ -136,15 +158,24 @@ export class MenuService {
         if (explicitlyDenied(channel, member, permission)) throw new Error('An explicit deny blocks this menu');
         await channel.permissionOverwrites.edit(member, { [permission]: true }, { reason: 'Reaction menu' });
       }
-      await query(this.services.pool, "UPDATE menu_participants SET status='active' WHERE menu_id=$1 AND user_id=$2 AND want_active", [menu.message_id, userId]);
+      const activated = await query(this.services.pool, `UPDATE menu_participants SET status='active'
+        WHERE menu_id=$1 AND user_id=$2 AND want_active AND status='granting'
+          AND EXISTS (SELECT 1 FROM menus WHERE message_id=$1 AND NOT closing
+            AND (expires_at IS NULL OR expires_at>clock_timestamp())) RETURNING user_id`, [menu.message_id, userId]);
+      if (activated.rowCount && participant.previous_state !== 'unknown') {
+        await this.notify(member, role ? `Role menu active: <@&${role.id}>.`
+          : `Permission menu active: \`${menu.permission}\` in <#${menu.target_id}>.`);
+      }
       return;
     }
+    let restored = true;
     // Existing imported effects have no trustworthy prior snapshot; never remove an unrelated role/overwrite.
     if (participant.previous_state === 'unknown') {
       this.services.logger.error('Imported menu effect has no prior snapshot; manual reconciliation required');
       return;
     } else if (role) {
       if (participant.previous_state === 'absent' && member.roles.cache.has(role.id)) await member.roles.remove(role, 'Reaction menu reverted');
+      else restored = member.roles.cache.has(role.id) === (participant.previous_state === 'present');
     } else if (channel) {
       const permission = resolvePermission(menu.permission ?? '');
       if (!permission) throw new Error('Unknown menu permission');
@@ -153,19 +184,26 @@ export class MenuService {
         await channel.permissionOverwrites.edit(member,
           { [permission]: permissionValue(participant.previous_state as PermissionState) }, { reason: 'Reaction menu reverted' });
       } else if (current !== participant.previous_state) {
+        restored = false;
         this.services.logger.error('Menu permission changed by another actor; preserving the current overwrite');
       }
     }
-    await query(this.services.pool, 'DELETE FROM menu_participants WHERE menu_id=$1 AND user_id=$2', [menu.message_id, userId]);
+    const deleted = await query(this.services.pool, `DELETE FROM menu_participants
+      WHERE menu_id=$1 AND user_id=$2 AND previous_state=$3 AND status=$4
+        AND (NOT want_active OR EXISTS (SELECT 1 FROM menus WHERE message_id=$1
+          AND (closing OR expires_at<=clock_timestamp()))) RETURNING user_id`,
+    [menu.message_id, userId, participant.previous_state, participant.status]);
+    if (deleted.rowCount && restored) await this.notify(member, role ? `Previous role state restored for <@&${role.id}>.`
+      : `Previous permission state restored for \`${menu.permission}\` in <#${menu.target_id}>.`);
   }
 
   async participant(messageId: string, userId: string, added: boolean, signal?: AbortSignal): Promise<void> {
     const menu = this.menus.get(messageId);
-    if (!menu || (added && menu.closing)) return;
+    if (!menu || (added && closing(menu))) return;
     await this.serial(`${messageId}:${userId}`, async () => {
       if (added) {
         const target = await this.targets(menu, userId);
-        if (!target || menu.closing) return;
+        if (!target || target.member.user.bot || closing(menu)) return;
         const actor = menu.created_by ? await target.guild.members.fetch({ user: menu.created_by, force: true }) : target.bot;
         authorizeTarget(actor, target.bot, target.member);
         let previous: Participant['previous_state'];
@@ -188,9 +226,11 @@ export class MenuService {
           [menu.guild_id, userId, menu.kind, menu.target_id, menu.permission]);
           if (overlap.rowCount) throw new Error('A temporary moderation change already owns this role or permission');
           const saved = await query(client, `INSERT INTO menu_participants(menu_id,user_id,target_key,previous_state)
-            SELECT $1,$2,$3,$4 WHERE EXISTS (SELECT 1 FROM menus WHERE message_id=$1 AND NOT closing)
+            SELECT $1,$2,$3,$4 WHERE EXISTS (SELECT 1 FROM menus WHERE message_id=$1 AND NOT closing
+              AND (expires_at IS NULL OR expires_at>clock_timestamp()))
             ON CONFLICT (menu_id,user_id) DO UPDATE SET want_active=true,
-              status=CASE WHEN menu_participants.status='capturing' THEN 'capturing' ELSE 'granting' END RETURNING menu_id`,
+              status=CASE WHEN menu_participants.want_active AND menu_participants.status='active' THEN 'active'
+                WHEN menu_participants.status='capturing' THEN 'capturing' ELSE 'granting' END RETURNING menu_id`,
           [messageId, userId, targetKey, previous]);
           if (saved.rowCount) await this.enqueueParticipant(client, messageId, userId);
         });
@@ -213,13 +253,15 @@ export class MenuService {
     if (menu) await this.serial(`${messageId}:${userId}`, () => this.reconcileParticipant(menu, userId, signal));
   }
 
-  async expire(messageId: string, signal?: AbortSignal): Promise<void> {
-    await this.serial(`expire:${messageId}`, () => this.closeMenu(messageId, signal));
+  async expire(messageId: string, signal?: AbortSignal): Promise<boolean> {
+    let restored = true;
+    await this.serial(`expire:${messageId}`, async () => { restored = await this.closeMenu(messageId, signal); });
+    return restored;
   }
 
-  private async closeMenu(messageId: string, signal?: AbortSignal): Promise<void> {
+  private async closeMenu(messageId: string, signal?: AbortSignal): Promise<boolean> {
     const menu = this.menus.get(messageId);
-    if (!menu) return;
+    if (!menu) return true;
     menu.closing = true;
     await withTransaction(this.services.pool, async client => {
       await query(client, 'UPDATE menus SET closing=true WHERE message_id=$1', [messageId]);
@@ -244,10 +286,11 @@ export class MenuService {
     if (unresolved.rowCount || menu.created_by === null) {
       if (menu.created_by === null) this.services.logger.error('Imported menu provenance retained; missing prior snapshots need manual reconciliation');
       this.menus.delete(messageId);
-      return;
+      return false;
     }
     await query(this.services.pool, 'DELETE FROM menus WHERE message_id=$1', [messageId]);
     this.menus.delete(messageId);
+    return true;
   }
 
   async ready(messageId?: string, signal?: AbortSignal): Promise<void> {
@@ -258,7 +301,7 @@ export class MenuService {
         const guild = await this.services.client.guilds.fetch(menu.guild_id);
         const channel = await guild.channels.fetch(menu.channel_id);
         if (!channel?.isTextBased()) { await this.expire(menu.message_id); continue; }
-        const message = await channel.messages.fetch(menu.message_id);
+        const message = await channel.messages.fetch({ message: menu.message_id, force: true });
         const reaction = message.reactions.cache.find(item => isMenuEmoji(menu.kind, item.emoji.id ?? item.emoji.name));
         const reacted = new Set<string>();
         if (reaction) {

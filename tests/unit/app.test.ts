@@ -166,8 +166,15 @@ test('test-bot startup awaits registration before returning readiness', async ()
   let ready = false;
   const starting = startApp(f.config, { client: f.client as unknown as Client, pool: f.pool }).then(close => { ready = true; return close; });
   await registrationStarted; assert.equal(ready, false);
+  const replies: unknown[] = [];
+  f.client.emit(Events.InteractionCreate, {
+    isRepliable: () => true, replied: false, deferred: false,
+    async reply(body: unknown) { replies.push(body); },
+  });
   release(); const close = await starting;
   try { assert.equal(ready, true); } finally { await close(); }
+  assert.equal(replies.length, 1, 'interactions arriving during registration are acknowledged without dispatch');
+  assert.match(JSON.stringify(replies), /starting up/);
 });
 
 test('test-bot registration failure closes Discord/database resources and does not expose a ready runtime', async () => {
@@ -211,4 +218,75 @@ test('validated production reporting override reaches actual startup notificatio
   const close = await startApp(f.config, { client: f.client as unknown as Client, pool: f.pool });
   try { assert.equal(f.client.registrations[0]?.guild, undefined); assert.deepEqual(f.client.reportChannels, [override]); assert.equal(f.client.reports.length, 1); }
   finally { await close(); }
+});
+
+test('Test Clanker restricts slash commands and context menus to testers and resolved owners', async () => {
+  const f = await fixture(); f.client.user.id = '796447999747948584';
+  const close = await startApp(f.config, { client: f.client as unknown as Client, pool: f.pool });
+  try {
+    for (const entry of [
+      { actor: 'ordinary', member: null, cached: false, context: false, allowed: false },
+      { actor: 'ordinary-context', member: { roles: [] }, cached: false, context: true, allowed: false },
+      { actor: 'tester', member: { roles: ['832194217493135400'] }, cached: false, context: false, allowed: true },
+      { actor: 'cached-tester', member: { roles: { cache: new Map([['832194217493135400', {}]]) } }, cached: true, context: false, allowed: true },
+      { actor: '289119054130839552', member: null, cached: false, context: false, allowed: true },
+    ]) {
+      let body: unknown;
+      await new Promise<void>(resolve => f.client.emit(Events.InteractionCreate, {
+        id: entry.actor, user: { id: entry.actor }, guildId: '822800862581751848', member: entry.member,
+        isChatInputCommand: () => !entry.context, isContextMenuCommand: () => entry.context, inCachedGuild: () => entry.cached,
+        commandName: entry.context ? 'unknown-context' : 'help', options: { getString: () => null },
+        memberPermissions: { has: () => true },
+        async reply(value: unknown) { body = value; resolve(); },
+      }));
+      assert.match(JSON.stringify(body), entry.allowed ? /Available slash commands/ : /Only testers and bot owners/);
+    }
+  } finally { await close(); }
+});
+
+test('scan cancellation still reaches its handler when all command slots are occupied', async () => {
+  const f = await fixture();
+  const close = await startApp(f.config, { client: f.client as unknown as Client, pool: f.pool });
+  const releases: Array<() => void> = [];
+  let allStarted!: () => void; const saturated = new Promise<void>(resolve => { allStarted = resolve; });
+  try {
+    for (let index = 0; index < 16; index++) f.client.emit(Events.InteractionCreate, {
+      id: `scan-${index}`, user: { id: `actor-${index}` }, commandName: 'help', guildId: 'guild',
+      isChatInputCommand: () => true, isContextMenuCommand: () => false,
+      memberPermissions: { has: () => true }, options: { getString: () => null },
+      async reply() { await new Promise<void>(resolve => { releases.push(resolve); if (releases.length === 16) allStarted(); }); },
+    });
+    await saturated;
+    const replies: unknown[] = [];
+    await new Promise<void>(resolve => f.client.emit(Events.InteractionCreate, {
+      id: 'cancel', customId: 'utilities:top:cancel:scan-0', user: { id: 'actor-0' },
+      isChatInputCommand: () => false, isContextMenuCommand: () => false, isButton: () => true,
+      isRepliable: () => true, replied: false, deferred: false,
+      async reply(body: unknown) { replies.push(body); resolve(); },
+    }));
+    assert.equal(replies.length, 1);
+    assert.match(JSON.stringify(replies), /scan has already finished/);
+    assert.doesNotMatch(JSON.stringify(replies), /busy/);
+  } finally { for (const release of releases) release(); await close(); }
+});
+
+test('shutdown during pending gateway login cancels startup before registration and closes resources', async () => {
+  const f = await fixture(); const controller = new AbortController();
+  let loginStarted!: () => void; const loggedIn = new Promise<void>(resolve => { loginStarted = resolve; });
+  let releaseLogin!: () => void; const gate = new Promise<void>(resolve => { releaseLogin = resolve; });
+  f.client.onLogin = async () => { loginStarted(); await gate; };
+  const starting = startApp(f.config, { client: f.client as unknown as Client, pool: f.pool, signal: controller.signal });
+  await loggedIn; controller.abort();
+  try {
+    await assert.rejects(starting, error => error instanceof Error && error.name === 'AbortError');
+    assert.deepEqual(f.client.registrations, []); assert.equal(f.client.destroyed, true); assert.equal(f.ended(), true);
+  } finally { releaseLogin(); }
+});
+
+test('shutdown during application fetch prevents ready hooks and global registration', async t => {
+  const f = await fixture(); const controller = new AbortController();
+  t.mock.method(f.client.application, 'fetch', async () => { controller.abort(); return { owner: { id: '289119054130839552' } }; });
+  await assert.rejects(startApp(f.config, { client: f.client as unknown as Client, pool: f.pool, signal: controller.signal }), error => error instanceof Error && error.name === 'AbortError');
+  assert.deepEqual(f.client.registrations, []); assert.equal(f.client.destroyed, true); assert.equal(f.ended(), true);
+  assert.equal(f.client.presence, undefined);
 });

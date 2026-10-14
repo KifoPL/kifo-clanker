@@ -6,10 +6,12 @@ import { startTelemetry } from './observability.js';
 let close: (() => Promise<void>) | undefined;
 let closing = false;
 let startup: Promise<void>;
+const startupController = new AbortController();
 async function shutdown(exitCode: number): Promise<void> {
   process.exitCode = Math.max(process.exitCode ? Number(process.exitCode) : 0, exitCode);
   if (closing) return;
   closing = true;
+  startupController.abort();
   const deadline = setTimeout(() => {
     logger.error('Shutdown deadline exceeded');
     process.exit(1);
@@ -27,11 +29,13 @@ startup = (async () => {
   try {
     const config = readConfig(process.env);
     stopTelemetry = startTelemetry(config.telemetry);
-    const stopApp = await startApp(config);
+    const stopApp = await startApp(config, { signal: startupController.signal });
     close = async () => { try { await stopApp(); } finally { await stopTelemetry?.(); } };
   } catch (error) {
-    logger.error('Startup failed; check configuration and database migrations', error);
+    if (!startupController.signal.aborted) {
+      logger.error('Startup failed; check configuration and database migrations', error);
+      process.exitCode = 1;
+    }
     await stopTelemetry?.();
-    process.exitCode = 1;
   }
 })();

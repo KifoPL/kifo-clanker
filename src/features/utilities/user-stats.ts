@@ -9,7 +9,7 @@ export const userStatsCommand: ContextCommand = {
     if (!interaction.isUserContextMenuCommand()) return;
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     if (!interaction.guild) { await interaction.editReply({ content: 'User statistics are only available in a server.' }); return; }
-    const member = await interaction.guild.members.fetch(interaction.targetId);
+    const member = await interaction.guild.members.fetch({ user: interaction.targetId, force: true });
     await interaction.editReply({ embeds: [userStats(member)], allowedMentions: safeMentions });
   },
 };

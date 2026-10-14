@@ -103,12 +103,22 @@ export class DurableScheduler {
 
   private async loop(): Promise<void> {
     while (this.running) {
+      try { await this.options.onTick?.(); }
+      catch (error) { this.options.logger.error('Scheduler maintenance failed', error); }
+      if (!this.running) break;
       try {
-        await this.options.onTick?.();
-        if (!this.running) break;
         if (this.types.length > 0) {
+          const token = randomUUID();
           const result = await query<ClaimedJob>(this.options.pool, claimSql,
-            [this.types, this.batchSize, randomUUID(), this.leaseMs]);
+            [this.types, this.batchSize, token, this.leaseMs]);
+          if (!this.running) {
+            // A claim can finish after stop; no handler ran, so return ownership without spending a retry.
+            if (result.rows.length) await query(this.options.pool, `UPDATE scheduled_jobs
+              SET status='pending', attempts=attempts-1, lease_token=NULL, lease_until=NULL
+              WHERE id=ANY($1::bigint[]) AND lease_token=$2 AND status='running' AND lease_until > clock_timestamp()`,
+            [result.rows.map(job => job.id), token]);
+            break;
+          }
           // Start the bounded batch together so waiting jobs do not consume their leases.
           await Promise.all(result.rows.map((job) => this.execute(job)));
         }

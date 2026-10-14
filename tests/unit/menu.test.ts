@@ -153,24 +153,39 @@ test('SQL hydration replaces removed menus and preserves prior state if refresh 
   assert.deepEqual([...service.menus.keys()], ['current']);
 });
 
-function fixture(initiallyPresent: boolean, imported = false) {
+function fixture(initiallyPresent: boolean, imported = false, captureWon = true, reactorBot = false) {
   const events: string[] = [];
+  const notifications: { content: string; allowedMentions: { parse: string[] } }[] = [];
+  let notificationsFail = false;
+  let revokePrivilege = false;
+  let requireFreshSource = false;
+  const sourceFetches: unknown[] = [];
   const roles = new Collection<string, { id: string }>();
   if (initiallyPresent) roles.set('role', { id: 'role' });
-  const member = { id: 'user', user: { bot: false }, guild: { id: 'guild', ownerId: 'owner' }, roles: { cache: roles, highest: { id: 'member-role' },
+  const member = { id: 'user', user: { bot: reactorBot }, guild: { id: 'guild', ownerId: 'owner' }, roles: { cache: roles, highest: { id: 'member-role' },
     async add() { events.push('grant'); roles.set('role', { id: 'role' }); },
     async remove() { events.push('restore'); roles.delete('role'); },
+  }, async send(input: { content: string; allowedMentions: { parse: string[] } }) {
+    if (notificationsFail) throw new Error('DM unavailable');
+    notifications.push(input);
   } };
   const bot = { id: 'bot', permissions: new PermissionsBitField(PermissionFlagsBits.Administrator),
     roles: { highest: { comparePositionTo: () => 1 } } };
   const role = { id: 'role', managed: false, guild: { id: 'guild', ownerId: 'owner' }, permissions: new PermissionsBitField() };
   const guild = { members: { fetch: async (input: string | { user: string }) => (typeof input === 'string' ? input : input.user) === 'user' ? member : bot, fetchMe: async () => bot },
-    roles: { fetch: async () => role }, channels: { fetch: async () => ({ isTextBased: () => true,
-      messages: { delete: async () => { events.push('delete menu'); }, fetch: async () => ({
-        reactions: { cache: new Collection([['role', { emoji: { id: null, name: '🎭' }, users: {
+    roles: { fetch: async (id?: string) => {
+      if (!id && revokePrivilege) bot.permissions = new PermissionsBitField(PermissionFlagsBits.ManageRoles);
+      return role;
+    } }, channels: { fetch: async () => ({ isTextBased: () => true,
+      messages: { delete: async () => { events.push('delete menu'); }, fetch: async (options?: unknown) => {
+        sourceFetches.push(options);
+        if (requireFreshSource && (typeof options !== 'object' || !options || !('force' in options) || !options.force)) {
+          return { reactions: { cache: new Collection() } };
+        }
+        return { reactions: { cache: new Collection([['role', { emoji: { id: null, name: '🎭' }, users: {
           fetch: async () => new Collection([['user', { id: 'user', bot: false }]]),
         } }]]) },
-      }) } }) } };
+      }; } } }) } };
   let saved: { menu_id: string; user_id: string; previous_state: string; want_active: boolean; status: string } | undefined = imported
     ? { menu_id: '123', user_id: 'user', previous_state: 'unknown', want_active: false, status: 'restoring' } : undefined;
   const connection = {
@@ -183,7 +198,11 @@ function fixture(initiallyPresent: boolean, imported = false) {
       }
       if (sql.includes('SELECT * FROM menu_participants')) return { rows: saved ? [saved] : [], rowCount: saved ? 1 : 0 };
       if (sql.includes('SELECT user_id FROM menu_participants')) return { rows: saved ? [{ user_id: 'user' }] : [], rowCount: saved ? 1 : 0 };
-      if (sql.includes("SET previous_state=$3")) { if (saved) { saved.previous_state = String(values[2]); saved.status = 'granting'; } return { rows: [], rowCount: 1 }; }
+      if (sql.includes("SET previous_state=$3")) {
+        if (!captureWon) { saved = undefined; return { rows: [], rowCount: 0 }; }
+        if (saved) { saved.previous_state = String(values[2]); saved.status = 'granting'; }
+        return { rows: [], rowCount: 1 };
+      }
       if (sql.includes("SET want_active=false")) { if (saved) { saved.want_active = false; saved.status = 'restoring'; } return { rows: saved ? [{ menu_id: '123' }] : [], rowCount: saved ? 1 : 0 }; }
       if (sql.includes("SET status='active'")) { if (saved) saved.status = 'active'; return { rows: [], rowCount: 1 }; }
       if (sql.includes('DELETE FROM menu_participants')) { saved = undefined; return { rows: [], rowCount: 1 }; }
@@ -195,11 +214,14 @@ function fixture(initiallyPresent: boolean, imported = false) {
     pool: { ...connection, connect: async () => connection }, logger: { error() {} } } as unknown as RuntimeServices;
   const service = new MenuService(services);
   service.menus.set(menu.message_id, { ...menu });
-  return { service, events, roles, getSnapshot: () => saved };
+  return { service, services, events, roles, notifications, sourceFetches,
+    requireFreshSource: () => { requireFreshSource = true; },
+    revokePrivilege: () => { role.permissions = new PermissionsBitField(PermissionFlagsBits.ManageGuild); revokePrivilege = true; },
+    failNotifications: () => { notificationsFail = true; }, getSnapshot: () => saved };
 }
 
 test('a new reaction saves its prior role state before granting and restores it on removal', async () => {
-  const { service, events, roles, getSnapshot } = fixture(false);
+  const { service, events, roles, notifications, getSnapshot } = fixture(false);
   await service.participant('123', 'user', true);
   assert.deepEqual(events, ['snapshot', 'grant']);
   assert.equal(getSnapshot()?.previous_state, 'absent');
@@ -207,6 +229,56 @@ test('a new reaction saves its prior role state before granting and restores it 
   assert.deepEqual(events, ['snapshot', 'grant', 'restore']);
   assert.equal(roles.has('role'), false);
   assert.equal(getSnapshot(), undefined);
+  assert.deepEqual(notifications, [
+    { content: 'Role menu active: <@&role>.', allowedMentions: { parse: [] } },
+    { content: 'Previous role state restored for <@&role>.', allowedMentions: { parse: [] } },
+  ]);
+});
+
+test('duplicate active reactions do not send another menu notification', async () => {
+  const { service, notifications } = fixture(false);
+  await service.participant('123', 'user', true);
+  await service.participant('123', 'user', true);
+  assert.equal(notifications.length, 1);
+});
+
+test('a disabled DM does not undo durable grant or restoration', async () => {
+  const { service, roles, getSnapshot, failNotifications } = fixture(false);
+  failNotifications();
+  await service.participant('123', 'user', true);
+  assert.equal(getSnapshot()?.status, 'active');
+  assert.equal(roles.has('role'), true);
+  await service.participant('123', 'user', false);
+  assert.equal(getSnapshot(), undefined);
+  assert.equal(roles.has('role'), false);
+});
+
+test('permission grants notify only after durable activation and never repeat for an active participant', async () => {
+  let active = false;
+  const notifications: unknown[] = [];
+  const edits: unknown[] = [];
+  const bot = { id: 'bot', permissions: new PermissionsBitField(PermissionFlagsBits.Administrator),
+    roles: { highest: { comparePositionTo: () => 1 } } };
+  const member = { id: 'user', user: { bot: false }, guild: { id: 'guild', ownerId: 'owner' },
+    roles: { highest: {}, cache: new Collection() }, async send(input: unknown) { assert.equal(active, true); notifications.push(input); } };
+  const channel = { isThread: () => false, permissionsFor: () => bot.permissions,
+    permissionOverwrites: { cache: new Collection(), async edit(_target: unknown, changes: unknown) { edits.push(changes); } } };
+  const guild = { members: { fetch: async (input: string | { user: string }) => (typeof input === 'string' ? input : input.user) === 'user' ? member : bot,
+    fetchMe: async () => bot }, roles: { fetch: async () => new Collection() }, channels: { fetch: async () => channel } };
+  const services = { client: { guilds: { fetch: async () => guild } }, logger: { error() {} }, pool: {
+    async query(sql: string) {
+      if (sql.includes('SELECT * FROM menu_participants')) return { rows: [{ menu_id: '123', user_id: 'user',
+        previous_state: 'inherit', want_active: true, status: active ? 'active' : 'granting' }], rowCount: 1 };
+      if (sql.includes("SET status='active'")) active = true;
+      return { rows: [], rowCount: 1 };
+    },
+  } } as unknown as RuntimeServices;
+  const service = new MenuService(services);
+  service.menus.set('123', { ...menu, kind: 'permission', target_id: 'channel', permission: 'SendMessages' });
+  await service.runParticipant('123', 'user', new AbortController().signal);
+  await service.runParticipant('123', 'user', new AbortController().signal);
+  assert.deepEqual(edits, [{ SendMessages: true }]);
+  assert.deepEqual(notifications, [{ content: 'Permission menu active: `SendMessages` in <#channel>.', allowedMentions: { parse: [] } }]);
 });
 
 test('removing a menu reaction preserves a role held before the menu', async () => {
@@ -222,6 +294,55 @@ test('imported effects with unknown snapshots remain durable for manual reconcil
   await service.runParticipant('123', 'user', new AbortController().signal);
   assert.equal(roles.has('role'), true);
   assert.equal(getSnapshot()?.previous_state, 'unknown');
+});
+
+test('menu expiry reports incomplete restoration when legacy snapshots remain unresolved', async () => {
+  const { service, roles, getSnapshot } = fixture(true, true);
+  service.menus.set('123', { ...menu, created_by: null });
+  assert.equal(await service.expire('123'), false);
+  assert.equal(roles.has('role'), true);
+  assert.equal(getSnapshot()?.previous_state, 'unknown');
+});
+
+test('closing a capturing participant preserves roles that the menu never granted', async () => {
+  const { service, events, roles, getSnapshot } = fixture(true, true);
+  Object.assign(getSnapshot()!, { previous_state: 'absent', want_active: true, status: 'capturing' });
+  service.menus.set('123', { ...menu, closing: true });
+  await service.runParticipant('123', 'user', new AbortController().signal);
+  assert.equal(roles.has('role'), true);
+  assert.equal(events.includes('restore'), false);
+  assert.equal(getSnapshot(), undefined);
+});
+
+test('a concurrently cancelled capture cannot grant without a durable snapshot', async () => {
+  const { service, events, roles, getSnapshot } = fixture(false, false, false);
+  await service.participant('123', 'user', true);
+  assert.deepEqual(events, ['snapshot']);
+  assert.equal(roles.has('role'), false);
+  assert.equal(getSnapshot(), undefined);
+});
+
+test('reaction admission stops at the expiry even when the scheduler has not closed the menu', async () => {
+  const { service, events, roles } = fixture(false);
+  service.menus.set('123', { ...menu, expires_at: new Date(0) });
+  await service.participant('123', 'user', true);
+  assert.deepEqual(events, []);
+  assert.equal(roles.has('role'), false);
+});
+
+test('losing guild access retains participant state for restoration after the bot rejoins', async () => {
+  const { service, services, getSnapshot } = fixture(true, true);
+  services.client.guilds.fetch = async () => { throw Object.assign(new Error('Unknown Guild'), { code: 10004 }); };
+  await assert.rejects(service.runParticipant('123', 'user', new AbortController().signal), /Unknown Guild/);
+  assert.equal(getSnapshot()?.previous_state, 'unknown');
+});
+
+test('a partial reaction user cannot grant roles to a bot once its member identity is fetched', async () => {
+  const { service, events, roles, getSnapshot } = fixture(false, false, true, true);
+  await service.participant('123', 'user', true);
+  assert.deepEqual(events, []);
+  assert.equal(roles.has('role'), false);
+  assert.equal(getSnapshot(), undefined);
 });
 
 test('menu expiry restores participants before deleting the message and menu record', async () => {
@@ -254,14 +375,15 @@ test('an expired new menu never grants a reaction that was added offline', async
 test('permission removal restores only its captured bit and preserves administrative changes', async () => {
   for (const current of ['allow', 'deny'] as const) {
     const edits: unknown[] = [];
+    const notifications: unknown[] = [];
     const overwrite = { allow: new PermissionsBitField(current === 'allow' ? PermissionFlagsBits.SendMessages : 0n),
       deny: new PermissionsBitField(PermissionFlagsBits.AttachFiles | (current === 'deny' ? PermissionFlagsBits.SendMessages : 0n)) };
     const channel = { isThread: () => false, permissionOverwrites: {
       cache: new Collection([['user', overwrite]]),
       async edit(_user: unknown, changes: unknown) { edits.push(changes); },
     } };
-    const member = { id: 'user' };
-    const guild = { members: { fetch: async () => member, fetchMe: async () => member }, channels: { fetch: async () => channel } };
+    const member = { id: 'user', user: { bot: false }, send: async (input: unknown) => { notifications.push(input); } };
+    const guild = { members: { fetch: async () => member, fetchMe: async () => member }, roles: { fetch: async () => new Collection() }, channels: { fetch: async () => channel } };
     const services = { client: { guilds: { fetch: async () => guild } }, logger: { error() {} }, pool: {
       async query(sql: string) {
         return { rows: sql.includes('SELECT * FROM menu_participants') ? [{ menu_id: '123', user_id: 'user',
@@ -273,6 +395,8 @@ test('permission removal restores only its captured bit and preserves administra
     await service.runParticipant('123', 'user', new AbortController().signal);
     assert.deepEqual(edits, current === 'allow' ? [{ SendMessages: null }] : []);
     assert.equal(overwrite.deny.has(PermissionFlagsBits.AttachFiles), true);
+    assert.deepEqual(notifications, current === 'allow'
+      ? [{ content: 'Previous permission state restored for `SendMessages` in <#channel>.', allowedMentions: { parse: [] } }] : []);
   }
 });
 
@@ -308,4 +432,52 @@ test('native menus expose typed role/permission creation and message-based resto
   const runtime=menusFeature.create(new Proxy({} as RuntimeServices,{get(){throw new Error('Native construction touched services.');}}));
   assert.deepEqual(runtime.slashCommands?.map(command=>command.data.name),['menu']);
   assert.equal('prefixCommands' in runtime,false);
+});
+
+
+test('refreshing role definitions blocks a privileged menu grant after bot privileges are revoked', async () => {
+  const { service, revokePrivilege, events, roles, getSnapshot } = fixture(false);
+  revokePrivilege();
+  await assert.rejects(service.participant('123', 'user', true), /every permission/);
+  assert.deepEqual(events, []);
+  assert.equal(roles.has('role'), false);
+  assert.equal(getSnapshot(), undefined);
+});
+
+test('reconnect uses fresh message reactions before restoring saved participants', async () => {
+  const { service, requireFreshSource, sourceFetches, events, roles, getSnapshot } = fixture(false);
+  await service.participant('123', 'user', true);
+  requireFreshSource();
+  await service.ready();
+  assert.deepEqual(sourceFetches, [{ message: '123', force: true }]);
+  assert.deepEqual(events, ['snapshot', 'grant']);
+  assert.equal(roles.has('role'), true);
+  assert.equal(getSnapshot()?.status, 'active');
+});
+
+
+test('a departed permission-menu member keeps the overwrite snapshot while role participation can be discarded', async () => {
+  for (const kind of ['permission', 'role'] as const) {
+    const overwrite = { allow: new PermissionsBitField(PermissionFlagsBits.SendMessages), deny: new PermissionsBitField() };
+    const channel = { isThread: () => false, permissionOverwrites: { cache: new Collection([['user', overwrite]]) } };
+    let saved = true;
+    const guild = { roles: { fetch: async () => new Collection() }, members: {
+      fetch: async () => { throw Object.assign(new Error('Unknown Member'), { code: 10007 }); },
+      fetchMe: async () => ({}),
+    }, channels: { fetch: async () => channel } };
+    const services = { client: { guilds: { fetch: async () => guild } }, pool: {
+      async query(sql: string) {
+        if (sql.includes('DELETE FROM menu_participants')) saved = false;
+        return { rows: sql.includes('SELECT * FROM menu_participants') ? [{ menu_id: '123', user_id: 'user',
+          previous_state: 'inherit', want_active: false, status: 'restoring' }] : [], rowCount: 1 };
+      },
+    } } as unknown as RuntimeServices;
+    const service = new MenuService(services);
+    service.menus.set('123', { ...menu, kind, permission: kind === 'permission' ? 'SendMessages' : null });
+    const restoration = service.runParticipant('123', 'user', new AbortController().signal);
+    if (kind === 'permission') await assert.rejects(restoration, /Unknown Member/);
+    else await restoration;
+    assert.equal(saved, kind === 'permission');
+    assert.equal(overwrite.allow.has(PermissionFlagsBits.SendMessages), true);
+  }
 });

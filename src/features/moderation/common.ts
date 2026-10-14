@@ -20,8 +20,13 @@ export async function guildContext(invocation: CommandInvocation, channelId = in
   if (!invocation.guild) throw new Error('Use this command in a server.');
   const channel = await invocation.guild.channels.fetch(channelId,{force:true});
   if (!channel || !('permissionOverwrites' in channel)) throw new Error('This command requires a server channel with permission overwrites.');
+  return {channel,...await guildMembers(invocation)};
+}
+export async function guildMembers(invocation: CommandInvocation): Promise<{actor: GuildMember; bot: GuildMember}> {
+  if (!invocation.guild) throw new Error('Use this command in a server.');
+  await invocation.guild.roles.fetch();
   const [actor,bot] = await Promise.all([invocation.guild.members.fetch({user:invocation.author.id,force:true}),invocation.guild.members.fetchMe({force:true})]);
-  return {channel,actor,bot};
+  return {actor,bot};
 }
 export async function confirm(invocation: CommandInvocation, action: string): Promise<boolean> {
   const id = `moderation:${randomUUID()}`;

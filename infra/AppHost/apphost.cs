@@ -17,15 +17,24 @@ var migrations = builder.AddDockerfile("migrations", "../..")
     .WithEnvironment("DATABASE_URL", database.Resource.UriExpression)
     .WaitFor(database);
 
-builder.AddDockerfile("bot", "../..")
+var bot = builder.AddDockerfile("bot", "../..")
     .WithOtlpExporter(Aspire.Hosting.OtlpProtocol.HttpProtobuf)
     .WithEnvironment("DISCORD_TOKEN", discordToken)
-    .WithEnvironment("DISCORD_TEST_GUILD_ID", builder.Configuration["DISCORD_TEST_GUILD_ID"])
-    .WithEnvironment("DISCORD_DEPLOY_CHANNEL_ID", builder.Configuration["DISCORD_DEPLOY_CHANNEL_ID"])
     .WithEnvironment("DATABASE_URL", database.Resource.UriExpression)
     .WithHttpEndpoint(targetPort: 8080, name: "health")
     .WithHttpHealthCheck("/health/ready", endpointName: "health")
     .WaitFor(database)
     .WaitForCompletion(migrations);
+
+foreach (var name in new[] { "BOT_OWNER_IDS", "SCHEDULER_PAUSED", "DISCORD_TEST_GUILD_ID", "DISCORD_DEPLOY_CHANNEL_ID", "DISCORD_LOG_CHANNEL_ID", "GITHUB_REPOSITORY", "JOKE_API_URL" })
+{
+    if (!string.IsNullOrWhiteSpace(builder.Configuration[name]))
+        bot.WithEnvironment(name, builder.Configuration[name]);
+}
+foreach (var name in new[] { "LANGUAGE_DETECT_KEY", "GITHUB_TOKEN", "GITHUB_KEY" })
+{
+    if (!string.IsNullOrWhiteSpace(builder.Configuration[name]))
+        bot.WithEnvironment(name, builder.AddParameterFromConfiguration(name.ToLowerInvariant().Replace('_', '-'), name, secret: true));
+}
 
 builder.Build().Run();

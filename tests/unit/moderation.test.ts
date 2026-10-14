@@ -21,15 +21,18 @@ function fakeServices(events:string[], rows?:Record<string,unknown>, failDatabas
     events.push(sql.trim().split(/\s+/).slice(0,4).join(' '));
     if (failDatabase && sql.includes('INSERT INTO moderation_operations')) throw new Error('offline');
     if (sql.includes('RETURNING id')) return {rows:[{id:'job'}],rowCount:1};
+    if (sql.includes('SELECT id FROM moderation_operations WHERE id=$1')) return {rows:[{id:values[0]}],rowCount:1};
     if (sql.includes('SELECT * FROM moderation_operations')) return {rows:rows ? [rows] : [],rowCount:rows ? 1 : 0};
     if (sql.startsWith('UPDATE moderation_operations')) events.push(`status:${String(values[1])}`);
     return {rows:[],rowCount:0};
   };
   const connection = {query:execute,release:()=>events.push('RELEASE')};
-  return {pool:{connect:async()=>connection,query:execute} as unknown as Pool} as RuntimeServices;
+  return {pool:{connect:async()=>connection,query:execute} as unknown as Pool,logger:{error:()=>events.push('notice.failed')}} as unknown as RuntimeServices;
 }
 function channel(state:'allow'|'deny'|'inherit',events:string[],failDiscord=false): GuildChannel {
-  const value = {id:'channel',guild:{id:'guild'},permissionOverwrites:{cache:new Collection([['target',{allow:new PermissionsBitField(state==='allow'?[PermissionFlagsBits.ViewChannel]:[]),deny:new PermissionsBitField(state==='deny'?[PermissionFlagsBits.ViewChannel]:[])}]]),edit:async(_id:string,permission:Record<string,unknown>)=>{events.push(`DISCORD:${String(permission.ViewChannel)}`);if(failDiscord)throw new Error('Discord unavailable');}},fetch:async()=>value};
+  const actor=member('actor',10),bot=member('bot',20),target=member('target',1);
+  const guild={id:'guild',ownerId:'owner',members:{fetch:async(value:{user:string})=>value.user==='actor'?actor:target,fetchMe:async()=>bot},roles:{fetch:async()=>null}};
+  const value = {id:'channel',name:'target',guild,permissionsFor:()=>new PermissionsBitField(PermissionFlagsBits.Administrator),permissionOverwrites:{cache:new Collection([['target',{allow:new PermissionsBitField(state==='allow'?[PermissionFlagsBits.ViewChannel]:[]),deny:new PermissionsBitField(state==='deny'?[PermissionFlagsBits.ViewChannel]:[])}]]),edit:async(_id:string,permission:Record<string,unknown>)=>{events.push(`DISCORD:${String(permission.ViewChannel)}`);if(failDiscord)throw new Error('Discord unavailable');}},fetch:async()=>value};
   return value as unknown as GuildChannel;
 }
 test('legacy numeric/underscore permission names and aliases retain all 22 modes',()=>{
@@ -187,7 +190,7 @@ test('native permission set checks the selected channel before confirmation or m
   let mutations=0;
   const target={id:'123456789012345680',name:'private',permissionsFor:()=>new PermissionsBitField(),permissionOverwrites:{edit:async()=>{mutations++;}}};
   const invoking={id:'123456789012345681',isTextBased:()=>true,permissionsFor:()=>new PermissionsBitField(PermissionFlagsBits.Administrator)};
-  const guild={id:'123456789012345682',members:{fetch:async()=>actor,fetchMe:async()=>bot},channels:{fetch:async(id:string)=>{assert.equal(id,target.id);return target;}}};
+  const guild={id:'123456789012345682',roles:{fetch:async()=>new Collection()},members:{fetch:async()=>actor,fetchMe:async()=>bot},channels:{fetch:async(id:string)=>{assert.equal(id,target.id);return target;}}};
   Object.assign(target,{guild});
   Object.assign(invoking,{guild});
   const replies:string[]=[];

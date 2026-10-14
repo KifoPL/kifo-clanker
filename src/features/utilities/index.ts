@@ -1,3 +1,4 @@
+import { ChannelType } from 'discord.js';
 import type { FeatureDefinition } from '../../contracts/features.js';
 import { invocationCommand } from '../../discord/invocation.js';
 import { createDetectLanguage, detectLanguageData } from './detect-language.js';
@@ -42,7 +43,8 @@ export const utilitiesFeature: FeatureDefinition = Object.freeze<FeatureDefiniti
       onInteraction: top.onInteraction,
       close: top.close,
       async onReaction(reaction, user, added) {
-        if (!added || user.bot) return;
+        if (!added || user.bot || reaction.message.channel?.type !== ChannelType.DM) return;
+        if (reaction.message.channel.partial) await services.client.channels.fetch(reaction.message.channel.id, { force: true });
         const message = reaction.message.partial ? await reaction.message.fetch() : reaction.message;
         if (!canDeleteUtilityDm(message, user.id)) return;
         if (message.embeds[0]?.author?.name === 'TODO' || reaction.emoji.name === '❌' || reaction.emoji.id === '857976926542757910') await message.delete();

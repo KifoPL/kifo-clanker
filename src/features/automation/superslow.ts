@@ -20,16 +20,16 @@ export const superslowData = new SlashCommandBuilder().setName('superslow').setD
 
 export function superslowCommand(state: AutomationState): InvocationCommand {
   return { name: 'superslow', category: 'UTILITY', guildOnly: true, permissions: [PermissionFlagsBits.ManageChannels], usage: ['/superslow set duration:<6h–1y>', '/superslow off', '/superslow list', '/superslow status'], description: 'Configure cooldowns from 6h to 1y; 0s disables. Use status or list to inspect settings.', async execute(message, args) {
-    if (!await requireCommandPermissions(message, [PermissionFlagsBits.ManageChannels,PermissionFlagsBits.ManageMessages])) return;
+    if (!await requireCommandPermissions(message, args[0] && args[0] !== 'list' && args[0] !== '0s' ? [PermissionFlagsBits.ManageChannels,PermissionFlagsBits.ManageMessages] : [])) return;
     if (!args[0]) { const setting = state.slow.get(message.channelId); await message.reply(setting ? `Cooldown: ${ms(Number(setting.duration_ms), { long: true })}.` : 'Superslow is off.'); return; }
     if (args[0].toLowerCase() === 'list') { await message.reply([...state.slow.values()].filter(row => belongsToGuild(row, message.guildId!, state)).map(row => `<#${row.channel_id}>: ${ms(Number(row.duration_ms), { long: true })}`).join('\n').slice(0,1900) || 'No superslow channels enabled.'); return; }
     const input = args.join(' ');
     const duration = input.length <= 100 ? ms(input as ms.StringValue) : undefined;
     if (duration === undefined || !Number.isSafeInteger(duration) || duration < 0 || (duration > 0 && duration < 21_600_000) || duration > 31_557_600_000) { await message.reply('Specify 6h to 1y, or 0s to disable.'); return; }
     const wasEnabled = state.slow.has(message.channelId);
-    if (duration === 0) { await query(state.services.pool,'DELETE FROM superslow_settings WHERE channel_id=$1',[message.channelId]); state.slow.delete(message.channelId); }
+    if (duration === 0) { await query(state.services.pool,'DELETE FROM superslow_settings WHERE channel_id=$1',[message.channelId]); state.revision++; state.slow.delete(message.channelId); }
     else { await query(state.services.pool,`INSERT INTO superslow_settings(channel_id,guild_id,duration_ms) VALUES($1,$2,$3)
-      ON CONFLICT(channel_id) DO UPDATE SET guild_id=EXCLUDED.guild_id,duration_ms=EXCLUDED.duration_ms`,[message.channelId,message.guildId,duration]); state.slow.set(message.channelId,{channel_id:message.channelId,guild_id:message.guildId,duration_ms:duration}); }
+      ON CONFLICT(channel_id) DO UPDATE SET guild_id=EXCLUDED.guild_id,duration_ms=EXCLUDED.duration_ms`,[message.channelId,message.guildId,duration]); state.revision++; state.slow.set(message.channelId,{channel_id:message.channelId,guild_id:message.guildId,duration_ms:duration}); }
     if ((!wasEnabled || duration === 0) && 'setRateLimitPerUser' in message.channel) {
       try { await message.channel.setRateLimitPerUser(duration ? 10 : 0); } catch { await message.reply('Superslow settings saved, but Discord slowmode could not be updated. Check channel permissions.'); return; }
     }

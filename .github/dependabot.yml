@@ -4,10 +4,6 @@ updates:
     directory: /
     schedule:
       interval: weekly
-  - package-ecosystem: nuget
-    directory: /infra/AppHost
-    schedule:
-      interval: weekly
   - package-ecosystem: docker
     directory: /
     schedule:

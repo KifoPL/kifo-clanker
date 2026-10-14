@@ -32,6 +32,7 @@ export function nativeFixture(values: Record<string, unknown> = {}) {
   };
   const source = { id: ids.other, author: user, content: 'Private source text', url: `https://discord.com/channels/${ids.guild}/${ids.channel}/${ids.other}`, attachments: new Collection(), embeds: [], createdTimestamp: Date.now(), reactions: { cache: new Collection([['thumb', { emoji: { name: '👍', id: null }, count: 4 }]]) } };
   const channel = { id: ids.channel, guildId: ids.guild, name: 'general', type: ChannelType.GuildText, guild, isTextBased: () => true, isDMBased: () => false, isThread: () => false, isSendable: () => true,
+    async fetch() { return channel; },
     permissionsFor: (_subject: unknown) => new PermissionsBitField(PermissionsBitField.All),
     async send(body: unknown) { channelSends.push(body); return response; },
     messages: { async fetch(argument: unknown) { return typeof argument === 'object' ? new Collection([[source.id, source]]) : source; } },

@@ -5,7 +5,7 @@ import type { InvocationCommand } from '../../contracts/commands.js';
 import type { RuntimeServices } from '../../contracts/features.js';
 import { query } from '../../db/index.js';
 import { permissionAliases, resolvePermission } from '../moderation/permissions.js';
-import { confirm, overwriteChannelTypes } from '../moderation/common.js';
+import { confirm, guildMembers, overwriteChannelTypes } from '../moderation/common.js';
 import { elevatedMenuPermission, elevatedMenuRole, messageIdFromReference, safeMenuPermission, safeMenuRole } from './safety.js';
 import { MenuService, menuEmoji, type Menu } from './service.js';
 
@@ -41,8 +41,7 @@ export function menuCommand(services: RuntimeServices, menus: MenuService): Invo
     async execute(invocation, args) {
       const guild = invocation.guild;
       if (!guild || invocation.channel.isDMBased()) { await invocation.reply('Menus are only available in servers.'); return; }
-      let actor = await guild.members.fetch({ user: invocation.author.id, force: true });
-      let bot = await guild.members.fetchMe({ force: true });
+      let { actor, bot } = await guildMembers(invocation);
       const usage = '/menu role role:<role> [duration]\n/menu permission permission:<permission> channel:<channel> [duration]\n/menu list\n/menu revert message:<message ID or URL>';
       const options = args;
       try {
@@ -81,8 +80,8 @@ export function menuCommand(services: RuntimeServices, menus: MenuService): Invo
             const permission = resolvePermission(menu.permission ?? '');
             if (channel && !channel.isThread() && permission) safeMenuPermission(actor, bot, channel, permission);
           }
-          await menus.expire(menu.message_id);
-          await invocation.reply('Menu reverted.');
+          const restored = await menus.expire(menu.message_id);
+          await invocation.reply(restored ? 'Menu reverted.' : 'Menu closed. Some earlier role or permission effects could not be restored safely and need manual review.');
           return;
         }
         if (!invocation.channel.permissionsFor(bot)?.has([PermissionFlagsBits.AddReactions, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel])) {
@@ -121,12 +120,12 @@ export function menuCommand(services: RuntimeServices, menus: MenuService): Invo
         if (needsConfirmation) {
           const action = `Create a menu in <#${invocation.channelId}> granting ${kind === 'role' ? `<@&${targetId}> (${rolePermissionNames})` : `\`${permission}\` in <#${targetId}>`} to every eligible reactor, ${expiresAt ? `reverting at ${expiresAt.toISOString()}` : 'permanently'}. This grants management or moderation privileges.`;
           if (!await confirm(invocation, action)) return;
-          const [freshActor, freshBot, source] = await Promise.all([
-            guild.members.fetch({ user: invocation.author.id, force: true }), guild.members.fetchMe({ force: true }),
+          const [members, source] = await Promise.all([
+            guildMembers(invocation),
             guild.channels.fetch(invocation.channelId, { force: true }),
           ]);
-          actor = freshActor;
-          bot = freshBot;
+          actor = members.actor;
+          bot = members.bot;
           if (!source || source.isThread() || !source.permissionsFor(actor)?.has(PermissionFlagsBits.ManageChannels)
             || !source.permissionsFor(bot)?.has([PermissionFlagsBits.AddReactions, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ViewChannel])) {
             throw new Error('Menu channel permissions changed while awaiting confirmation.');

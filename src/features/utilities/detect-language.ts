@@ -13,7 +13,9 @@ export function createDetectLanguage(services: RuntimeServices): ContextCommand 
       try {
         const target = interaction.targetMessage;
         await assertCanRead(target.channel, interaction.user.id);
-        await interaction.editReply({ embeds: [await detectLanguage(target.content, services.env.LANGUAGE_DETECT_KEY)] });
+        const embed = await detectLanguage(target.content, services.env.LANGUAGE_DETECT_KEY);
+        await assertCanRead(target.channel, interaction.user.id);
+        await interaction.editReply({ embeds: [embed] });
       } catch (error) { await interaction.editReply({ content: error instanceof Error ? error.message : 'Language detection failed.' }); }
     },
   };

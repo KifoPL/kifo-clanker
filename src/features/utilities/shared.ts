@@ -20,17 +20,28 @@ export function parseMessageReference(input: string): { guildId?: string; channe
 
 export async function assertCanRead(channel: TextBasedChannel, userId: string): Promise<void> {
   if (channel.isDMBased()) {
-    if (channel.type !== ChannelType.DM || channel.recipientId !== userId) throw new Error('You cannot read that direct message.');
+    if (channel.type !== ChannelType.DM) throw new Error('You cannot read that direct message.');
+    const dm = channel.partial ? await channel.client.channels.fetch(channel.id, { force: true }) : channel;
+    if (dm?.type !== ChannelType.DM || dm.recipientId !== userId) throw new Error('You cannot read that direct message.');
     return;
   }
-  const member = await channel.guild.members.fetch(userId);
-  const bot = channel.guild.members.me ?? await channel.guild.members.fetchMe();
+  const fresh = await channel.fetch(true);
+  if (!fresh.isTextBased() || fresh.isDMBased()) throw new Error('The message channel is unavailable.');
+  if (fresh.isThread()) {
+    // Thread permissions inherit the parent's cached overwrites in discord.js.
+    if (!fresh.parentId || !await fresh.guild.channels.fetch(fresh.parentId, { force: true })) throw new Error('The thread parent is unavailable.');
+  }
+  const [member, bot] = await Promise.all([
+    fresh.guild.members.fetch({ user: userId, force: true }),
+    fresh.guild.members.fetchMe({ force: true }),
+    fresh.guild.roles.fetch(),
+  ]);
   const required = [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.ReadMessageHistory];
-  if (!channel.permissionsFor(member)?.has(required) || !channel.permissionsFor(bot)?.has(required)) {
+  if (!fresh.permissionsFor(member)?.has(required) || !fresh.permissionsFor(bot)?.has(required)) {
     throw new Error('Both you and the bot need View Channel and Read Message History in the target channel.');
   }
-  if (channel.isThread() && channel.type === ChannelType.PrivateThread && !channel.permissionsFor(member)?.has(PermissionFlagsBits.ManageThreads)) {
-    if (!await channel.members.fetch(userId).catch(() => null)) throw new Error('You are not a member of that private thread.');
+  if (fresh.isThread() && fresh.type === ChannelType.PrivateThread && !fresh.permissionsFor(member)?.has(PermissionFlagsBits.ManageThreads)) {
+    if (!await fresh.members.fetch({ member: userId, force: true }).catch(() => null)) throw new Error('You are not a member of that private thread.');
   }
 }
 
@@ -41,7 +52,9 @@ export async function fetchVisibleMessage(client: Client, userId: string, channe
   if (ref.guildId && ref.guildId !== '@me' && (!('guildId' in target) || target.guildId !== ref.guildId)) throw new Error('Invalid message link.');
   if (ref.guildId === '@me' && !target.isDMBased()) throw new Error('Invalid direct message link.');
   await assertCanRead(target, userId);
-  return target.messages.fetch(ref.messageId);
+  const message = await target.messages.fetch(ref.messageId);
+  await assertCanRead(target, userId);
+  return message;
 }
 
 export function textFile(content: string, name = 'list.txt'): AttachmentBuilder {
@@ -73,6 +86,7 @@ export async function attachmentBuffers(message: Message): Promise<AttachmentBui
 export async function saveBookmark(user: User, message: Message, pin = false): Promise<Message> {
   await assertCanRead(message.channel, user.id);
   const files = await attachmentBuffers(message);
+  await assertCanRead(message.channel, user.id);
   const content = message.content.replace(/<@&(\d{16,22})>/gu, (match, id: string) => message.guild?.roles.cache.get(id)?.name ? `@${message.guild.roles.cache.get(id)!.name}` : match);
   const embed = new EmbedBuilder().setColor(BOT_COLOR).setTitle(`BOOKMARK - ${'name' in message.channel ? message.channel.name : 'DM'}, ${message.guild?.name ?? 'Direct message'}`.slice(0, 256))
     .setAuthor({ name: `${message.author.tag}, ID: ${message.author.id}`, iconURL: message.author.displayAvatarURL() })
@@ -90,7 +104,7 @@ export async function saveBookmark(user: User, message: Message, pin = false): P
 }
 
 export function canDeleteUtilityDm(message: Message, userId: string): boolean {
-  if (message.channel.type !== ChannelType.DM || message.channel.recipientId !== userId || message.author.id !== message.client.user?.id) return false;
+  if (message.channel.type !== ChannelType.DM || message.channel.partial || message.channel.recipientId !== userId || message.author.id !== message.client.user?.id) return false;
   const embed = message.embeds[0];
   return embed?.author?.name === 'TODO' || embed?.title?.startsWith('BOOKMARK - ') === true;
 }

@@ -16,7 +16,7 @@ export async function dispatchInteraction(interaction: ChatInputCommandInteracti
     logger.error('Interaction failed', error);
     const reply = { content: 'The command failed. Please try again.', allowedMentions: { parse: [] as const } };
     try {
-      if (interaction.deferred) await interaction.editReply(reply);
+      if (interaction.deferred && !interaction.replied) await interaction.editReply(reply);
       else if (interaction.replied) await interaction.followUp({ ...reply, flags: MessageFlags.Ephemeral });
       else await interaction.reply({ ...reply, flags: MessageFlags.Ephemeral });
     } catch (responseError) { logger.error('Interaction error response failed', responseError); }
@@ -33,7 +33,7 @@ export async function dispatchContext(interaction: ContextMenuCommandInteraction
     logger.error('Context menu command failed', error);
     const reply = { content: 'The command could not complete. Check access to the selected resource.', allowedMentions: { parse: [] as const } };
     try {
-      if (interaction.deferred) await interaction.editReply(reply);
+      if (interaction.deferred && !interaction.replied) await interaction.editReply(reply);
       else if (interaction.replied) await interaction.followUp({ ...reply, flags: MessageFlags.Ephemeral });
       else await interaction.reply({ ...reply, flags: MessageFlags.Ephemeral });
     } catch (responseError) { logger.error('Context menu error response failed', responseError); }

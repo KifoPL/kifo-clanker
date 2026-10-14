@@ -1,6 +1,6 @@
-import { ChannelType, Collection, MessageFlags, PermissionFlagsBits, SlashCommandBuilder, type ThreadChannel } from 'discord.js';
+import { ChannelType, Collection, PermissionFlagsBits, SlashCommandBuilder, type ThreadChannel } from 'discord.js';
 import type { SlashCommand } from '../../contracts/commands.js';
-import { confirm, requireChannel } from './shared.js';
+import { confirm, requireChannel, recheckPermissions } from './shared.js';
 
 const counts = ['all','3','5','10','25'].map(value=>({name:value === 'all'?'All':value,value}));
 export const threadsData = new SlashCommandBuilder().setName('threads').setDescription('Manage threads in this channel.').setDMPermission(false)
@@ -13,12 +13,11 @@ export const threadsData = new SlashCommandBuilder().setName('threads').setDescr
     .addBooleanOption(o=>o.setName('silent').setDescription('Only you see the result.'))).toJSON();
 export function threadsCommand(): SlashCommand {
   return {data:threadsData,async execute(interaction) {
-    const channel = await requireChannel(interaction,[PermissionFlagsBits.ManageThreads],[PermissionFlagsBits.ManageThreads,PermissionFlagsBits.ReadMessageHistory,PermissionFlagsBits.ViewChannel]);
+    const channel = await requireChannel(interaction,[PermissionFlagsBits.ManageThreads],[PermissionFlagsBits.ManageThreads,PermissionFlagsBits.ReadMessageHistory,PermissionFlagsBits.ViewChannel],interaction.options.getBoolean('silent') ?? false);
     if (!channel) return;
     const action = interaction.options.getSubcommand();
     const count = interaction.options.getString('count',true);
     const which = action === 'archive' ? 'active' : interaction.options.getString('which',true);
-    await interaction.deferReply(interaction.options.getBoolean('silent') ? {flags:MessageFlags.Ephemeral} : {});
     const threads = new Collection<string,ThreadChannel>();
     if (which !== 'archived') { const active = await channel.threads.fetchActive(); for (const [id,thread] of active.threads) threads.set(id,thread); }
     if (which !== 'active') {
@@ -31,9 +30,7 @@ export function threadsCommand(): SlashCommand {
     if (!selected.length) { await interaction.editReply('No matching threads.'); return; }
     if (action === 'delete' && !await confirm(interaction,`Permanently delete ${selected.length} ${which} threads?`,'threads-delete')) return;
     // Permissions may have changed while the confirmation was open.
-    const member = await interaction.guild!.members.fetch(interaction.user.id);
-    const bot = await interaction.guild!.members.fetchMe();
-    if (!member.permissionsIn(channel).has(PermissionFlagsBits.ManageThreads) || !bot.permissionsIn(channel).has(PermissionFlagsBits.ManageThreads)) { await interaction.editReply('Thread permissions changed; action canceled.'); return; }
+    if (!await recheckPermissions(interaction,channel,[PermissionFlagsBits.ManageThreads],[PermissionFlagsBits.ManageThreads,PermissionFlagsBits.ReadMessageHistory,PermissionFlagsBits.ViewChannel])) return;
     let succeeded = 0;
     let failed = 0;
     for (const thread of selected) {

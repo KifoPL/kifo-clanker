@@ -22,7 +22,7 @@ export function parseEpochInput(input: string, now = Date.now()): EpochInput | u
     return epochToIso(epoch) === undefined ? undefined : { epoch, kind: 'duration', duration };
   }
 
-  const match = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})?)?$/i.exec(text);
+  const match = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})?)?$/i.exec(text);
   if (!match) return undefined;
   const year = Number(match[1]);
   const month = Number(match[2]);

@@ -73,7 +73,7 @@ test('native top maps all typed options, applies permissions and ranks public so
 test('native top routes cross-channel source contents into requester DMs, never public results', async () => {
   const f = nativeFixture({ winners: 1, duration: '1d', emoji: '👍' });
   const source = { ...f.channel, id: ids.other }; f.values.channel = source;
-  Object.assign(f.guild, { channels: { cache: new Collection([[ids.other, source]]), fetch: async () => source } });
+  Object.assign(f.guild, { channels: { cache: new Collection([[ids.channel, f.channel], [ids.other, source]]), fetch: async (id: string) => id === ids.channel ? f.channel : source } });
   await command('top', f).execute(f.interaction);
   assert.equal(f.channelSends.length, 0); assert.match(output(f.dms), /Private source text/);
   assert.doesNotMatch(output(f.replies), /Private source text/);
@@ -160,7 +160,7 @@ test('native top refuses inaccessible history without reading or disclosing the 
 test('bookmark reaction removal fetches partial messages and honors deletion emoji and bot exclusion', async () => {
   const f = nativeFixture(); const runtime = utilitiesFeature.create(f.services); let deletions = 0; let fetches = 0;
   const full = { channel: { type: 1, recipientId: ids.actor }, client: { user: { id: 'bot' } }, author: { id: 'bot' }, embeds: [{ title: 'BOOKMARK - general' }], async delete() { deletions++; } };
-  const reaction = { message: { partial: true, async fetch() { fetches++; return full; } }, emoji: { name: '👍' } };
+  const reaction = { message: { partial: true, channel: full.channel, async fetch() { fetches++; return full; } }, emoji: { name: '👍' } };
   const invoke = () => runtime.onReaction?.(reaction as unknown as Parameters<NonNullable<typeof runtime.onReaction>>[0], f.interaction.user, true);
   await invoke(); assert.equal(deletions, 0); assert.equal(fetches, 1);
   reaction.emoji.name = '❌'; await invoke(); assert.equal(deletions, 1);

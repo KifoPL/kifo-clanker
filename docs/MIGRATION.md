@@ -37,6 +37,8 @@ Startup verifies all six migration checksums and required tables, hydrates confi
 
 Message processing is ordered by channel, with explicit continue/handled/deleted results. Intake bounds concurrent work to 16 and pending work to 256. Saturated application commands receive an immediate retry response. Dropped menu reaction/deletion events trigger bounded durable reconciliation through the same scheduler loop. On shutdown, intake closes, unstarted work is discarded, scans/jobs cancel and drain, Discord disconnects, the pool closes, and telemetry flushes. The process enforces a 15-second shutdown deadline; unfinished leased jobs recover after restart.
 
+Startup can be cancelled during gateway login and checks cancellation before ready hooks, command registration, and scheduler startup. Interactions received before readiness get a private retry response. Scan cancellation has a separate bounded intake so active scans cannot occupy every slot needed to cancel them.
+
 One non-overlapping scheduler claims bounded batches using `FOR UPDATE SKIP LOCKED`, releases database connections before Discord I/O, renews leases while handlers are actually running, and fences completion by lease token and expiry. Each job completes, retries with backoff, or becomes terminal individually. Unsupported job types are not claimed. Presence refresh and overflow reconciliation share that loop.
 
 Intentional changes and fixes:
@@ -50,6 +52,16 @@ Intentional changes and fixes:
 - “1 day” archive options mean 1440 minutes. Private tickets create private threads. Archive and thread visibility settings follow current Discord capabilities.
 - Giveaways paginate entrants, exclude bots and persist winners before announcement. Poll/countdown/giveaway results produce new replies with stable enforced nonces and persisted result IDs. Crash recovery does not reroll winners.
 - Missing integrations fail clearly. GitHub issue creation has a durable per-user throttle. User-controlled mentions are disabled by default. Attachments use bounded in-memory buffers instead of writes into the application directory.
+
+The regression review against the original bot also covered failure and concurrency paths:
+
+- Test Clanker command access is restricted to tester role `832194217493135400` or resolved/configured bot owners, for both slash commands and context menus.
+- Source access is fetched freshly and rechecked before delivering long-running scans or saved attachments. Authorization refreshes role definitions, channel overwrites, and inherited thread-parent permissions as well as membership. Private-thread membership changes are respected; cold-start DM reaction deletion resolves the recipient before authorization.
+- Moderation reserves ownership before capturing the authoritative prior state. Role restoration works after the invoking channel disappears; `/remove` and selected-channel `/clean` work from threads. Guild-wide cleanup rechecks Administrator after confirmation. Due restoration waits for an in-process mutation to settle, and expired intents cannot start a new effect. Restoration notifications try the saved channel, then the operator's DMs, without making notification failures repeat the mutation.
+- Menu admission checks expiry in PostgreSQL, cancelled snapshot captures cannot grant or remove unrelated state, and partial bot users cannot join. Lost guild access preserves participant records for retries; departed members' permission snapshots remain because their overwrites survive leaving the server. Reversion reports retained unknown legacy effects for manual review. Successful grants/restorations send best-effort participant DMs after saving state; duplicate reactions do not repeat notifications.
+- Scheduled results force a fresh source-message fetch. Temporary permission or guild-access loss remains retryable; computed results can reach the creator in DMs when channel delivery fails. Failed visible poll/giveaway setup cancels its domain record. Maintenance failures do not starve durable jobs, and stopping during a claim releases work without starting it.
+- Automation can be disabled after the bot loses feature permissions; private tickets require the matching thread permission. Webhook authors no longer cause unnecessary member fetches, ticket starter threads avoid automatic-thread races, and reload cannot publish stale configuration over a committed command.
+- Late interaction failures preserve already delivered results; failed initial delivery can still recover through the original response. Reverse rejects empty input and epoch accepts valid ISO fractional seconds. Inherited broken GIF links were replaced with verified links to the same clips.
 
 ## Local setup
 
@@ -68,7 +80,7 @@ PostgreSQL has no `CREATE OR ALTER TABLE`. The migrator uses `CREATE TABLE IF NO
 
 `npm run build` emits compiled code; `npm start` runs it. Development, start, migration, registration, and import/export scripts read `.env` when present. Production and Aspire inject environment variables. Configure `DISCORD_TOKEN` for the gateway and `DATABASE_URL` for PostgreSQL. Environment values are validated before entry points open connections; validation errors identify fields without printing secrets.
 
-Enable Discord's Message Content, Server Members, and Presence privileged intents for the test bot. Give it the permissions and role hierarchy required by the specific features being tested.
+Enable Discord's Message Content, Server Members, and Presence privileged intents for each deployed bot. Give it the permissions and role hierarchy required by the specific features being tested. Test users need tester role `832194217493135400`; application owners and configured operators can also use Test Clanker.
 
 `/health/live` reports process liveness. `/health/ready` requires gateway readiness and a database probe. The default health port is 8080. Database outages affect readiness independently of liveness.
 
@@ -107,7 +119,9 @@ dotnet user-secrets set "Parameters:discord-token" "YOUR_TEST_BOT_TOKEN" --id ki
 dotnet user-secrets set "Parameters:postgres-password" "YOUR_LOCAL_DATABASE_PASSWORD" --id kifo-clanker-apphost
 ```
 
-Keep the PostgreSQL password stable across restarts and do not commit secrets. Aspire forwards optional `DISCORD_TEST_GUILD_ID` and `DISCORD_DEPLOY_CHANNEL_ID` environment overrides to the bot; leaving them unset uses the defaults above.
+Keep the PostgreSQL password stable across restarts and do not commit secrets. Aspire forwards optional `BOT_OWNER_IDS`, `SCHEDULER_PAUSED`, `DISCORD_TEST_GUILD_ID`, `DISCORD_DEPLOY_CHANNEL_ID`, `DISCORD_LOG_CHANNEL_ID`, `GITHUB_REPOSITORY`, and `JOKE_API_URL` from AppHost configuration. It forwards `LANGUAGE_DETECT_KEY`, `GITHUB_TOKEN`, and legacy `GITHUB_KEY` as secret parameters when configured. Leaving optional settings unset uses the bot's defaults. The AppHost does not read the bot's `.env`; set shell environment variables or values under the same keys in the `kifo-clanker-apphost` user-secrets store.
+
+The file-based .NET/Aspire SDK and package pins require coordinated manual updates in `global.json`, `infra/AppHost/apphost.cs`, and CI. Dependabot continues checking npm, Docker, and GitHub Actions; its NuGet discovery does not support inline `.cs` package directives.
 
 ```sh
 dotnet build infra/AppHost/apphost.cs
@@ -169,7 +183,7 @@ Aspire rehearsal proved successful migration gating, persistent restart, and fai
 
 For cutover, rehearse against a restored snapshot, stop the old bot and writes, take a final backup, export/import/reconcile, then start the new deployment and monitor readiness, scheduler lag, retries and terminal jobs. Validate menu/permission reconciliation first. A paused scheduler alone does not suppress passive Discord effects.
 
-Announcements remain at-least-once: a crash after Discord accepts a reply but before its ID is saved can cause a duplicate if retry occurs after Discord's nonce deduplication window. Winners and result snapshots remain stable. Role/permission restoration uses idempotent state checks; later changes are preserved where detectable.
+Announcements remain at-least-once: a crash after Discord accepts a reply but before its ID is saved can cause a duplicate if retry occurs after Discord's nonce deduplication window. Winners and result snapshots remain stable. Role/permission restoration uses idempotent state checks; later changes are preserved where detectable. Discord requests can also settle after a local timeout or after the process that sent them crashes: in-process mutation/restoration coordination cannot make remote effects atomic across a restart. Inspect unresolved intents and conflicting snapshots during recovery.
 
 Before new writes or Discord effects, rollback can restore the previous deployment. Afterwards, rollback requires reconciling new PostgreSQL state and Discord actions; simply restarting the old MySQL bot can lose changes or replay jobs.
 

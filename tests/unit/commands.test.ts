@@ -19,9 +19,17 @@ test('migration registry contains only the supported slash commands with valid o
   const textOption = reverse?.data.options?.find(option => option.name === 'text');
   assert.ok(textOption?.type === ApplicationCommandOptionType.String);
   assert.equal(textOption.required, true);
+  assert.equal(textOption.min_length, 1);
   assert.equal(textOption.max_length, 4096);
   const epoch = slashCommands.find(command => command.data.name === 'epoch');
   assert.deepEqual(epoch?.data.options?.map(option => option.name), ['date_to_epoch', 'epoch_to_date', 'help']);
+});
+
+test('empty reverse input produces a valid private validation response', () => {
+  const reply = reverseReply('', false, 'Someone');
+  assert.equal(reply.content, 'Provide text to reverse.');
+  assert.equal(reply.flags, MessageFlags.Ephemeral);
+  assert.equal(reply.embeds, undefined);
 });
 
 test('ping stays private and preserves the optional custom reply', () => {
@@ -63,6 +71,14 @@ test('epoch rejects malformed, normalized calendar dates and excessive durations
     assert.equal(parseEpochInput(input, 0), undefined, input);
     assert.equal(epochDateReply(input, 0).flags, MessageFlags.Ephemeral, input);
   }
+});
+
+test('epoch retains legacy support for valid ISO fractional seconds without allowing malformed dates', () => {
+  assert.equal(parseEpochInput('1970-01-01T00:00:00.123456Z', 0)?.epoch, 0);
+  assert.equal(parseEpochInput('1969-12-31T23:59:59.999999Z', 0)?.epoch, -1);
+  assert.equal(parseEpochInput('2024-02-30T00:00:00.123456Z', 0), undefined);
+  assert.equal(parseEpochInput('1970-01-01T00:00:00.Z', 0), undefined);
+  assert.equal(parseEpochInput('1970-01-01T00:00:00.123abcZ', 0), undefined);
 });
 
 test('epoch returns copyable seconds and ISO output, including zero and negative epochs', () => {

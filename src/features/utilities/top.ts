@@ -22,7 +22,7 @@ export function parseTopArgs(args: readonly string[]): { count: number; duration
   if (!channelId) throw new Error('Specify a channel mention or ID.');
   const emojiKey = parsed?.id ?? args[3]!;
   const isCustomId = /^\d{16,22}$/u.test(emojiKey);
-  if (!parsed?.id && !isCustomId && !/^(?:\p{Extended_Pictographic}\uFE0F?\p{Emoji_Modifier}?(?:\u200D\p{Extended_Pictographic}\uFE0F?\p{Emoji_Modifier}?)*|\p{Regional_Indicator}{2}|[0-9#*]\uFE0F?\u20E3)$/u.test(emojiKey)) throw new Error('Specify a Unicode or custom emoji.');
+  if (!parsed?.id && !isCustomId && !/^(?:\p{Extended_Pictographic}\uFE0F?\p{Emoji_Modifier}?(?:\u200D\p{Extended_Pictographic}\uFE0F?\p{Emoji_Modifier}?)*|\p{Regional_Indicator}{2}|\u{1F3F4}[\u{E0020}-\u{E007E}]+\u{E007F}|[0-9#*]\uFE0F?\u20E3)$/u.test(emojiKey)) throw new Error('Specify a Unicode or custom emoji.');
   return { count, duration, channelId, emojiKey };
 }
 
@@ -97,6 +97,8 @@ export function createTop(): { command: InvocationCommand; onInteraction(interac
             authorId: item.author.id,
             score: item.reactions.cache.find(reaction => (reaction.emoji.id ?? normalize(reaction.emoji.name ?? '')) === normalize(options.emojiKey))?.count ?? 0,
           }));
+          await assertCanRead(channel, invocation.author.id);
+          signal.throwIfAborted();
           const allWinners = selectWinners(candidates, options.count);
           const winners = allWinners.slice(0, 100);
           const summary = `Scanned ${result.messages.length} messages. ${winners.length ? `${winners.length} winning posts (one per author; equal scores tie).` : 'No matching posts found.'}${result.truncated ? '\nThe 50,000-message scan limit was reached; results cover only scanned messages. Use a shorter time period.' : ''}${allWinners.length > winners.length ? '\nThe first 100 tied posts are shown; use a shorter time period to narrow the result.' : ''}`;
@@ -104,6 +106,8 @@ export function createTop(): { command: InvocationCommand; onInteraction(interac
           if (privateResults) await invocation.author.send({ content: summary, allowedMentions: safeMentions }).catch(() => { throw new Error('Could not deliver results in DM. Enable DMs and run top again.'); });
           else await progress.edit({ content: summary, components: [], allowedMentions: safeMentions });
           for (let offset = 0; offset < winners.length; offset += 5) {
+            await assertCanRead(channel, invocation.author.id);
+            signal.throwIfAborted();
             const embeds = winners.slice(offset, offset + 5).map(winner => {
               const item = winner.message;
               const embed = new EmbedBuilder().setColor(BOT_COLOR).setTitle(`${winner.rank} place by ${item.author.username} with ${winner.score} ${args[3]}`.slice(0, 256))

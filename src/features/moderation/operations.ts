@@ -4,6 +4,7 @@ import type { RuntimeServices } from '../../contracts/features.js';
 import { query, withTransaction, enqueueJob } from '../../db/index.js';
 import type { ScheduledHandler } from '../../scheduler/index.js';
 import { permissionState, permissionValue, resolvePermission, type PermissionName, type PermissionState } from './permissions.js';
+import { authorizeChannel, authorizePermissionGrant, authorizeRole, authorizeTarget } from './authorization.js';
 
 type State = PermissionState | 'present' | 'absent' | 'unknown';
 export interface OperationRow {
@@ -13,8 +14,9 @@ export interface OperationRow {
   restore_at: Date | null; status: 'intent' | 'applied' | 'restored' | 'conflict' | 'failed';
 }
 interface Mutation {
-  guild: Guild; channel: GuildChannel; targetId: string; actorId: string; messageId: string; restoreAt?: Date;
+  guild: Guild; channel: Pick<GuildChannel, 'id'>; targetId: string; actorId: string; messageId: string; restoreAt?: Date;
 }
+const activeEffects = new WeakMap<RuntimeServices, Map<string, Promise<void>>>();
 export function restorationDecision(previous: State, applied: State, current: State, status: string): 'restore' | 'done' | 'conflict' {
   if (status === 'restored' || status === 'failed' || status === 'conflict') return 'done';
   if (current === previous) return 'done';
@@ -36,64 +38,149 @@ async function persistIntent(services: RuntimeServices, mutation: Mutation, kind
   return id;
 }
 async function apply(services: RuntimeServices, id: string, action: () => Promise<unknown>): Promise<void> {
-  try { await action(); }
+  let effects = activeEffects.get(services);
+  if (!effects) { effects = new Map(); activeEffects.set(services,effects); }
+  let finish!: () => void;
+  const pending = new Promise<void>(resolve => { finish = resolve; });
+  // Register synchronously before admission I/O. A due restorer must wait for this
+  // attempt to settle before deciding that an unchanged prior state is already done.
+  effects.set(id,pending);
+  try {
+    await prepare(services,id,async () => {
+      const admitted = await query(services.pool, `SELECT id FROM moderation_operations WHERE id=$1 AND status='intent' AND (restore_at IS NULL OR restore_at > CURRENT_TIMESTAMP)`, [id]);
+      if (!admitted.rowCount) throw new Error('The moderation intent expired or was reconciled before it could be applied.');
+    });
+    try { await action(); }
+    catch (error) {
+      // A network failure may follow a successful Discord effect. Keep temporary intent for reconciliation.
+      await query(services.pool, `UPDATE moderation_operations SET status=CASE WHEN restore_at IS NULL THEN 'failed' ELSE 'intent' END WHERE id=$1 AND status='intent'`, [id]);
+      throw error;
+    }
+    await query(services.pool, `UPDATE moderation_operations SET status='applied' WHERE id=$1 AND status='intent'`, [id]);
+  } finally {
+    effects.delete(id);
+    finish();
+  }
+}
+async function finalizeSnapshot(services: RuntimeServices, id: string, previous: State, applied: State): Promise<void> {
+  const result = await query(services.pool, `UPDATE moderation_operations SET previous_state=$2,applied_state=$3 WHERE id=$1 AND status='intent' AND (restore_at IS NULL OR restore_at > CURRENT_TIMESTAMP) RETURNING id`, [id,previous,applied]);
+  if (!result.rowCount) throw new Error('The moderation intent expired or was reconciled before it could be applied.');
+}
+async function prepare<T>(services: RuntimeServices, id: string, inspect: () => Promise<T>): Promise<T> {
+  try { return await inspect(); }
   catch (error) {
-    // A network failure may follow a successful Discord effect. Keep temporary intent for reconciliation.
-    await query(services.pool, `UPDATE moderation_operations SET status=CASE WHEN restore_at IS NULL THEN 'failed' ELSE 'intent' END WHERE id=$1`, [id]);
+    // No Discord effect has been attempted. Release admission for caught preparation failures;
+    // process interruption still leaves the unknown snapshot for conservative recovery.
+    await query(services.pool, `UPDATE moderation_operations SET status='failed' WHERE id=$1 AND status='intent'`, [id]);
     throw error;
   }
-  await query(services.pool, `UPDATE moderation_operations SET status='applied' WHERE id=$1`, [id]);
 }
-export async function setTemporaryPermission(services: RuntimeServices, mutation: Mutation & {permission: PermissionName; state: PermissionState}): Promise<void> {
-  const channel = await mutation.channel.fetch(true);
-  const previous = permissionState(channel,mutation.targetId,mutation.permission);
-  const id = await persistIntent(services,mutation,'permission',previous,mutation.state,mutation.permission,null);
-  await apply(services,id, () => channel.permissionOverwrites.edit(mutation.targetId, {[mutation.permission]: permissionValue(mutation.state)}, {reason:`perms by ${mutation.actorId}; operation ${id}`}));
+export async function setTemporaryPermission(services: RuntimeServices, mutation: Mutation & {channel: GuildChannel; permission: PermissionName; state: PermissionState}): Promise<void> {
+  const initial = await mutation.channel.fetch(true);
+  // Reserve ownership before taking the authoritative snapshot. An unfinished capture is unknown,
+  // so recovery never mistakes another operation's completed effect for our own.
+  const id = await persistIntent(services,mutation,'permission',permissionState(initial,mutation.targetId,mutation.permission),'unknown',mutation.permission,null);
+  const freshChannel = await prepare(services,id,async () => {
+    const channel = await mutation.channel.fetch(true);
+    const previous = permissionState(channel,mutation.targetId,mutation.permission);
+    await finalizeSnapshot(services,id,previous,mutation.state);
+    await mutation.guild.roles.fetch();
+    const [actor,bot,targetRole] = await Promise.all([mutation.guild.members.fetch({user:mutation.actorId,force:true}),mutation.guild.members.fetchMe({force:true}),mutation.guild.roles.fetch(mutation.targetId)]);
+    const target = targetRole ?? await mutation.guild.members.fetch({user:mutation.targetId,force:true});
+    const fresh = await channel.fetch(true);
+    authorizeChannel(actor,bot,fresh);
+    authorizeTarget(actor,bot,target);
+    if (mutation.state === 'allow') authorizePermissionGrant(actor,bot,fresh,PermissionFlagsBits[mutation.permission]);
+    if (permissionState(fresh,mutation.targetId,mutation.permission) !== previous) throw new Error('The permission changed while preparing the operation. Please retry.');
+    return fresh;
+  });
+  await apply(services,id, () => freshChannel.permissionOverwrites.edit(mutation.targetId, {[mutation.permission]: permissionValue(mutation.state)}, {reason:`perms by ${mutation.actorId}; operation ${id}`}));
 }
 export async function removeRole(services: RuntimeServices, mutation: Mutation & {roleId: string}): Promise<void> {
   const member = await mutation.guild.members.fetch({user:mutation.targetId,force:true});
   if (!member.roles.cache.has(mutation.roleId)) throw new Error('The member does not have this role.');
-  const id = await persistIntent(services,mutation,'role','present','absent',null,mutation.roleId);
-  await apply(services,id, () => member.roles.remove(mutation.roleId,`remove by ${mutation.actorId}; operation ${id}`));
+  const id = await persistIntent(services,mutation,'role','present','unknown',null,mutation.roleId);
+  const currentMember = await prepare(services,id,async () => {
+    const freshMember = await mutation.guild.members.fetch({user:mutation.targetId,force:true});
+    if (!freshMember.roles.cache.has(mutation.roleId)) throw new Error('The member no longer has this role.');
+    await finalizeSnapshot(services,id,'present','absent');
+    await mutation.guild.roles.fetch();
+    const [actor,bot,role,current] = await Promise.all([mutation.guild.members.fetch({user:mutation.actorId,force:true}),mutation.guild.members.fetchMe({force:true}),mutation.guild.roles.fetch(mutation.roleId),mutation.guild.members.fetch({user:mutation.targetId,force:true})]);
+    if (!role) throw new Error('The role was deleted.');
+    authorizeRole(actor,bot,role);
+    authorizeTarget(actor,bot,current);
+    if (!current.roles.cache.has(mutation.roleId)) throw new Error('The member no longer has this role.');
+    return current;
+  });
+  await apply(services,id, () => currentMember.roles.remove(mutation.roleId,`remove by ${mutation.actorId}; operation ${id}`));
+}
+async function restorationNotice(services: RuntimeServices, operation: OperationRow, conflict: boolean, signal: AbortSignal): Promise<void> {
+  if (signal.aborted) return;
+  const content = conflict
+    ? `Temporary ${operation.kind} operation ${operation.id} needs review: its state changed or its snapshot is incomplete. Guild ${operation.guild_id}; target ${operation.target_id}; ${operation.permission ?? operation.role_id}.`
+    : `Temporary ${operation.kind} operation ${operation.id} finished with its prior state restored. Guild ${operation.guild_id}; target ${operation.target_id}; ${operation.permission ?? operation.role_id}.`;
+  const payload = {content,allowedMentions:{parse:[] as []}};
+  try {
+    const guild = await services.client.guilds.fetch(operation.guild_id);
+    if (signal.aborted) return;
+    const channel = await guild.channels.fetch(operation.channel_id,{force:true});
+    if (signal.aborted) return;
+    if (channel?.isTextBased()) { await channel.send(payload); return; }
+  } catch (error) { services.logger.error('Could not send moderation restoration notice to its channel.',error); }
+  if (signal.aborted) return;
+  try {
+    const actor = await services.client.users.fetch(operation.actor_id);
+    if (signal.aborted) return;
+    await actor.send(payload);
+  }
+  catch (error) { services.logger.error('Could not send moderation restoration notice to its actor.',error); }
 }
 export function createRestoreHandler(services: RuntimeServices, kind: 'role' | 'permission'): ScheduledHandler {
   return async (job, signal) => {
     signal.throwIfAborted();
     if (!job.payload || typeof job.payload !== 'object' || !('operationId' in job.payload) || typeof job.payload.operationId !== 'string') throw new Error('Invalid moderation job payload.');
+    await activeEffects.get(services)?.get(job.payload.operationId);
+    signal.throwIfAborted();
     const result = await query<OperationRow>(services.pool, 'SELECT * FROM moderation_operations WHERE id=$1 AND kind=$2', [job.payload.operationId, kind]);
     const operation = result.rows[0];
     if (!operation || ['restored','conflict','failed'].includes(operation.status)) return;
     const guild = await services.client.guilds.fetch(operation.guild_id);
-    const channel = await guild.channels.fetch(operation.channel_id,{force:true});
     const bot = await guild.members.fetchMe({force:true});
-    if (!channel || !('permissionOverwrites' in channel)) throw new Error('Restoration channel unavailable.');
     let current: State;
     let action: () => Promise<unknown>;
     if (kind === 'permission') {
+      const channel = await guild.channels.fetch(operation.channel_id,{force:true});
+      if (!channel || !('permissionOverwrites' in channel)) throw new Error('Restoration channel unavailable.');
       const permission = operation.permission && resolvePermission(operation.permission);
       if (!permission) throw new Error('Unknown persisted permission.');
-      if (!channel.permissionsFor(bot)?.has([PermissionFlagsBits.ManageChannels,PermissionFlagsBits.ManageRoles])) throw new Error('Bot lacks target channel restoration permissions.');
-      const targetRole = await guild.roles.fetch(operation.target_id);
-      const targetMember = targetRole ? null : await guild.members.fetch({user:operation.target_id,force:true});
-      if (operation.target_id !== guild.id && bot.roles.highest.comparePositionTo(targetRole ?? targetMember!.roles.highest) <= 0) throw new Error('Restoration target exceeds bot hierarchy.');
       current = permissionState(channel,operation.target_id,permission);
       if (!['allow','deny','inherit'].includes(operation.previous_state)) throw new Error('Invalid permission snapshot.');
-      action = () => channel.permissionOverwrites.edit(operation.target_id,{[permission]:permissionValue(operation.previous_state as PermissionState)}, {reason:`Restore moderation operation ${operation.id}`});
+      action = async () => {
+        await guild.roles.fetch();
+        if (!channel.permissionsFor(bot)?.has([PermissionFlagsBits.ManageChannels,PermissionFlagsBits.ManageRoles])) throw new Error('Bot lacks target channel restoration permissions.');
+        const targetRole = await guild.roles.fetch(operation.target_id);
+        const targetMember = targetRole ? null : await guild.members.fetch({user:operation.target_id,force:true});
+        if (operation.target_id !== guild.id && (targetMember?.id === guild.ownerId || bot.roles.highest.comparePositionTo(targetRole ?? targetMember!.roles.highest) <= 0)) throw new Error('Restoration target exceeds bot hierarchy.');
+        signal.throwIfAborted();
+        return channel.permissionOverwrites.edit(operation.target_id,{[permission]:permissionValue(operation.previous_state as PermissionState)}, {reason:`Restore moderation operation ${operation.id}`});
+      };
     } else {
       if (!operation.role_id) throw new Error('Missing persisted role.');
       const member = await guild.members.fetch({user:operation.target_id,force:true});
-      const role = await guild.roles.fetch(operation.role_id);
-      if (!role || role.managed || !bot.permissions.has(PermissionFlagsBits.ManageRoles) || bot.roles.highest.comparePositionTo(role) <= 0 || bot.roles.highest.comparePositionTo(member.roles.highest) <= 0 || member.id === guild.ownerId) throw new Error('Role restoration is blocked by hierarchy or permissions.');
-      current = member.roles.cache.has(role.id) ? 'present' : 'absent';
-      action = () => operation.previous_state === 'present' ? member.roles.add(role.id,`Restore moderation operation ${operation.id}`) : member.roles.remove(role.id,`Restore moderation operation ${operation.id}`);
+      current = member.roles.cache.has(operation.role_id) ? 'present' : 'absent';
+      action = async () => {
+        await guild.roles.fetch();
+        const role = await guild.roles.fetch(operation.role_id!);
+        if (!role || role.managed || !bot.permissions.has(PermissionFlagsBits.ManageRoles) || bot.roles.highest.comparePositionTo(role) <= 0 || bot.roles.highest.comparePositionTo(member.roles.highest) <= 0 || member.id === guild.ownerId) throw new Error('Role restoration is blocked by hierarchy or permissions.');
+        signal.throwIfAborted();
+        return operation.previous_state === 'present' ? member.roles.add(role.id,`Restore moderation operation ${operation.id}`) : member.roles.remove(role.id,`Restore moderation operation ${operation.id}`);
+      };
     }
     const decision = restorationDecision(operation.previous_state,operation.applied_state,current,operation.status);
     signal.throwIfAborted();
     if (decision === 'restore') await action();
     await query(services.pool,'UPDATE moderation_operations SET status=$2 WHERE id=$1',[operation.id,decision === 'conflict' ? 'conflict' : 'restored']);
-    if (decision === 'conflict' && channel.isTextBased()) {
-      await channel.send({content:`Temporary ${kind} operation ${operation.id} was not restored because its state changed or its legacy snapshot is incomplete. Please review <@${operation.actor_id}>.`,allowedMentions:{parse:[]}});
-    }
+    await restorationNotice(services,operation,decision === 'conflict',signal);
   };
 }
 

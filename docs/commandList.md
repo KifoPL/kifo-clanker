@@ -373,7 +373,7 @@ This command reverses anything you type.
 
 | Option | Type | Required | Description | Choices and limits |
 |---|---|---|---|---|
-| `text` | Text | Yes | The text to reverse | Maximum length: 4096 |
+| `text` | Text | Yes | The text to reverse | Minimum length: 1 · Maximum length: 4096 |
 | `silent` | True / false | No | Whether to show the result to only you, or everyone. False by default. | — |
 
 ### /serverlist

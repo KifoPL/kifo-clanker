@@ -27,11 +27,14 @@ export function createGiveaway(services: RuntimeServices): InvocationCommand {
       await query(connection, 'INSERT INTO giveaways(id,guild_id,channel_id,message_id,user_id,winner_count,reaction,end_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8)', [id, message.guildId, message.channelId, placeholder.id, message.author.id, count, reaction, end]);
       await enqueueJob(connection, 'giveaway.complete', { id }, end, `giveaway:${id}`);
     });
-    await placeholder.edit({ content: `Ends at <t:${Math.floor(end.getTime() / 1000)}> (<t:${Math.floor(end.getTime() / 1000)}:R>).`, embeds: [new EmbedBuilder().setColor(BOT_COLOR).setTitle('GIVEAWAY!').setDescription(`React with ${emoji} to enter! ${count} winner${count === 1 ? '' : 's'} will be chosen.`)] });
-    try { await placeholder.react(emoji); }
+    try {
+      await placeholder.edit({ content: `Ends at <t:${Math.floor(end.getTime() / 1000)}> (<t:${Math.floor(end.getTime() / 1000)}:R>).`, embeds: [new EmbedBuilder().setColor(BOT_COLOR).setTitle('GIVEAWAY!').setDescription(`React with ${emoji} to enter! ${count} winner${count === 1 ? '' : 's'} will be chosen.`)] });
+      await placeholder.react(emoji);
+    }
     catch (error) {
-      await query(services.pool, "UPDATE giveaways SET completed_at=clock_timestamp(),terminal_reason='Reaction setup failed' WHERE id=$1", [id]);
-      await placeholder.edit({ content: 'Giveaway cancelled: I could not add that reaction.', embeds: [] });
+      await query(services.pool, "UPDATE giveaways SET completed_at=clock_timestamp(),terminal_reason='Giveaway setup failed' WHERE id=$1", [id]);
+      await placeholder.edit({ content: 'Giveaway cancelled: I could not finish its setup.', embeds: [] })
+        .catch(cleanupError => services.logger.error('Giveaway cancellation message failed', cleanupError));
       throw error;
     }
   } };

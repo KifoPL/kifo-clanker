@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { ApplicationCommandOptionType, ChannelType, MessageFlags, type ChatInputCommandInteraction, Collection, PermissionsBitField, PermissionFlagsBits, type Client, type GuildMember, type Message, type TextBasedChannel, type User } from 'discord.js';
+import { ApplicationCommandOptionType, ChannelType, MessageFlags, type ChatInputCommandInteraction, Collection, PermissionsBitField, PermissionFlagsBits, Client, Guild, GuildMember, TextChannel, ThreadChannel, type Message, type PrivateThreadChannel, type PublicThreadChannel, type TextBasedChannel, type User } from 'discord.js';
 import type { CommandInvocation } from '../../src/contracts/invocation.js';
 import type { RuntimeServices } from '../../src/contracts/features.js';
 import { utilitiesFeature } from '../../src/features/utilities/index.js';
-import { detectLanguage, languageName, readDetections } from '../../src/features/utilities/lang.js';
+import { createLang, detectLanguage, languageName, readDetections } from '../../src/features/utilities/lang.js';
 import { assertCanRead, canDeleteUtilityDm, fetchVisibleMessage, parseMessageReference, saveBookmark } from '../../src/features/utilities/shared.js';
 import { filterMembers, memberTsv, parseListTarget, userStats } from '../../src/features/utilities/statistics.js';
 import { createTop, parseTopArgs, scanPages, selectWinners } from '../../src/features/utilities/top.js';
@@ -18,11 +18,28 @@ const role2 = '623456789012345678';
 const read = [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.ReadMessageHistory];
 
 function readableChannel(userPermissions = read, botPermissions = read): TextBasedChannel {
-  return {
-    id: channelId, type: ChannelType.GuildText, isTextBased: () => true, isDMBased: () => false, isThread: () => false,
-    guild: { members: { me: { id: 'bot' }, fetch: async () => ({ id: userId }) } },
+  const channel = {
+    id: channelId, parentId: role2, type: ChannelType.GuildText, isTextBased: () => true, isDMBased: () => false, isThread: () => false,
+    guild: { roles: { fetch: async () => new Collection() }, channels: { fetch: async () => channel }, members: { me: { id: 'bot' }, fetchMe: async () => ({ id: 'bot' }), fetch: async () => ({ id: userId }) } },
+    fetch: async () => channel,
     permissionsFor: (member: { id: string }) => new PermissionsBitField(member.id === 'bot' ? botPermissions : userPermissions),
-  } as unknown as TextBasedChannel;
+  };
+  return channel as unknown as TextBasedChannel;
+}
+
+function sdkPermissionFixture() {
+  const client = new Client({ intents: [] });
+  // Exercise the SDK's real role/overwrite calculation without a Discord connection.
+  const guild = Reflect.construct(Guild, [client, { id: guildId, name: 'Source guild', roles: [
+    { id: guildId, name: '@everyone', permissions: '0' },
+    { id: roleId, name: 'Readers', permissions: new PermissionsBitField(read).bitfield.toString() },
+  ] }]) as Guild;
+  const member = Reflect.construct(GuildMember, [client, { user: { id: userId, username: 'Reader' }, roles: [roleId] }, guild]) as GuildMember;
+  const channel = Reflect.construct(TextChannel, [guild, { id: channelId, name: 'source', type: ChannelType.GuildText, permission_overwrites: [] }, client]) as TextChannel;
+  Object.assign(channel, { fetch: async () => channel });
+  Object.assign(guild.members, { fetch: async () => member, fetchMe: async () => member });
+  Object.assign(guild.roles, { fetch: async () => guild.roles.cache });
+  return { guild, member, channel };
 }
 function rosterMember(id: string, roles: readonly string[], visible = true): GuildMember {
   return { id, user: { username: 'Żółć\nadmin\tname' }, nickname: 'line\nline', roles: { highest: { rawPosition: 2 }, cache: new Collection(roles.map(role => [role, {}])) }, visible } as unknown as GuildMember;
@@ -289,7 +306,7 @@ test('native utilities expose typed targets and bounded ranking options', () => 
 test('native /list user resolves the selected member and returns roles as an interaction attachment', async () => {
   const roles = new Collection([[guildId, { id: guildId, name: '@everyone', rawPosition: 0, position: 0 }], [roleId, { id: roleId, name: 'Selected role', rawPosition: 2, position: 2 }]]);
   const target = { id: role2, displayName: 'Selected member', nickname: null, premiumSince: null, joinedAt: null, joinedTimestamp: null, user: { id: role2, bot: false, tag: 'selected', createdAt: new Date(0), createdTimestamp: 0, displayAvatarURL: () => 'https://cdn.discordapp.com/avatar.png' }, roles: { cache: roles, highest: roles.get(roleId) } };
-  const guild = { id: guildId, roles: { cache: roles, highest: roles.get(roleId), fetch: async () => roles }, channels: { cache: new Collection([[channelId, {}]]) }, members: { me: { id: 'bot' }, fetch: async (argument: string | { user: string }) => { if (typeof argument === 'string') { assert.equal(argument, role2); return target; } assert.equal(argument.user, userId); return { id: userId }; } } };
+  const guild = { id: guildId, roles: { cache: roles, highest: roles.get(roleId), fetch: async () => roles }, channels: { cache: new Collection([[channelId, {}]]) }, members: { me: { id: 'bot' }, fetch: async (argument: string | { user: string }) => { if (typeof argument === 'string' || argument.user === role2) { assert.equal(typeof argument === 'string' ? argument : argument.user, role2); return target; } assert.equal(argument.user, userId); return { id: userId }; } } };
   Object.assign(target, { guild });
   const channel = readableChannel(read, [...read, PermissionFlagsBits.AttachFiles]);
   const replies: unknown[] = [];
@@ -331,4 +348,148 @@ test('native /todo preserves literal URL text and fetches only the explicit link
   const copied = sends[1] as { embeds: Array<{ toJSON(): { description?: string } }> };
   assert.equal(copied.embeds[0]?.toJSON().description, 'Referenced message\n==========\nAdditional note');
   assert.equal(sourceReads, 1);
+});
+
+test('message authorization refreshes member, bot and private-thread membership instead of trusting caches', async () => {
+  const source = readableChannel();
+  if (source.isDMBased()) throw new Error('Expected a guild channel.');
+  Object.assign(source.guild.members, {
+    me: { id: 'bot', allowed: true },
+    fetch: async (options: string | { user: string; force: boolean }) => {
+      if (typeof options === 'string') return { id: userId, allowed: true };
+      assert.deepEqual(options, { user: userId, force: true });
+      return { id: userId, allowed: false };
+    },
+    fetchMe: async (options: { force: boolean }) => { assert.equal(options.force, true); return { id: 'bot', allowed: true }; },
+  });
+  Object.assign(source, { permissionsFor: (member: { allowed: boolean }) => new PermissionsBitField(member.allowed ? read : []) });
+  await assert.rejects(assertCanRead(source, userId), /Read Message History/);
+  Object.assign(source.guild.members, { fetch: async () => ({ id: userId, allowed: true }) });
+  Object.assign(source, { type: ChannelType.PrivateThread, isThread: () => true, members: { fetch: async (options: string | { member: string; force: boolean }) => {
+    if (typeof options === 'string') return { id: userId };
+    assert.deepEqual(options, { member: userId, force: true });
+    return null;
+  } } });
+  await assert.rejects(assertCanRead(source, userId), /private thread/);
+});
+
+test('message authorization evaluates fetched channel overwrites instead of a captured readable channel', async () => {
+  const { guild, member, channel } = sdkPermissionFixture();
+  const fresh = Reflect.construct(TextChannel, [guild, { id: channelId, name: 'source', type: ChannelType.GuildText,
+    permission_overwrites: [{ id: userId, type: 1, allow: '0', deny: PermissionFlagsBits.ViewChannel.toString() }],
+  }, guild.client]) as TextChannel;
+  assert.equal(channel.permissionsFor(member).has(read), true);
+  assert.equal(fresh.permissionsFor(member).has(read), false);
+  Object.assign(channel, { fetch: async (force: boolean) => { assert.equal(force, true); return fresh; } });
+  await assert.rejects(assertCanRead(channel, userId), /Read Message History/);
+});
+
+test('message authorization refreshes role permission bits with unchanged member roles', async () => {
+  const { guild, member, channel } = sdkPermissionFixture();
+  assert.equal(channel.permissionsFor(member).has(read), true);
+  Object.assign(guild.roles, { fetch: async () => {
+    Object.assign(guild.roles.cache.get(roleId)!, { permissions: new PermissionsBitField() });
+    return guild.roles.cache;
+  } });
+  await assert.rejects(assertCanRead(channel, userId), /Read Message History/);
+  assert.equal(member.roles.cache.has(roleId), true);
+});
+
+test('thread authorization refreshes its parent overwrites before checking inherited access', async () => {
+  const { guild, member, channel: parent } = sdkPermissionFixture();
+  const freshParent = Reflect.construct(TextChannel, [guild, { id: channelId, name: 'source', type: ChannelType.GuildText,
+    permission_overwrites: [{ id: userId, type: 1, allow: '0', deny: PermissionFlagsBits.ViewChannel.toString() }],
+  }, guild.client]) as TextChannel;
+  let parentReads = 0;
+  guild.channels.cache.set(parent.id, parent);
+  Object.assign(guild.channels, { fetch: async (id: string, options: { force: boolean }) => {
+    assert.equal(id, parent.id); assert.equal(options.force, true); parentReads++;
+    guild.channels.cache.set(parent.id, freshParent);
+    return freshParent;
+  } });
+  const thread = Reflect.construct(ThreadChannel, [guild, { id: role2, parent_id: parent.id, type: ChannelType.PublicThread }, guild.client]) as PublicThreadChannel;
+  Object.assign(thread, { fetch: async () => thread });
+  assert.equal(parent.permissionsFor(member).has(read), true);
+  await assert.rejects(assertCanRead(thread, userId), /Read Message History/);
+  assert.equal(parentReads, 1);
+});
+
+test('private-thread membership is checked on the freshly fetched thread', async () => {
+  const { guild, channel: parent } = sdkPermissionFixture();
+  guild.channels.cache.set(parent.id, parent);
+  Object.assign(guild.channels, { fetch: async () => parent });
+  const captured = Reflect.construct(ThreadChannel, [guild, { id: role2, parent_id: parent.id, type: ChannelType.PublicThread }, guild.client]) as PublicThreadChannel;
+  const fresh = Reflect.construct(ThreadChannel, [guild, { id: role2, parent_id: parent.id, type: ChannelType.PrivateThread }, guild.client]) as PrivateThreadChannel;
+  let membershipChecks = 0;
+  Object.assign(captured, { fetch: async () => fresh });
+  Object.assign(fresh.members, { fetch: async () => { membershipChecks++; return null; } });
+  await assert.rejects(assertCanRead(captured, userId), /private thread/);
+  assert.equal(membershipChecks, 1);
+});
+
+test('bookmark delivery rechecks source access after attachment downloading', async () => {
+  const originalFetch = globalThis.fetch;
+  let allowed = true;
+  let copies = 0;
+  const source = readableChannel();
+  Object.assign(source, { permissionsFor: () => new PermissionsBitField(allowed ? read : []) });
+  const message = { channel: source, content: 'Sensitive content', guild: null, author: { id: userId, tag: 'User', displayAvatarURL: () => 'https://cdn.discordapp.com/avatar.png' }, url: 'https://discord.com/channels/@me/a/b', embeds: [], attachments: new Collection([['a', { size: 3, name: 'secret.txt', url: 'https://cdn.discordapp.com/attachments/secret.txt' }]]) } as unknown as Message;
+  const user = { id: userId, send: async () => { copies++; } } as unknown as User;
+  try {
+    globalThis.fetch = async () => { allowed = false; return new Response(new Uint8Array([1, 2, 3])); };
+    await assert.rejects(saveBookmark(user, message), /Read Message History/);
+    assert.equal(copies, 0);
+  } finally { globalThis.fetch = originalFetch; }
+});
+
+test('top does not disclose results after source access changes during its scan', async () => {
+  let allowed = true;
+  let copies = 0;
+  const replies: unknown[] = [];
+  const source = readableChannel();
+  Object.assign(source, { permissionsFor: () => new PermissionsBitField(allowed ? read : []), messages: { fetch: async () => {
+    allowed = false;
+    return new Collection([[messageId, { id: messageId, createdTimestamp: Date.now(), author: { id: userId }, reactions: { cache: new Collection() } }]]);
+  } } });
+  const invocation = { id: messageId, channelId: roleId, author: { id: userId, send: async () => { copies++; } }, channel: { isDMBased: () => false }, guild: { channels: { fetch: async () => source } }, member: { permissionsIn: () => new PermissionsBitField([PermissionFlagsBits.ManageChannels]) }, reply: async (payload: unknown) => { replies.push(payload); return { edit: async (body: unknown) => { replies.push(body); } }; } } as unknown as CommandInvocation;
+  await createTop().command.execute(invocation, ['1', '1d', channelId, '👍']);
+  assert.equal(copies, 0);
+  assert.match(JSON.stringify(replies.at(-1)), /Read Message History/);
+});
+
+test('utility DM reaction hydrates the recipient before deleting a note received after restart', async () => {
+  let channelReads = 0;
+  let deletes = 0;
+  const channel: { id: string; type: ChannelType; partial: boolean; recipientId?: string } = { id: channelId, type: ChannelType.DM, partial: true };
+  const message = { channel, partial: false, author: { id: 'bot' }, client: { user: { id: 'bot' } }, embeds: [{ author: { name: 'TODO' } }], delete: async () => { deletes++; } } as unknown as Message;
+  const runtime = utilitiesFeature.create({ client: { channels: { fetch: async (id: string, options: { force: boolean }) => { assert.equal(id, channelId); assert.equal(options.force, true); channelReads++; channel.partial = false; channel.recipientId = userId; return channel; } } } } as unknown as RuntimeServices);
+  await runtime.onReaction!({ message, emoji: { name: '✅' } } as Parameters<NonNullable<typeof runtime.onReaction>>[0], { id: userId, bot: false } as User, true);
+  assert.equal(channelReads, 1);
+  assert.equal(deletes, 1);
+});
+
+test('top accepts Discord subdivision flag emoji tag sequences', () => {
+  const england = '\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}';
+  assert.equal(parseTopArgs(['1', '1d', channelId, england]).emojiKey, england);
+});
+
+
+test('source access revoked while message fetch or language detection is pending prevents result delivery', async () => {
+  let allowed = true;
+  let reads = 0;
+  const source = readableChannel();
+  Object.assign(source, { permissionsFor: () => new PermissionsBitField(allowed ? read : []), messages: { fetch: async () => { reads++; allowed = false; return { content: 'Private text', channel: source }; } } });
+  await assert.rejects(fetchVisibleMessage({} as Client, userId, source, messageId), /Read Message History/);
+  assert.equal(reads, 1);
+  allowed = true;
+  Object.assign(source, { messages: { fetch: async () => ({ content: 'Private text', channel: source }) } });
+  const originalFetch = globalThis.fetch;
+  const replies: unknown[] = [];
+  try {
+    globalThis.fetch = async () => { allowed = false; return Response.json({ data: { detections: [{ language: 'pl', confidence: 90, isReliable: true }] } }); };
+    const invocation = { author: { id: userId }, channel: source, reply: async (payload: unknown) => { replies.push(payload); } } as unknown as CommandInvocation;
+    await createLang({ client: {}, env: { LANGUAGE_DETECT_KEY: 'test-key' } } as RuntimeServices).execute(invocation, [messageId]);
+    assert.match(JSON.stringify(replies), /Read Message History/);
+    assert.doesNotMatch(JSON.stringify(replies), /Detected language|Private text/);
+  } finally { globalThis.fetch = originalFetch; }
 });

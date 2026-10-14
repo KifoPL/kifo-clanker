@@ -117,13 +117,13 @@ export async function runStatistics(invocation: CommandInvocation, args: readonl
   if (!isList && args.length > 1) throw new Error('Choose either a member or a role for /stats.');
   await guild.roles.fetch();
   const target = parseListTarget(args, invocation.author.id, invocation.channelId, new Set(guild.roles.cache.keys()), new Set(guild.channels.cache.keys()));
-  if (target.kind === 'unsupported') throw new Error('Channel and message statistics were not implemented in the original bot. Use stats with a member, role, or no target.');
+  if (target.kind === 'unsupported') throw new Error('Use /stats with a member, role, or no target. For a channel-filtered member export, use /list roles.');
   if (isList && !invocation.channel.isDMBased() && !invocation.channel.permissionsFor(guild.members.me ?? await guild.members.fetchMe())?.has(PermissionFlagsBits.AttachFiles)) throw new Error('The bot needs Attach Files in this channel.');
   let embed: EmbedBuilder;
   let content = '';
   if (target.kind === 'user') {
-    const member = await guild.members.fetch(target.id).catch(() => null);
-    if (!member) throw new Error('Unknown member. Message statistics were not implemented in the original bot.');
+    const member = await guild.members.fetch({ user: target.id, force: true }).catch(() => null);
+    if (!member) throw new Error('The selected member is unavailable. Check that they are still in this server and try again.');
     embed = userStats(member);
     content = 'Role ID\tPosition\tRole name\n' + [...member.roles.cache.values()].map(role => `${role.id}\t${role.rawPosition}\t${cell(role.name)}`).join('\n');
   } else {

@@ -196,3 +196,38 @@ test('onTick shares the scheduler loop even with no registered durable handlers'
   await instance.stop();
   assert.equal(claims, 0);
 });
+
+test('stop during a claim releases its jobs without starting handlers', async () => {
+  const claiming = deferred();
+  const claimed = deferred<{ rows: unknown[] }>();
+  let executed = 0;
+  let released = false;
+  const instance = scheduler(async () => { executed++; }, async sql => {
+    if (sql.includes('WITH exhausted')) { claiming.resolve(); return claimed.promise; }
+    released = true;
+    return { rows: [] };
+  });
+  instance.start();
+  await claiming.promise;
+  const stopping = instance.stop();
+  claimed.resolve({ rows: [job('1')] });
+  await stopping;
+  assert.equal(executed, 0);
+  assert.equal(released, true);
+});
+
+test('maintenance failure cannot prevent durable jobs from being polled', { timeout: 1_000 }, async context => {
+  const polled = deferred();
+  let warnings = 0;
+  const instance = new DurableScheduler({
+    pool: { async query() { polled.resolve(); return { rows: [] }; } } as unknown as Pool,
+    handlers: { reminder: async () => {} },
+    logger: { error() { warnings++; } },
+    onTick: async () => { throw new Error('Maintenance unavailable'); },
+  });
+  context.after(() => instance.stop());
+  instance.start();
+  await polled.promise;
+  await instance.stop();
+  assert.equal(warnings, 1);
+});

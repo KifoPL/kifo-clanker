@@ -1,5 +1,5 @@
 import { BOT_COLOR } from '../../constants.js';
-import { AttachmentBuilder, EmbedBuilder, resolvePartialEmoji, type Message } from 'discord.js';
+import { AttachmentBuilder, DiscordAPIError, EmbedBuilder, resolvePartialEmoji, type Message, type MessageCreateOptions } from 'discord.js';
 import type { Pool, PoolClient } from 'pg';
 import type { RuntimeServices } from '../../contracts/features.js';
 import { query } from '../../db/index.js';
@@ -17,17 +17,36 @@ async function guarded(services: RuntimeServices, table: 'polls' | 'giveaways' |
   try { await work(); }
   catch (error) { if (!terminalDiscordError(error) && !(error instanceof PermanentJobError)) throw error; await finish(services, table, id, undefined, 'Discord resource deleted or no longer accessible'); }
 }
+
+async function announce(services: RuntimeServices, row: BaseRecord, body: MessageCreateOptions, signal: AbortSignal, source?: Message): Promise<Message> {
+  signal.throwIfAborted();
+  try {
+    const message = source ?? await fetchJobMessage(services, row.channel_id, row.message_id, signal);
+    signal.throwIfAborted();
+    return await message.reply(body);
+  } catch (error) {
+    const inaccessible = error instanceof PermanentJobError || terminalDiscordError(error)
+      || (error instanceof DiscordAPIError && [10004, 50001, 50013].includes(Number(error.code)));
+    if (!inaccessible || !/^\d{17,20}$/u.test(row.user_id)) throw error;
+    signal.throwIfAborted();
+    const creator = await services.client.users.fetch(row.user_id);
+    signal.throwIfAborted();
+    return creator.send({ ...body, content: `${body.content ?? ''}\nChannel delivery unavailable. Source: https://discord.com/channels/${row.guild_id}/${row.channel_id}/${row.message_id}` });
+  }
+}
 export function createScheduledHandlers(services: RuntimeServices): Record<string, ScheduledHandler> {
   return {
     'giveaway.complete': async (job, signal) => {
+      signal.throwIfAborted();
       const id = jobRecordId(job.payload);
       const row = (await query<Giveaway>(services.pool, 'SELECT * FROM giveaways WHERE id=$1', [id])).rows[0];
       if (!row || row.completed_at) return;
       if (row.outcome_message_id) { await finish(services, 'giveaways', id, row.outcome_message_id); return; }
       await guarded(services, 'giveaways', id, async () => {
-        const message = await fetchJobMessage(services, row.channel_id, row.message_id);
+        let message: Message | undefined;
         let winners = row.winner_ids;
         if (winners === null) {
+          message = await fetchJobMessage(services, row.channel_id, row.message_id, signal);
           const legacyEmoji = /React with (.*?) to enter!/iu.exec(message.embeds[0]?.description ?? '')?.[1];
           const recovered = legacyEmoji ? resolvePartialEmoji(legacyEmoji) : null;
           const reactionId = row.reaction ?? recovered?.id ?? (recovered && 'name' in recovered ? recovered.name : undefined);
@@ -41,19 +60,21 @@ export function createScheduledHandlers(services: RuntimeServices): Record<strin
         if (!Array.isArray(winners) || !winners.every(value => typeof value === 'string' && /^\d+$/u.test(value))) throw new Error('Invalid stored giveaway winners');
         signal.throwIfAborted();
         const text = winners.length ? winners.map(id => `- <@${id}>`).join('\n') : 'No eligible participants entered.';
-        const announcement = await message.reply({ content: `<@${row.user_id}> Giveaway ended.`, embeds: [new EmbedBuilder().setColor(BOT_COLOR).setTitle('Giveaway results:').setDescription(text.length > 3500 ? 'Winners are listed in the attached file.' : text)], files: text.length > 3500 ? [new AttachmentBuilder(Buffer.from(text), { name: 'giveaway-winners.txt' })] : [], nonce: announcementNonce(id), enforceNonce: true, allowedMentions: { parse: [], users: [row.user_id], repliedUser: false } });
+        const announcement = await announce(services, row, { content: `<@${row.user_id}> Giveaway ended.`, embeds: [new EmbedBuilder().setColor(BOT_COLOR).setTitle('Giveaway results:').setDescription(text.length > 3500 ? 'Winners are listed in the attached file.' : text)], files: text.length > 3500 ? [new AttachmentBuilder(Buffer.from(text), { name: 'giveaway-winners.txt' })] : [], nonce: announcementNonce(id), enforceNonce: true, allowedMentions: { parse: [], users: [row.user_id], repliedUser: false } }, signal, message);
         await finish(services, 'giveaways', id, announcement.id);
       });
     },
     'poll.complete': async (job, signal) => {
+      signal.throwIfAborted();
       const id = jobRecordId(job.payload);
       const row = (await query<Poll>(services.pool, 'SELECT * FROM polls WHERE id=$1', [id])).rows[0];
       if (!row || row.completed_at) return;
       if (row.outcome_message_id) { await finish(services, 'polls', id, row.outcome_message_id); return; }
       await guarded(services, 'polls', id, async () => {
-        const message = await fetchJobMessage(services, row.channel_id, row.message_id);
+        let message: Message | undefined;
         let outcome = row.outcome;
         if (outcome === null) {
+          message = await fetchJobMessage(services, row.channel_id, row.message_id, signal);
           const options = row.options ?? message.embeds[0]?.fields.map(field => field.value) ?? [];
           const calculated: PollOutcome[] = [];
           for (const [index, label] of options.entries()) {
@@ -67,30 +88,32 @@ export function createScheduledHandlers(services: RuntimeServices): Record<strin
         }
         if (!Array.isArray(outcome)) throw new Error('Invalid stored poll outcome');
         signal.throwIfAborted();
-        const announcement = await message.reply({ content: `<@${row.user_id}> Poll ended.`, embeds: [new EmbedBuilder().setColor(BOT_COLOR).setTitle('Poll results').setDescription((row.question ?? message.embeds[0]?.description ?? 'Poll').slice(0, 1800)).addFields(outcome.map((option, index) => ({ name: `${index + 1}. ${option.label}`.slice(0, 256), value: `${option.votes} votes` })))], nonce: announcementNonce(id), enforceNonce: true, allowedMentions: { parse: [], users: [row.user_id], repliedUser: false } });
+        const announcement = await announce(services, row, { content: `<@${row.user_id}> Poll ended.`, embeds: [new EmbedBuilder().setColor(BOT_COLOR).setTitle('Poll results').setDescription((row.question ?? message?.embeds[0]?.description ?? 'Poll').slice(0, 1800)).addFields(outcome.map((option, index) => ({ name: `${index + 1}. ${option.label}`.slice(0, 256), value: `${option.votes} votes` })))], nonce: announcementNonce(id), enforceNonce: true, allowedMentions: { parse: [], users: [row.user_id], repliedUser: false } }, signal, message);
         await finish(services, 'polls', id, announcement.id);
       });
     },
     'countdown.complete': async (job, signal) => {
+      signal.throwIfAborted();
       const id = jobRecordId(job.payload);
       const row = (await query<Countdown>(services.pool, 'SELECT * FROM countdowns WHERE id=$1', [id])).rows[0];
       if (!row || row.completed_at || row.status !== 'scheduled') return;
       if (row.outcome_message_id) { await finish(services, 'countdowns', id, row.outcome_message_id); return; }
       await guarded(services, 'countdowns', id, async () => {
-        const message = await fetchJobMessage(services, row.channel_id, row.message_id);
         signal.throwIfAborted();
-        const announcement = await message.reply({ content: `<@${row.user_id}> Countdown has ended!`, embeds: [new EmbedBuilder().setColor(BOT_COLOR).setTitle('Countdown has ended!').setDescription(row.message)], nonce: announcementNonce(id), enforceNonce: true, allowedMentions: { parse: [], users: [row.user_id], repliedUser: false } });
+        const announcement = await announce(services, row, { content: `<@${row.user_id}> Countdown has ended!`, embeds: [new EmbedBuilder().setColor(BOT_COLOR).setTitle('Countdown has ended!').setDescription(row.message)], nonce: announcementNonce(id), enforceNonce: true, allowedMentions: { parse: [], users: [row.user_id], repliedUser: false } }, signal);
         await finish(services, 'countdowns', id, announcement.id);
       });
     },
     'countdown.expire': async (job, signal) => {
+      signal.throwIfAborted();
       const id = jobRecordId(job.payload);
       await query(services.pool, `UPDATE countdowns SET status='cancelled' WHERE id=$1 AND status='pending_confirmation' AND confirmation_expires_at <= clock_timestamp()`, [id]);
       const row = (await query<Countdown>(services.pool, `SELECT * FROM countdowns WHERE id=$1 AND status='cancelled' AND completed_at IS NULL AND confirmation_expires_at <= clock_timestamp()`, [id])).rows[0];
       if (!row) return;
       await guarded(services, 'countdowns', id, async () => {
         signal.throwIfAborted();
-        const message: Message = await fetchJobMessage(services, row.channel_id, row.message_id);
+        const message: Message = await fetchJobMessage(services, row.channel_id, row.message_id, signal);
+        signal.throwIfAborted();
         await message.edit({ content: 'Countdown confirmation expired.', components: [], embeds: [] });
         await query(services.pool, 'UPDATE countdowns SET completed_at=clock_timestamp(),outcome_message_id=$2 WHERE id=$1', [id, message.id]);
       });

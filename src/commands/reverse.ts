@@ -10,6 +10,7 @@ export function reverseText(text: string): string {
 }
 
 export function reverseReply(text: string, silent: boolean, userTag: string): InteractionReplyOptions {
+  if (!text.length) return { content: 'Provide text to reverse.', flags: MessageFlags.Ephemeral };
   return {
     embeds: [new EmbedBuilder()
       .setColor(BOT_COLOR)
@@ -24,7 +25,7 @@ export const reverse: SlashCommand = {
   data: new SlashCommandBuilder()
     .setName('reverse')
     .setDescription('This command reverses anything you type.')
-    .addStringOption(option => option.setName('text').setDescription('The text to reverse').setRequired(true).setMaxLength(4096))
+    .addStringOption(option => option.setName('text').setDescription('The text to reverse').setRequired(true).setMinLength(1).setMaxLength(4096))
     .addBooleanOption(option => option.setName('silent').setDescription('Whether to show the result to only you, or everyone. False by default.'))
     .toJSON(),
   async execute(interaction) {

@@ -2,7 +2,7 @@ import { BOT_COLOR } from '../../constants.js';
 import { EmbedBuilder, InteractionContextType, SlashCommandBuilder } from 'discord.js';
 import type { InvocationCommand } from '../../contracts/commands.js';
 import type { RuntimeServices } from '../../contracts/features.js';
-import { fetchVisibleMessage, safeMentions, utilityError } from './shared.js';
+import { assertCanRead, fetchVisibleMessage, safeMentions, utilityError } from './shared.js';
 
 export const langData = new SlashCommandBuilder().setName('lang').setDescription('Detect a message’s language.').setContexts(InteractionContextType.Guild)
   .addStringOption(option => option.setName('message').setDescription('Discord message ID or link.').setRequired(true).setMaxLength(300)).toJSON();
@@ -46,7 +46,9 @@ export function createLang(services: RuntimeServices): InvocationCommand {
       try {
         if (args.length !== 1) throw new Error('Usage: /lang message:<message ID or Discord link>');
         const target = await fetchVisibleMessage(services.client, invocation.author.id, invocation.channel, args[0]!);
-        await invocation.reply({ embeds: [await detectLanguage(target.content, services.env.LANGUAGE_DETECT_KEY)], allowedMentions: safeMentions });
+        const embed = await detectLanguage(target.content, services.env.LANGUAGE_DETECT_KEY);
+        await assertCanRead(target.channel, invocation.author.id);
+        await invocation.reply({ embeds: [embed], allowedMentions: safeMentions });
       } catch (error) { await utilityError(invocation, error); }
     },
   };

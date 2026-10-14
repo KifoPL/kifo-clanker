@@ -28,11 +28,14 @@ export function createPoll(services: RuntimeServices): SlashCommand {
     });
     const embed = new EmbedBuilder().setColor(BOT_COLOR).setTitle('React to the option you choose!').setDescription(question)
       .addFields(options.map((option, index) => ({ name: `Option ${pollReactions[index]}:`, value: option })));
-    await interaction.editReply({ content: end ? `Poll ends at <t:${Math.floor(end.getTime() / 1000)}> (<t:${Math.floor(end.getTime() / 1000)}:R>).` : '', embeds: [embed] });
-    try { for (const reaction of pollReactions.slice(0, options.length)) await message.react(reaction); }
+    try {
+      await interaction.editReply({ content: end ? `Poll ends at <t:${Math.floor(end.getTime() / 1000)}> (<t:${Math.floor(end.getTime() / 1000)}:R>).` : '', embeds: [embed] });
+      for (const reaction of pollReactions.slice(0, options.length)) await message.react(reaction);
+    }
     catch (error) {
-      await query(services.pool, "UPDATE polls SET completed_at=clock_timestamp(),terminal_reason='Reaction setup failed' WHERE id=$1", [id]);
-      await interaction.editReply({ content: 'Poll cancelled: I could not add all voting reactions.', embeds: [] });
+      await query(services.pool, "UPDATE polls SET completed_at=clock_timestamp(),terminal_reason='Poll setup failed' WHERE id=$1", [id]);
+      await interaction.editReply({ content: 'Poll cancelled: I could not finish its setup.', embeds: [] })
+        .catch(cleanupError => services.logger.error('Poll cancellation message failed', cleanupError));
       throw error;
     }
   } };

@@ -10,7 +10,7 @@ export const cringe: SlashCommand = {
     const user = interaction.options.getUser('user');
     const embed = new EmbedBuilder().setColor(BOT_COLOR).setTitle(`Command "CRINGE" issued by ${interaction.user.tag}`);
     if (user && protectedIds.has(user.id)) {
-      embed.setTitle(`You dare use my own spell against me, ${interaction.user.username}?`).setImage('https://media1.tenor.com/images/72623e4b02895f3c7b623f2222268908/tenor.gif');
+      embed.setTitle(`You dare use my own spell against me, ${interaction.user.username}?`).setImage('https://media.tenor.com/FfEuhXlmhYkAAAAM/my-own-spells-against-me.gif');
       await interaction.reply({ embeds: [embed] });
     } else {
       embed.setDescription("Roses are red,\nViolets are blue,\nYou are cringe.\nSeriously. You're cringe.");

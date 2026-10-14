@@ -103,6 +103,11 @@ function fixture(definition:FeatureDefinition, initial:Record<string,Record<stri
     if(sql.includes('INSERT INTO superslow_users'))return control.grantCooldown?{rows:[{user_id:values[1]}],rowCount:1}:{rows:[],rowCount:0};
     if(sql.includes('INSERT INTO scheduled_jobs'))return {rows:[{id:`job-${calls.length}`}],rowCount:1};
     if(sql.includes('INSERT INTO moderation_operations'))rows.moderation_operations=[{id:values[0],kind:values[1],guild_id:values[2],channel_id:values[3],target_id:values[4],role_id:values[5],permission:values[6],previous_state:values[7],applied_state:values[8],actor_id:values[9],message_id:values[10],restore_at:values[11],status:'intent'}];
+    if(sql.includes('UPDATE moderation_operations SET previous_state')) {
+      const record=rows.moderation_operations?.find(record=>record.id===values[0]);
+      if(!record || record.status!=='intent' || (record.restore_at instanceof Date && record.restore_at.getTime()<=Date.now()))return {rows:[],rowCount:0};
+      record.previous_state=values[1];record.applied_state=values[2];return {rows:[{id:record.id}],rowCount:1};
+    }
     if(sql.includes("UPDATE moderation_operations SET status='applied'"))rows.moderation_operations![0]!.status='applied';
     if(sql.includes('UPDATE moderation_operations SET status=$2'))rows.moderation_operations![0]!.status=values[1];
     if(sql.includes('UPDATE moderation_operations SET status=CASE'))rows.moderation_operations![0]!.status=rows.moderation_operations![0]!.restore_at?'intent':'failed';
@@ -120,6 +125,7 @@ function fixture(definition:FeatureDefinition, initial:Record<string,Record<stri
     if(sql.trim().startsWith('SELECT')) {
       const table=/FROM (\w+)/u.exec(sql)?.[1];let result=table ? rows[table] ?? []:[];
       if(table==='moderation_operations' && sql.includes('SELECT id FROM'))result=result.filter(row=>row.status==='intent' || (row.status==='applied' && row.restore_at!==null));
+      if(table==='moderation_operations' && sql.includes('WHERE id=$1'))result=result.filter(row=>row.id===values[0] && (sql.includes("status='intent'") ? row.status==='intent' && (!(row.restore_at instanceof Date) || row.restore_at.getTime()>Date.now()) : true));
       if(table==='countdowns' && sql.includes("status='cancelled'"))result=result.filter(row=>row.status==='cancelled' && row.completed_at===null && (row.confirmation_expires_at as Date).getTime()<=Date.now());
       return {rows:result,rowCount:result.length};
     }
@@ -127,7 +133,7 @@ function fixture(definition:FeatureDefinition, initial:Record<string,Record<stri
   };
   const connection={query,release:()=>events.push('db:RELEASE')};
   const pool={query,connect:async()=>connection} as unknown as Pool;
-  const services={pool,client:{user:bot.user,emojis:{cache:new Collection()},channels:{fetch:async(id:string)=>channels.get(id)},guilds:{fetch:async()=>guild}},ownerIds:new Set(),prefixes:new Map(),startedAt:Date.now(),env:{},logger:{error:()=>events.push('log:error'),info:()=>{}}} as unknown as RuntimeServices;
+  const services={pool,client:{user:bot.user,users:{fetch:async(id:string)=>{assert.equal(id,user.id);return user;}},emojis:{cache:new Collection()},channels:{fetch:async(id:string)=>channels.get(id)},guilds:{fetch:async()=>guild}},ownerIds:new Set(),prefixes:new Map(),startedAt:Date.now(),env:{},logger:{error:()=>events.push('log:error'),info:()=>{}}} as unknown as RuntimeServices;
   const runtime=definition.create(services);
   function interaction(subcommand:string, options:Record<string,unknown>={}) {
     const response=(input:unknown)=>{const data=body(input);replies.push(data);if(!currentReply)currentReply=message(data,control.replyEphemeral);else Object.assign(currentReply.value,data);return currentReply;};
@@ -290,7 +296,8 @@ test('native /remove persists its durable restoration before the effect, and its
   assert.equal(f.target.roles.cache.has(ids.role),false);
   assert.deepEqual(f.jobTypes(),['role_restore']);
   const record=f.writes('moderation_operations')[0]!.values;
-  assert.equal(record[4],ids.target);assert.equal(record[5],ids.role);assert.equal(record[7],'present');assert.equal(record[8],'absent');
+  assert.equal(record[4],ids.target);assert.equal(record[5],ids.role);assert.equal(record[7],'present');assert.equal(record[8],'unknown');
+  assert.equal(f.rows.moderation_operations?.[0]?.applied_state,'absent');
   assert.ok(f.events.indexOf('effect:role.remove')>f.events.indexOf('db:COMMIT'));assert.ok(f.events.indexOf('effect:role.remove')>f.events.indexOf('db:RELEASE'));
   const job={id:'job',type:'role_restore',payload:{operationId:record[0]},attempts:1};
   await f.runtime.handlers!.role_restore!(job,new AbortController().signal);
@@ -303,6 +310,18 @@ test('native /remove rejects user hierarchy and post-confirmation permission los
     await f.execute('remove','',{member:f.target.user,role:f.role,duration:'1h'});
     assert.equal(f.writes('moderation_operations').length,0);assert.equal(f.effectCount('role.remove'),0);assert.equal(f.target.roles.cache.has(ids.role),true);
   }
+});
+test('native role removal and selected-channel cleanup can run from a thread without its own overwrites',async()=>{
+  for(const name of ['remove','clean'] as const){
+    const f=fixture(moderationFeature);Object.assign(f.primary,{type:ChannelType.PublicThread,isThread:()=>true});Reflect.deleteProperty(f.primary,'permissionOverwrites');
+    if(name==='remove') {await f.execute('remove','',{member:f.target.user,role:f.role});assert.equal(f.target.roles.cache.has(ids.role),false);}
+    else {await f.other.permissionOverwrites.edit(ids.target,{ViewChannel:null});await f.execute('clean','',{channel:f.other});assert.equal(f.effectCount('overwrite.delete'),1);}
+  }
+});
+test('native guild-wide cleanup rechecks Administrator after confirmation even when management rights remain',async()=>{
+  const f=fixture(moderationFeature);await f.other.permissionOverwrites.edit(ids.target,{ViewChannel:null});
+  f.control.onConfirm=()=>f.deny([PermissionFlagsBits.ManageChannels,PermissionFlagsBits.ManageRoles]);
+  await f.execute('clean','',{all:true});assert.equal(f.effectCount('overwrite.delete'),0);assert.match(f.content(),/cleaned: 0/u);
 });
 test('native /remove database admission failure leaves Discord unchanged and REST failure retains temporary intent',async()=>{
   const db=fixture(moderationFeature);db.control.failSql=/INSERT INTO moderation_operations/u;
@@ -513,7 +532,7 @@ test('moderation ready callback reconciles a pre-start permanent intent without 
   const record={id:'existing',kind:'role',guild_id:ids.guild,channel_id:ids.channel,target_id:ids.target,role_id:ids.role,permission:null,previous_state:'present',applied_state:'absent',actor_id:ids.actor,message_id:'old',restore_at:null,status:'intent'};
   const f=fixture(moderationFeature,{moderation_operations:[record]});f.target.roles.cache.delete(ids.role);await f.runtime.onReady!();assert.equal(record.status,'applied');assert.equal(f.effectCount('role.remove'),0);assert.equal(f.effectCount('role.add'),0);
 });
-test('scheduled completion records a terminal missing resource for giveaway, poll and countdown instead of announcing',async()=>{
+test('unrecoverable voting sources terminate while countdowns still notify their creator',async()=>{
   for(const name of ['giveaway','poll','countdown'] as const){
     const f=fixture(scheduledFeature);
     if(name==='giveaway')await f.execute(name,'',{winners:1,duration:'1h',emoji:'✅'});
@@ -522,6 +541,8 @@ test('scheduled completion records a terminal missing resource for giveaway, pol
     const table=name==='giveaway'?'giveaways':name==='poll'?'polls':'countdowns';const record=f.rows[table]![0]!;if(name==='countdown')record.status='scheduled';
     f.services.client.channels.fetch=(async()=>null) as typeof f.services.client.channels.fetch;
     await f.runtime.handlers![`${name}.complete`]!({id:'job',type:`${name}.complete`,payload:{id:record.id},attempts:1},new AbortController().signal);
-    assert.ok(record.completed_at instanceof Date);assert.match(String(record.terminal_reason),/deleted or no longer accessible/);assert.equal(f.effectCount('job.announce'),0);
+    assert.ok(record.completed_at instanceof Date);assert.equal(f.effectCount('job.announce'),0);
+    if(name==='countdown'){assert.equal(record.terminal_reason,null);assert.equal(f.effectCount('dm'),1);assert.ok(record.outcome_message_id);}
+    else{assert.match(String(record.terminal_reason),/deleted or no longer accessible/);assert.equal(f.effectCount('dm'),0);}
   }
 });
