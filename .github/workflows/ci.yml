@@ -42,5 +42,5 @@ jobs:
         run: |
           dotnet tool install --tool-path "$RUNNER_TEMP/aspire" Aspire.Cli --version 13.6.1
           echo "$RUNNER_TEMP/aspire" >> "$GITHUB_PATH"
-      - run: dotnet build infra/AppHost/AppHost.csproj --configuration Release
+      - run: dotnet build infra/AppHost/apphost.cs --configuration Release
       - run: docker build --tag kifo-clanker:ci .

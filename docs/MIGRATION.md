@@ -96,13 +96,20 @@ Migrations must complete before running the bot directly. Runtime images include
 
 For a managed cloud build, supply the session CA using `--secret id=proxy_ca,src="$CODEX_PROXY_CERT"` when required. The CA exists only in dependency-install build mounts, not image layers. Keep TLS verification enabled.
 
-Aspire requires .NET SDK 10.0.401, Aspire CLI 13.6.1 on PATH, and Docker. Configure AppHost user secrets `Parameters:discord-token` and `Parameters:postgres-password`. Keep the PostgreSQL password stable across restarts and do not commit secrets.
+Aspire requires .NET SDK 10.0.401, Aspire CLI 13.6.1 on PATH, and Docker. The file-based AppHost is `infra/AppHost/apphost.cs`; `aspire.config.json` points at this file, so `aspire run` discovers it from the repository root or `infra/AppHost`. Configure secrets with the stable ID `kifo-clanker-apphost`:
 
 ```sh
-dotnet build infra/AppHost/AppHost.csproj
-aspire start --apphost infra/AppHost/AppHost.csproj --non-interactive
-aspire wait bot --apphost infra/AppHost/AppHost.csproj --non-interactive
-aspire stop --apphost infra/AppHost/AppHost.csproj --non-interactive
+dotnet user-secrets set "Parameters:discord-token" "YOUR_TEST_BOT_TOKEN" --id kifo-clanker-apphost
+dotnet user-secrets set "Parameters:postgres-password" "YOUR_LOCAL_DATABASE_PASSWORD" --id kifo-clanker-apphost
+```
+
+Keep the PostgreSQL password stable across restarts and do not commit secrets.
+
+```sh
+dotnet build infra/AppHost/apphost.cs
+aspire start --apphost infra/AppHost/apphost.cs --non-interactive
+aspire wait bot --apphost infra/AppHost/apphost.cs --non-interactive
+aspire stop --apphost infra/AppHost/apphost.cs --non-interactive
 ```
 
 The resource order is PostgreSQL healthy → migrations succeed → bot initializes → Discord ready. A failed migration prevents bot startup. Both application containers receive a PostgreSQL URI via `database.Resource.UriExpression`, not an Npgsql connection string. PostgreSQL 18 storage persists in the named `kifo-clanker-postgres-data` volume mounted at `/var/lib/postgresql`. Run one bot replica: job leases do not deduplicate gateway events across replicas.

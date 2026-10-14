@@ -1,6 +1,6 @@
 {
   "appHost": {
     "language": "csharp",
-    "path": "infra/AppHost"
+    "path": "infra/AppHost/apphost.cs"
   }
 }

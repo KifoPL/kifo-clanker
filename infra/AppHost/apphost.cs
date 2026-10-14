@@ -1,3 +1,8 @@
+#:sdk Aspire.AppHost.Sdk@13.6.1
+#:package Aspire.Hosting.PostgreSQL@13.6.1
+#:property AspireUseCliBundle=true
+#:property UserSecretsId=kifo-clanker-apphost
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 var discordToken = builder.AddParameter("discord-token", secret: true);
