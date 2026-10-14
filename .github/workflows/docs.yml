@@ -1,0 +1,27 @@
+name: Documentation
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24.21.0'
+          cache: npm
+      - run: npm ci
+      - name: Check the command reference
+        run: npm run generate-docs -- --check
+      - name: Build the Jekyll website
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+      - name: Check the link validator
+        run: python3 -m unittest discover -s tests/docs
+      - name: Check local links and anchors
+        run: python3 scripts/check-docs.py _site /kifo-clanker

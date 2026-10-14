@@ -1,327 +1,536 @@
-# List of text Commands (used with prefix):
-> Remember to add server prefix before command syntax.
+---
+title: Command reference
+permalink: /docs/commandList/
+---
+{% include docs-nav.html %}
 
-### help
-This command lists all categories of commands and shows help for every command.
-- Usage:
-	- `help` - lists all available commands
-	- `help <category>` - lists all commands for a specific category
-	- `help <command>` - shows help for specific command
-	- `<command> help` - shows help for specific command
-- Required user permissions: `SEND_MESSAGES`
+# Command reference
 
-## DEBUG
+35 slash commands and 3 context menu actions, generated from the bot’s current registry.
 
-### test
-Test how your arguments are passed.
-- Usage:
-	- `test <args>` - showcase of how the arguments are passed.
-- Required user permissions: `SEND_MESSAGES`
+Type `/` in Discord and choose Kifo Clanker. Options marked required must be provided; choose listed values in Discord’s command picker.
 
-## MANAGEMENT
+## Slash commands
 
-### clean
-This command cleans any permission overwrites that don't have `DENY` (<:RedX:857976926542757910>) or `ALLOW` (<:GreenCheck:857976926941478923>).
-- Usage:
-	- `clean` - cleans permission overwrites in the current channel.
-	- `clean <channel>` - cleans permission overwrites in `channel`.
-	- `clean <category>` - clean permission overwrites for `category` and all channels in `category`
-	- `clean all` - clean permission overwrites for `all` channels in the server.
-- Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`, `MANAGE_ROLES`
+[`/autothreading`](#autothreading) · [`/bookmark`](#bookmark) · [`/clean`](#clean) · [`/cmdlist`](#cmdlist) · [`/countdown`](#countdown) · [`/cringe`](#cringe) · [`/deploy`](#deploy) · [`/epoch`](#epoch) · [`/error`](#error) · [`/giveaway`](#giveaway) · [`/guide`](#guide) · [`/help`](#help) · [`/howgay`](#howgay) · [`/iq`](#iq) · [`/lang`](#lang) · [`/list`](#list) · [`/menu`](#menu) · [`/perms`](#perms) · [`/ping`](#ping) · [`/poll`](#poll) · [`/pp`](#pp) · [`/react`](#react) · [`/reload`](#reload) · [`/remove`](#remove) · [`/reverse`](#reverse) · [`/serverlist`](#serverlist) · [`/stats`](#stats) · [`/stfu`](#stfu) · [`/superslow`](#superslow) · [`/threads`](#threads) · [`/ticket`](#ticket) · [`/ticketing`](#ticketing) · [`/todo`](#todo) · [`/top`](#top) · [`/urmum`](#urmum)
 
-### list
-Lists all users in the server, or users having a certain role.
-To list more than 1000 users you need `MANAGE_GUILD` perms.
-If the bot doesn't see some channels, lists ~~may~~ will be incorrect.
-- Usage:
-	- `list` - lists all users on the server
-	- `list <user>` - lists roles of specified user.
-	- `list <role> <optional_role2> <optional_role_n>` - lists users that have all specified roles.
-	- `list <channel/"here"> <role> <optional_role2> <optional_role_n>` - lists users with specified roles in specified channel.
-	- ~~`list <message_id>` - pastes raw message content *(with formatting, works with embeds and all types of messages)*.~~ NOT IMPLEMENTED YET.
-- Required user permissions: `SEND_MESSAGES`, `MANAGE_GUILD`
+### /autothreading
 
-### menu
-This powerful command allows you to create a role menu or channel perms menu with an optional timeout
-- Usage:
-	- `menu` - DMs you with channel aliases and syntax of the command.
-	- `menu list` - lists active menus in the server (requires `MANAGE_GUILD`)
-	- `menu perm <perm_alias> <channel>` - creates a menu, that when user reacts, they get `perm_alias` in `channel`.
-	- `menu perm <perm_alias> <channel> <time_period>` - creates a menu, that when user reacts, they get `perm_alias` in `channel`. Everyone's perms will be reverted `time_period` after menu is created.
-	- `menu role <role>` - creates a menu, that when user reacts, they get `role`.
-	- `menu role <role> <time_period>` - creates a menu, that when user reacts, they get `role`. Everyone's role will be reverted `time_period` after menu is created.
-	- `menu revert <message_url>` - removes `role` / `channel perm` from everyone who reacted to menu.
-- Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`
+Set up automatic threads.
 
-### perms
-This powerful command manages permissions for channels and categories.
-- **ADD** - allows a perm (green check), 
-- **DENY** - denies a perm (red x),
-- **RM** - removes a perm (grey /).
-- Usage:
-	- `perms` - checks if you have permissions to manage the channel, lists aliases and Ids of permissions for easier cmd usage.
-	- `perms "here"/"list"` - list perms of all roles and members for this channel in a `.txt` file
-	- `perms <user_or_role_id>` - lists perms for specific user/role
-	- `perms <channel_or_category_id>` - lists perms of all roles and members in a `.txt` file
-	- `perms <add/rm/deny> <perm> <role_or_user_id_1> ... <role_or_user_id_n>` - adds/removes/denies perms for provided users and roles in this channel. <perm> can be either full name, id (number), or alias of a perm.
-	- `perms <add/rm/deny> <perm> <role_or_user_id_1> ... <role_or_user_id_n> <time_period>` - adds/removes/denies perms for provided users and roles in this channel, then reverts the changes after <time_period>. <perm> can be either full name, id (number), or alias of a perm.
-- Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`
+#### `/autothreading on`
 
-### remove
-This command allows you to (temporarily) remove the user role.
-- Usage:
-	- `remove` - Informs you of syntax.
-	- `remove <user> <role>` - permanently removes role from user.
-	- `remove <user> <role> <time_period>` - removes role from user, and re-adds it after given time period.
-- Required user permissions: `SEND_MESSAGES`, `MANAGE_ROLES`
+Enable automatic threads.
 
-### stats
-Displays stats for given user, bot, role, server, message, ~~channel~~ (in development).
-If the bot doesn't see some channels, stats ~~may~~ will be incorrect.
-- Usage:
-	- `stats` - shows stats of the server
-	- `stats <user>` - shows stats of specified user.
-	- `stats <role>` - shows stats of specified role.
-	- ~~`stats <message_id>` - shows stats of specified message.~~ NOT IMPLEMENTED YET.
-	- `stats me` - shows your stats.
-- Required user permissions: `SEND_MESSAGES`
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `title` | Text | Yes | Title template; see help for placeholders. | Minimum length: 1 · Maximum length: 100 |
+| `archiving` | Text | Yes | Inactivity before archiving. | Choices: 1 hour (`1h`), 1 day (`1d`), 3 days (`3d`), 1 week (`1w`) |
+| `bots` | True / false | Yes | Create threads for bot messages. | — |
+| `slowmode` | Text | No | Thread slowmode. | Choices: 5s (`5s`), 10s (`10s`), 15s (`15s`), 30s (`30s`), 1m (`1m`), 2m (`2m`), 5m (`5m`), 10m (`10m`), 15m (`15m`), 30m (`30m`), 1h (`1h`), 2h (`2h`), 6h (`6h`) |
 
-### top
-This command lists x messages with the most reactions from another channel.
-- Usage:
-	- `top <x> <time_period> <other_channel> <reaction>` - lists top x messages with most reactions from other channel. Sends x embeds (don't set it too large).
-- Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`
+#### `/autothreading off`
 
-## UTILITY
+Disable automatic threads.
 
-### giveaway
-This command allows you to set up a timeout, after which random winners who reacted will be selected.
-- Usage:
-	- `giveaway` - Informs you of syntax.
-	- `giveaway <x> <time_period>` - sets up a message with default reaction as <a:done:828097348545544202> that'll choose `x` random users after `time_period`.
-	- `giveaway <x> <time_period> <reaction>` - sets up a message with `reaction`, that'll choose `x` random users after `time_period`.
-- Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`, `ADD_REACTIONS`
+No options.
 
-### lang
-(**DEPRECATED**) This command allows you to detect message language.
-- Usage:
-	- `lang <message_id_or_url>` - sends a DM with description (react with any emote to the message to delete it).
-- Required user permissions: `SEND_MESSAGES`
+#### `/autothreading list`
 
-### prefix
-This command informs you in detail how you can change the server prefix.
-- Usage:
-	- `prefix` - sends a DM with details on the prefix change process.
-- Required user permissions: `SEND_MESSAGES`
+List configured channels.
 
-### react
-This command tells the bot to react to all messages in the channel with specific reactions.
-- Usage:
-	- `react on <emote1> <optional_emote2> ... <optional_emoten>` - turns on react command in this channel.
-	- `react off` - turns off react command in this channel
-	- `react` - checks if there is react module online.
-	- `react list` - lists channels in which the command is active.
-- Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`
+No options.
 
-### superslow
-Enable Super slow-mode (longer than 6 hours) for channels where you need it.
-- Usage:
-	- `superslow <time>` - turns on superslow command in this channel (setting time to 0s will turn off superslow module). 
-	- `superslow` checks if there is a superslow module online.
-	- `superslow list` lists channels in which the command is active.
-- Required user permissions: `SEND_MESSAGES`, `MANAGE_CHANNELS`
+#### `/autothreading help`
 
-### todo
-This command allows you to create simple to-do notes.
-- Usage:
-	- `todo <description>` - sends a DM with description (react with any emote to the message to delete it).
-	- `todo <message_url> <optional_description>` - sends a DM with message content, link to the message and optional description.
-- Required user permissions: `SEND_MESSAGES`
+Read the title template guide.
 
-# List of slash commands (used with `/`):
-## DEBUG
+No options.
 
-### error
-Creates an issue on GitHub and pings KifoPL. Do not spam this command.
-- Options:
-	- `description` - Provide a brief description of how and when this error occurred.
-- Required user permissions: `USE_APPLICATION_COMMANDS`
+### /bookmark
 
-### ping
-...pong?
-- Options:
-	- `reply` *(optional)* - What do you want me to reply with?
-- Required user permissions: `USE_APPLICATION_COMMANDS`
+Save a message and its attachments in your DMs.
 
-### test
-test out if the `/` commands work properly.
-- Options:
-	- `input` *(optional)* - The text to return.
-	- `input2` *(optional)* - The text to return.
-- Required user permissions: `USE_APPLICATION_COMMANDS`
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `message` | Text | Yes | ID or URL of the message. | Maximum length: 200 |
+| `pin` | True / false | No | Pin the saved message. False by default. | — |
 
-## FUN
+### /clean
 
-### cringe
+Delete empty permission overwrites in channels or categories.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `channel` | Channel | No | Channel or category to clean; defaults to this channel. | Channel types: `text`, `announcement`, `voice`, `stage`, `category`, `forum`, `media` |
+| `all` | True / false | No | Clean every channel in the server; requires Administrator. | — |
+
+### /cmdlist
+
+Bot owner only: List registered commands.
+
+No options.
+
+### /countdown
+
+Count down to a given time, then show your message.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `epoch` | Integer | Yes | Unix seconds; use /epoch date_to_epoch to get the number. | — |
+| `message` | Text | Yes | The message to show when the countdown ends. | Maximum length: 1500 |
+
+### /cringe
+
 Express your feelings to another discord user with this beautiful poem.
-- Options:
-	- `user` *(optional)* - direct your feelings towards the user.
-- Required user permissions: `USE_APPLICATION_COMMANDS`
 
-### howgay
-A quick test to find out your gayness level.
-- Options:
-	- `user` *(optional)* - A subject of measurement.
-- Required user permissions: `USE_APPLICATION_COMMANDS`
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `user` | Member | No | Direct your feelings towards this user. | — |
 
-### iq
-A very quick and accurate IQ test.
-- Options:
-	- `user` *(optional)* - A subject of measurement.
-- Required user permissions: `USE_APPLICATION_COMMANDS`
+### /deploy
 
-### pp
-Measure your PP length with this totally reliable pp length calculator.
-- Options:
-	- `user` *(optional)* - A subject of measurement.
-- Required user permissions: `USE_APPLICATION_COMMANDS`
+Bot owner only: Review and confirm command registration/removal.
 
-### reverse
-This command reverses anything you type.
-- Options:
-	- `text` - The text to reverse
-	- `silent` *(optional)* - Whether to show the result to only you, or everyone. False by default.
-- Required user permissions: `USE_APPLICATION_COMMANDS`
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `operation` | Text | Yes | Registration or removal scope. | Choices: guild (`guild`), global (`global`), both (`both`), delete-guild (`delete-guild`), delete-global (`delete-global`), delete-both (`delete-both`) |
 
-### stfu
-This is an eloquent way to say "Thank you for this conversation we've had".
-- Options:
-	- `user` *(optional)* - Ask someone to lower their voice to the sub-audible level in an elegant manner.
-- Required user permissions: `USE_APPLICATION_COMMANDS`
+### /epoch
 
-### urmum
-Random *yo momma* joke.
-- Options:
-- Required user permissions: `USE_APPLICATION_COMMANDS`
-
-## HELP
-
-### guide
-Receive a link for the command list, or guide regarding a specific topic.
-- Options:
-	- `choice` *(optional)* - Select a topic, which you want to learn about.
-- Required user permissions: `USE_APPLICATION_COMMANDS`
-
-## MANAGEMENT
-
-### autothreading
-Set up an auto threading system in a channel.
-- Options:
-	- `on` - Turn on auto-threading system.
-		- `title` - Choose the title for every thread (use /autothreading help for more info)
-		- `archiving` - After what time of inactivity should threads be archived?
-		- `bots` - True if you want threads to be created on bot messages as well, false otherwise.
-		- `slowmode` *(optional)* - What should be the default slow-mode for threads?
-	- `off` - Turn off auto-threading system.
-	- `list` - List all channels with auto-threading system enabled.
-	- `help` - Send a link with very detailed information regarding auto-threading system.
-- Required user permissions: `USE_APPLICATION_COMMANDS`, `MANAGE_CHANNELS`, `MANAGE_THREADS`
-
-### threads
-Manage threads in this channel.
-- Options:
-	- `archive` - Bulk archive oldest threads in this channel.
-		- `count` - How many oldest threads would you like to archive?
-		- `silent` *(optional)* - Do you want the output to be visible only by you? Defaults to false.
-	- `delete` - Bulk delete specified threads in this channel.
-		- `count` - How many oldest threads would you like to archive?
-		- `which` - Should I delete archived, or active threads?
-		- `silent` *(optional)* - Do you want the output to be visible only by you? Defaults to false.
-- Required user permissions: `USE_APPLICATION_COMMANDS`, `MANAGE_THREADS`
-
-### ticketing
-Set up ticketing system in a channel.
-- Options:
-	- `on` - Turn on ticketing system.
-		- `visibility` - Should tickets be public, allowing everyone to answer questions, or private?
-		- `archiving` - After what time of inactivity should threads be archived?
-		- `slowmode` *(optional)* - What should be the default slow-mode for tickets?
-	- `off` - Turn off ticketing system.
-	- `list` - List all channels with ticketing system enabled.
-	- `help` - Send a link with very detailed information regarding ticketing system.
-- Required user permissions: `USE_APPLICATION_COMMANDS`, `MANAGE_CHANNELS`, `MANAGE_THREADS`
-
-## UTILITY
-
-### bookmark
-(**DEPRECATED**) Sends a copy of the message in DM (with attachments).
-- Options:
-	- `message` - ID or URL of the message.
-	- `pin` *(optional)* - Whether the message should be pinned. False by default.
-- Required user permissions: `USE_APPLICATION_COMMANDS`
-
-### countdown
-Count down to a given time, then send a message.
-- Options:
-	- `epoch` - The amount of seconds since 1970-01-01T00:00:00Z (use /epoch date_to_epoch to get the number)
-	- `message` - The message to send when the countdown ends.
-- Required user permissions: `USE_APPLICATION_COMMANDS`, `MANAGE_MESSAGES`
-
-### epoch
 Easily convert dates to epoch and vice versa.
-- Options:
-	- `date_to_epoch` - Convert from date to epoch number (in seconds).
-		- `input` - Type either date like "1970-01-01T00:00:00Z", or time period "1h"
-	- `epoch_to_date` - Convert from epoch number (in seconds) to date.
-		- `epoch` - The number of seconds since 1970-01-01T00:00:00
-	- `help` - Receive link to guide that helps you use this command.
-- Required user permissions: `USE_APPLICATION_COMMANDS`
 
-### poll
+#### `/epoch date_to_epoch`
+
+Convert from date to epoch number (in seconds).
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `input` | Text | Yes | Type a date like "1970-01-01T00:00:00Z", or a time period like "1h" | Maximum length: 100 |
+
+#### `/epoch epoch_to_date`
+
+Convert from epoch number (in seconds) to date.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `epoch` | Integer | Yes | The number of seconds since 1970-01-01T00:00:00 | — |
+
+#### `/epoch help`
+
+Receive a link to the guide for this command.
+
+No options.
+
+### /error
+
+Report a bot problem as a GitHub issue. Do not spam.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `description` | Text | Yes | Describe how and when the error occurred. | Minimum length: 5 · Maximum length: 4000 |
+
+### /giveaway
+
+Choose random winners from users who react before a deadline.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `winners` | Integer | Yes | Number of distinct winners. | Minimum: 1 · Maximum: 2147483647 |
+| `duration` | Text | Yes | Duration of at least 1 minute, for example 1h. | Maximum length: 100 |
+| `emoji` | Text | No | Entry reaction, such as ✅ or a custom emoji. | Maximum length: 100 |
+
+### /guide
+
+Receive a guide link for a specific topic.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `choice` | Text | No | Select a topic to learn about. | Choices: Slash commands (`slash`), Context menus (`contextmenus`), Epoch converter (`epoch`), Using /ticket (`ticket`), Ticketing system (`ticketing`), Auto-threading system (`autothreading`) |
+
+### /help
+
+List slash commands or show command details.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `command` | Text | No | The command to describe. | — |
+| `category` | Text | No | List commands in a category. | Choices: Management (`management`), Utility (`utility`), Fun (`fun`), Debug (`debug`) |
+
+### /howgay
+
+A quick test to find out your gayness level.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `user` | Member | No | A subject of measurement. | — |
+
+### /iq
+
+A very quick and accurate IQ test.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `user` | Member | No | A subject of measurement. | — |
+
+### /lang
+
+Detect a message’s language.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `message` | Text | Yes | Discord message ID or link. | Maximum length: 300 |
+
+### /list
+
+Export members or roles to a text attachment.
+
+#### `/list server`
+
+Export all server members.
+
+No options.
+
+#### `/list user`
+
+Export a member’s roles; defaults to yourself.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `member` | Member | No | Server member whose roles to export. | — |
+
+#### `/list roles`
+
+Export members having every specified role, optionally in a channel.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `role` | Role | Yes | A role every result must have. | — |
+| `roles` | Text | No | Additional role IDs or mentions, separated by spaces. | Maximum length: 1000 |
+| `channel` | Channel | No | Only members who can view this channel. | — |
+
+### /menu
+
+Create or revert reaction role and permission menus.
+
+#### `/menu help`
+
+Show menu usage and permission aliases.
+
+No options.
+
+#### `/menu list`
+
+List configured reaction menus.
+
+No options.
+
+#### `/menu role`
+
+Create a reaction menu assigning a role.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `role` | Role | Yes | Role assigned to eligible reactors. | — |
+| `duration` | Text | No | Revert the menu after this duration, for example 1d. | Maximum length: 100 |
+
+#### `/menu permission`
+
+Create a reaction menu granting a channel permission.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `permission` | Text | Yes | Permission name, legacy numeric ID, or alias. | Maximum length: 100 |
+| `channel` | Channel | Yes | Channel whose permission should be granted. | Channel types: `text`, `announcement`, `voice`, `stage`, `category`, `forum`, `media` |
+| `duration` | Text | No | Revert the menu after this duration, for example 1d. | Maximum length: 100 |
+
+#### `/menu revert`
+
+Revert a menu and restore captured participant states.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `message` | Text | Yes | Menu message ID or Discord link. | Maximum length: 200 |
+
+### /perms
+
+Inspect or change channel permission overwrites.
+
+#### `/perms info`
+
+Show permission aliases and check your management permissions.
+
+No options.
+
+#### `/perms report`
+
+Export channel overwrites, optionally for a member or role.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `channel` | Channel | No | Channel or category; defaults to this channel. | Channel types: `text`, `announcement`, `voice`, `stage`, `category`, `forum`, `media` |
+| `user` | Member | No | Show this member’s overwrite. | — |
+| `role` | Role | No | Show this role’s overwrite. | — |
+
+#### `/perms set`
+
+Allow, deny, or inherit a permission for selected members or roles.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `permission` | Text | Yes | Permission name, legacy numeric ID, or alias. | Maximum length: 100 |
+| `state` | Text | Yes | Permission overwrite state. | Choices: Allow (`allow`), Deny (`deny`), Inherit (`inherit`) |
+| `user` | Member | No | Member whose overwrite should change. | — |
+| `role` | Role | No | Role whose overwrite should change. | — |
+| `targets` | Text | No | Additional member/role IDs or mentions, separated by spaces or commas. | Maximum length: 2000 |
+| `duration` | Text | No | Restore the previous state after this duration, for example 10m. | Maximum length: 100 |
+| `channel` | Channel | No | Channel or category; defaults to this channel. | Channel types: `text`, `announcement`, `voice`, `stage`, `category`, `forum`, `media` |
+
+### /ping
+
+...pong?
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `reply` | Text | No | What do you want me to reply with? | Maximum length: 4000 |
+
+### /poll
+
 Create a poll.
-- Options:
-	- `question` - Ask the question or an opinion
-	- `timeout` - When do you want to calculate results? "0", if never.
-	- `one` - Option 1
-	- `two` - Option 2
-	- `three` *(optional)* - Option 3
-	- `four` *(optional)* - Option 4
-	- `five` *(optional)* - Option 5
-	- `six` *(optional)* - Option 6
-	- `seven` *(optional)* - Option 7
-	- `eight` *(optional)* - Option 8
-	- `nine` *(optional)* - Option 9
-	- `ten` *(optional)* - Option 10
-- Required user permissions: `USE_APPLICATION_COMMANDS`
 
-### ticket
-Create a ticket
-- Options:
-	- `title` - The problem, or question you have.
-	- `description` *(optional)* - Provide any additional information about your question/problem
-- Required user permissions: `USE_APPLICATION_COMMANDS`
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `question` | Text | Yes | Ask the question or an opinion. | Maximum length: 1800 |
+| `timeout` | Text | Yes | When to calculate results? Use "0" for no timeout. | Maximum length: 100 |
+| `one` | Text | Yes | Option 1 | Maximum length: 150 |
+| `two` | Text | Yes | Option 2 | Maximum length: 150 |
+| `three` | Text | No | Option 3 | Maximum length: 150 |
+| `four` | Text | No | Option 4 | Maximum length: 150 |
+| `five` | Text | No | Option 5 | Maximum length: 150 |
+| `six` | Text | No | Option 6 | Maximum length: 150 |
+| `seven` | Text | No | Option 7 | Maximum length: 150 |
+| `eight` | Text | No | Option 8 | Maximum length: 150 |
+| `nine` | Text | No | Option 9 | Maximum length: 150 |
+| `ten` | Text | No | Option 10 | Maximum length: 150 |
 
-# List of context menus (used with <kbd>Right-Click</kbd>):
-## MESSAGE *(right-click on `message` to use)*
+### /pp
+
+Measure your PP length with this totally reliable pp length calculator.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `user` | Member | No | A subject of measurement. | — |
+
+### /react
+
+Configure automatic reactions.
+
+#### `/react on`
+
+Enable automatic reactions in this channel.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `emojis` | Text | Yes | 1–20 emojis separated by spaces. | Minimum length: 1 · Maximum length: 2000 |
+
+#### `/react off`
+
+Disable automatic reactions.
+
+No options.
+
+#### `/react status`
+
+Show reactions configured in this channel.
+
+No options.
+
+#### `/react list`
+
+List automatic reactions in this server.
+
+No options.
+
+### /reload
+
+Bot owner only: Reload cached settings.
+
+No options.
+
+### /remove
+
+Remove a member role permanently or for a chosen duration.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `member` | Member | Yes | Member whose role should be removed. | — |
+| `role` | Role | Yes | Role to remove. | — |
+| `duration` | Text | No | Restore after this duration, for example 10m or 2d. | Maximum length: 100 |
+
+### /reverse
+
+This command reverses anything you type.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `text` | Text | Yes | The text to reverse | Minimum length: 1 · Maximum length: 4096 |
+| `silent` | True / false | No | Whether to show the result to only you, or everyone. False by default. | — |
+
+### /serverlist
+
+Bot owner only: List connected servers.
+
+No options.
+
+### /stats
+
+Show server, member/bot, or role statistics.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `member` | Member | No | Member whose statistics to show. | — |
+| `role` | Role | No | Role whose statistics to show; choose either member or role. | — |
+
+### /stfu
+
+An eloquent way to ask someone to lower their voice.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `user` | Member | No | Direct your feelings towards this user. | — |
+
+### /superslow
+
+Configure long message cooldowns.
+
+#### `/superslow set`
+
+Set the cooldown in this channel.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `duration` | Text | Yes | Duration from 6h to 1y. | Minimum length: 1 · Maximum length: 100 |
+
+#### `/superslow off`
+
+Disable cooldowns and clear their history.
+
+No options.
+
+#### `/superslow status`
+
+Show the cooldown in this channel.
+
+No options.
+
+#### `/superslow list`
+
+List cooldowns in this server.
+
+No options.
+
+### /threads
+
+Manage threads in this channel.
+
+#### `/threads archive`
+
+Archive oldest active threads.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `count` | Text | Yes | Number of oldest threads. | Choices: All (`all`), 3 (`3`), 5 (`5`), 10 (`10`), 25 (`25`) |
+| `silent` | True / false | No | Only you see the result. | — |
+
+#### `/threads delete`
+
+Delete oldest threads.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `count` | Text | Yes | Number of oldest threads. | Choices: All (`all`), 3 (`3`), 5 (`5`), 10 (`10`), 25 (`25`) |
+| `which` | Text | Yes | Which threads? | Choices: Archived (`archived`), Active (`active`), Both (`both`) |
+| `silent` | True / false | No | Only you see the result. | — |
+
+### /ticket
+
+Create a ticket.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `title` | Text | Yes | Your question or problem. | Minimum length: 1 · Maximum length: 256 |
+| `description` | Text | No | Additional details. | Maximum length: 4000 |
+
+### /ticketing
+
+Set up ticketing in this channel.
+
+#### `/ticketing on`
+
+Enable tickets.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `visibility` | Text | Yes | Ticket visibility. | Choices: Public (`public`), Private (`private`) |
+| `archiving` | Text | Yes | Inactivity before archiving. | Choices: 1 hour (`1h`), 1 day (`1d`), 3 days (`3d`), 1 week (`1w`) |
+| `slowmode` | Text | No | Ticket slowmode. | Choices: 5s (`5s`), 10s (`10s`), 15s (`15s`), 30s (`30s`), 1m (`1m`), 2m (`2m`), 5m (`5m`), 10m (`10m`), 15m (`15m`), 30m (`30m`), 1h (`1h`), 2h (`2h`), 6h (`6h`) |
+
+#### `/ticketing off`
+
+Disable tickets.
+
+No options.
+
+#### `/ticketing list`
+
+List configured channels.
+
+No options.
+
+#### `/ticketing help`
+
+Read the ticketing guide.
+
+No options.
+
+### /todo
+
+Send yourself a pinned to-do note in DMs.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `text` | Text | No | Your task description. | Maximum length: 4000 |
+| `link` | Text | No | Discord message ID or link to include in the note. | Maximum length: 300 |
+
+### /top
+
+Rank unique authors by a reaction in a channel over a time period.
+
+| Option | Type | Required | Description | Choices and limits |
+|---|---|---|---|---|
+| `winners` | Integer | Yes | Number of winning posts, including ties at the cutoff. | Minimum: 1 · Maximum: 10 |
+| `duration` | Text | Yes | Time period between 10s and 14d. | Maximum length: 100 |
+| `channel` | Channel | Yes | Channel to scan; cross-channel results are sent by DM. | Channel types: `text`, `announcement`, `public thread`, `private thread`, `voice`, `stage` |
+| `emoji` | Text | Yes | Unicode emoji, custom emoji, or custom emoji ID. | Maximum length: 100 |
+
+### /urmum
+
+Random yo momma joke.
+
+No options.
+
+## Context menus
+
+Open a message or member’s context menu, choose **Apps**, then select the action.
 
 ### detect language
-This command allows you to detect message language.
-- Required user permissions: `USE_APPLICATION_COMMANDS`
+
+Target: **message**. Detect the selected message’s language. The result is visible only to you.
 
 ### save
-Sends a copy of the message in DM (with attachments).
-- Required user permissions: `USE_APPLICATION_COMMANDS`
 
-## USER *(right-click on `user` to use)*
+Target: **message**. Send yourself a DM copy of the selected message and its attachments. React with ❌ to delete the copy.
 
 ### user stats
-Lists user stats.
-- Required user permissions: `USE_APPLICATION_COMMANDS`
 
-<hr/>
-
-> - *Some commands may require additional perms for the bot.*
-- Last update: Sun, 17 Oct 2021 20:10:51 GMT
-*~by [KifoPL](https://bio.link/KifoPL)*
-
-[<kbd>Back to home page</kbd>](https://kifopl.github.io/kifo-clanker/)
+Target: **server member**. Show the selected server member’s account, roles, presence, and other statistics privately.

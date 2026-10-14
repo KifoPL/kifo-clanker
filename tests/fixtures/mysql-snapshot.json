@@ -1,0 +1,21 @@
+{
+  "timezone": "+02:00",
+  "tables": {
+    "prefixes": [{"GuildId":"1234567890123456789","Prefix":"!custom "}],
+    "react": [{"ChannelId":"2234567890123456789","emote":"✅"},{"ChannelId":"2234567890123456789","emote":"❌"}],
+    "superslow": [{"ChannelId":"3234567890123456789","Time":"21600000"}],
+    "superslowusers": [
+      {"Id":"1","ChannelId":"3234567890123456789","UserId":"4234567890123456789","Timestamp":"1760000000000"},
+      {"Id":"2","ChannelId":"3234567890123456789","UserId":"4234567890123456789","Timestamp":"1760000001000"}
+    ],
+    "ticketing": [{"Id":"1","GuildId":"1234567890123456789","ChannelId":"5234567890123456789","ArePublic":{"type":"Buffer","data":[1]},"DefaultSlowmode":30000,"DefaultArchive":86400000}],
+    "autothreading": [{"Id":"1","GuildId":"1234567890123456789","ChannelId":"6234567890123456789","BotAuto":0,"Title":"Discussion","DefaultSlowmode":null,"DefaultArchive":"1h"}],
+    "giveaway": [{"Id":"1","GuildId":"1234567890123456789","ChannelId":"2234567890123456789","MessageId":"7234567890123456789","UserId":"4234567890123456789","Winners":2,"EndTime":"2030-01-02 12:34:56","Reaction":null}],
+    "polls": [{"Id":"1","GuildId":"1234567890123456789","ChannelId":"2234567890123456789","MessageId":"8234567890123456789","UserId":"4234567890123456789","EndTime":"2030-01-02 12:34:56"}],
+    "countdown": [{"Id":"1","GuildId":"1234567890123456789","ChannelId":"2234567890123456789","MessageId":"9234567890123456789","AuthorId":"4234567890123456789","Message":"The event starts now.","EndDate":"2030-01-02 12:34:56"}],
+    "role_remove": [{"Id":"1","GuildId":"1234567890123456789","ChannelId":"2234567890123456789","UserId":"4234567890123456789","RoleId":"1023456789012345678","PerpetratorId":"1123456789012345678","EndTime":"2030-01-02 12:34:56"}],
+    "perms": [{"Id":"1","GuildId":"1234567890123456789","ChannelId":"2234567890123456789","PermId":"1223456789012345678","PermFlag":"SEND_MESSAGES","PerpetratorId":"1123456789012345678","MessageId":"1323456789012345678","Command":"rm","EndTime":"2030-01-02 12:34:56"}],
+    "menu_perms": [{"Id":"1","GuildId":"1234567890123456789","ChannelId":"2234567890123456789","MessageId":"1423456789012345678","CmdMsgId":"1523456789012345678","CmdChId":"2234567890123456789","DestinationChannelId":"1634567890123456789","PermName":"VIEW_CHANNEL","StartDate":"2029-01-02 12:34:56","EndDate":"2030-01-02 12:34:56"}],
+    "menu_roles": [{"Id":"1","GuildId":"1234567890123456789","ChannelId":"2234567890123456789","MessageId":"1723456789012345678","CmdMsgId":"1823456789012345678","CmdChId":"2234567890123456789","RoleId":"1023456789012345678","StartDate":"2029-01-02 12:34:56","EndDate":"2030-01-02 12:34:56"}]
+  }
+}

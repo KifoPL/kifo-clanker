@@ -1,0 +1,14 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "formatter": { "enabled": false },
+  "assist": { "enabled": false },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": false,
+      "correctness": { "noUnreachable": "error" },
+      "suspicious": { "noExplicitAny": "error", "noDoubleEquals": "error", "noDebugger": "error" },
+      "security": { "noGlobalEval": "error" }
+    }
+  }
+}

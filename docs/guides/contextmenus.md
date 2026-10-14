@@ -1,42 +1,31 @@
-# How to use context menus?
+---
+title: Message and member actions
+permalink: /docs/guides/contextmenus/
+---
+{% include docs-nav.html %}
 
-## Table of Contents:
+# Message and member actions
 
-- [How to use context menus?](#how-to-use-context-menus)
-	- [Table of Contents:](#table-of-contents)
-	- [What are context menus?](#what-are-context-menus)
-- [List of context menu actions](#list-of-context-menu-actions)
-	- [Using context menus on `PC`](#using-context-menus-on-pc)
-		- [Message context menus:](#message-context-menus)
-		- [User context menus:](#user-context-menus)
-	- [Using context menus on `Mobile`](#using-context-menus-on-mobile)
+Open a message or member’s context menu and choose **Apps**. On desktop, right-click or open the message’s **…** menu. On mobile, open the message or member’s action menu; the exact placement of **Apps** depends on your Discord client.
 
-## What are context menus?
+Kifo Clanker provides three actions:
 
-Context menus are the latest feature of integrating applications directly into your communities. By simple <kbd>Right-Click</kbd>, you can choose an action for either message or user.
+| Action | Target | Result |
+|---|---|---|
+| **save** | Message | A DM copy of its text and attachments. React with ❌ to delete the copy. |
+| **detect language** | Message | A private language-detection result with confidence and reliability. |
+| **user stats** | Server member | Private account, membership, role, presence, and other statistics. |
 
-> Currently there are two places where you can use context menus: on message, and user.
+The bot checks that both you and it can read the selected message’s channel. Private threads also require access to the thread.
 
-# List of context menu actions
+## Save something for later
 
-The complete and auto-updated list of context menus can be found [here](../commandList.md#list-of-context-menus-used-with-right-click).
+Choose **Apps → save** on a message. Open your DMs with Kifo Clanker to find the copy. Keep DMs enabled; attachment copies have a total 9 MiB limit, so use the original message link for larger files.
 
-## Using context menus on `PC`
+You can also use `/bookmark message:<link>` and optionally choose `pin:true`, or `/todo text:<task>` to leave yourself a pinned task. For a task based on a message, use `/todo link:<message link> text:<note>`. React to a to-do note to complete it and remove it.
 
-### Message context menus:
+## Detect a language
 
-Either <kbd>Right-Click</kbd> on the message or <kbd>Left-Click</kbd> on the <kbd>...</kbd> in the top right corner to open Discord context menu. Then go to the `Apps` tab, where you'll find all possible interactions with the message provided by `Kifo Clanker`. Simply click on the desired action.
+Choose **Apps → detect language**, or use `/lang message:<link>`. The message must contain text. If detection is unavailable, the bot operator needs to configure the language provider.
 
-### User context menus:
-
-<kbd>Right-Click</kbd> on the user to open Discord context menu. Then go to the `Apps` tab, where you'll find all possible interactions with the user, provided by `Kifo Clanker`. Simply click on the desired action.
-
-![sample context menu](../images/tutorials/context_menu_sample.png)
-
-## Using context menus on `Mobile`
-
-_Currently there is no support for context menus via mobile app. I will update this guide once this feature is implemented._
-
-<hr/>
-
-~by [KifoPL](https://bio.link/KifoPL)
+[See all context actions](../commandList.md#context-menus).

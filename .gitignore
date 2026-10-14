@@ -1,3 +1,17 @@
-node_modules
+node_modules/
+dist/
 .env
-.vscode
+.env.*
+!.env.example
+.vscode/
+infra/**/bin/
+infra/**/obj/
+.aspire/
+
+# Documentation build outputs
+_site/
+.jekyll-cache/
+.sass-cache/
+.jekyll-metadata
+__pycache__/
+*.pyc

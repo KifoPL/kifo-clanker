@@ -1,38 +1,27 @@
-# How to use `/ticket`?
+---
+title: Creating a ticket
+permalink: /docs/guides/ticket/
+---
+{% include docs-nav.html %}
 
-## Table of Contents:
+# Creating a ticket
 
-- [How to use `/ticket`?](#how-to-use-ticket)
-	- [Table of Contents:](#table-of-contents)
-	- [What is a `/ticket`?](#what-is-a-ticket)
-	- [How to use `tickets`?](#how-to-use-tickets)
-			- [Friendly tips: *(not required, but they help to get the answer you're looking for!)*](#friendly-tips-not-required-but-they-help-to-get-the-answer-youre-looking-for)
-	- [Why not a normal channel?](#why-not-a-normal-channel)
+A ticket gives your question or problem its own thread, keeping related answers together. Use `/ticket` in a channel where moderators have enabled ticketing.
 
-## What is a `/ticket`?
+1. Choose a brief `title` that describes the question.
+2. Add an optional `description` with the details someone needs to help.
+3. Send the command and open the thread linked in the bot’s private response.
 
-`/ticket` is a natural way to handle all questions and problems members of huge servers may have. Think of it as an entire forum within a single text channel.
+```text
+/ticket title:How do I join the event? description:I can see the event channel but cannot sign up.
+```
 
-It is sometimes hard to find a question within rules or even find a relevant channel, and that's when this command comes in - it's a neat and organized way to ask questions and receive answers.
+The channel’s configuration determines whether your ticket is public or private. A public ticket can be read by people with access to its channel. A private ticket is a private thread that includes you; moderators with **Manage Threads** can access it. Only share information suitable for that audience.
 
-## How to use `tickets`?
+You need **View Channel**, **Use Application Commands**, and **Send Messages in Threads**. If the channel is not configured for tickets, ask a moderator to check `/ticketing list`.
 
-1. If you have a question or a problem that needs solving, type `/ticket` to create a ticket.
-2. Then, in `title`, ask the question, or state the problem.
-3. If you need to provide additional details, that's what `description` is for!
+## Help people help you
 
-#### Friendly tips: *(not required, but they help to get the answer you're looking for!)*
+Search existing answers first. Keep the title specific, include the steps you tried, and thank people who take time to respond. The thread title uses the first 100 characters of your title; the full title remains in the ticket’s message.
 
-- **Try to find an answer yourself** *(90% of the questions have their answer somewhere in the rules or other generally accessible channels)*.
-- **Keep your `titles` brief** *(the perfect title is straight to the point - people love answering simple questions, so try to make it look simple)*.
-- **Skip all unnecessary details** *(people often find it disappointing when a giant wall of the text leads to small and easy questions)*.
-- **Describe the origin of your problem/question** *(What topic/category brought you to this channel? Where did you expect to find an answer?)*.
-
-And the most important one: __**Don't forget to thank the person for answering!**__ They didn't have to, yet they *chose* to help you. Share kindness everywhere you can.
-
-## Why not a normal channel?
-
-It may seem like an over-complication for you. But think bigger: imagine 20 people trying to ask a question at the same time. Then, 20 other people try to answer. See the problem yet? `/ticket` creates sound-proof booths for every person, where they all can ask questions, and they will be able to hear the answers.
-<hr/>
-
-~by [KifoPL](https://bio.link/KifoPL)
+[Ticket options](../commandList.md#ticket) · [Administrator setup](ticketing.md)
